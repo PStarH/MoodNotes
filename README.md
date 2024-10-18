@@ -2,14 +2,14 @@ Certainly! Here’s a structured `README.md` for your diary application, formatt
 
 ---
 
-# MoodsDiary
+# MoodNotes
 
 
-![Workflow](https://img.shields.io/github/workflow/status/PStarH/MoodDiary/CI)
-![License](https://img.shields.io/github/license/PStarH/MoodDiary)
-![Star](https://img.shields.io/github/stars/PStarH/MoodDiary?style=social)
+![Workflow](https://img.shields.io/github/workflow/status/PStarH/MoodNotes/CI)
+![License](https://img.shields.io/github/license/PStarH/MoodNotes)
+![Star](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
 
-MoodsDiary is a cross-platform diary application built on Vue.js and Electron. It provides users with a seamless and intuitive interface to document their daily thoughts, moods, and activities. With features like multimedia support, weather integration, and a calendar view, MoodsDiary is designed to enhance your journaling experience.
+MoodNotes is a cross-platform diary application built on Vue.js and Electron. It provides users with a seamless and intuitive interface to document their daily thoughts, moods, and activities. With features like multimedia support, weather integration, and a calendar view, MoodNotes is designed to enhance your journaling experience.
 
 ## 📖 Table of Contents
 
@@ -51,7 +51,7 @@ MoodsDiary is a cross-platform diary application built on Vue.js and Electron. I
 
 ## 🏗 Architecture
 
-MoodsDiary follows a client-server architecture where the frontend communicates with a local SQLite database. The application is designed to handle diary entries, multimedia attachments, and user settings effectively, providing an intuitive interface for users to document their daily lives.
+MoodNotes follows a client-server architecture where the frontend communicates with a local SQLite database. The application is designed to handle diary entries, multimedia attachments, and user settings effectively, providing an intuitive interface for users to document their daily lives.
 
 ## 🚀 Installation
 
@@ -60,8 +60,8 @@ MoodsDiary follows a client-server architecture where the frontend communicates 
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/MoodsDiary.git
-   cd MoodsDiary/backend
+   git clone https://github.com/yourusername/MoodNotes.git
+   cd MoodNotes/backend
    ```
 
 2. **Create a Virtual Environment** (if applicable)
@@ -134,7 +134,7 @@ MoodsDiary follows a client-server architecture where the frontend communicates 
 
 ## 🚀 Future Plans
 
-MoodsDiary is continually evolving to enhance user experience and functionality. Upcoming features include:
+MoodNotes is continually evolving to enhance user experience and functionality. Upcoming features include:
 
 - **User Authentication:**
   - Allow users to create accounts and manage their diary entries across devices.
@@ -153,7 +153,7 @@ MoodsDiary is continually evolving to enhance user experience and functionality.
 
 ## 📂 Project Structure
 
-MoodsDiary/
+MoodNotes/
 ├── backend/
 │ ├── app.py
 │ ├── models.py
@@ -216,11 +216,11 @@ Made with ❤️ by [Your Name](https://github.com/PStarH)
 
 ### Chinese Version (中文版本)
 
-# 晨暮日记MoodsDiary
+# 晨暮日记MoodNotes
 
-![工作流程](https://img.shields.io/github/workflow/status/PStarH/MoodDiary/CI)
-![许可证](https://img.shields.io/github/license/PStarH/MoodDiary)
-![星标](https://img.shields.io/github/stars/PStarH/MoodDiary?style=social)
+![工作流程](https://img.shields.io/github/workflow/status/PStarH/MoodNotes/CI)
+![许可证](https://img.shields.io/github/license/PStarH/MoodNotes)
+![星标](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
 
 晨暮日记是一个跨平台的日记App，基于 Vue.js 和 Electron 构建。它为用户提供无缝直观的界面，以记录他们的日常想法、情感和活动。通过多媒体支持、天气集成和日历视图等功能，晨暮日记旨在增强您的写作体验。
 
@@ -264,7 +264,7 @@ Made with ❤️ by [Your Name](https://github.com/PStarH)
 
 ## 🏗 架构
 
-晨暮日记MoodsDiary遵循客户端-服务器架构，前端与本地 SQLite 数据库进行通信。该应用程序旨在有效处理日记条目、多媒体附件和用户设置，为用户提供直观的界面来记录日常生活。
+晨暮日记MoodNotes遵循客户端-服务器架构，前端与本地 SQLite 数据库进行通信。该应用程序旨在有效处理日记条目、多媒体附件和用户设置，为用户提供直观的界面来记录日常生活。
 
 ## 🚀 安装
 
@@ -273,8 +273,8 @@ Made with ❤️ by [Your Name](https://github.com/PStarH)
 1. **克隆仓库**
 
    ```bash
-   git clone https://github.com/yourusername/MoodsDiary.git
-   cd MoodsDiary/backend
+   git clone https://github.com/yourusername/MoodNotes.git
+   cd MoodNotes/backend
    ```
 
 2. **创建虚拟环境** （如适用）
@@ -349,7 +349,7 @@ Made with ❤️ by [Your Name](https://github.com/PStarH)
 
 ## 🚀 未来计划
 
-晨暮日记MoodsDiary不断发展，以增强用户体验和功能。即将推出的功能包括：
+晨暮日记MoodNotes不断发展，以增强用户体验和功能。即将推出的功能包括：
 
 - **用户身份验证：**
   - 允许用户创建帐户并跨设备管理他们的日记条目。
@@ -368,7 +368,7 @@ Made with ❤️ by [Your Name](https://github.com/PStarH)
 
 ## 📂 项目结构
 
-晨暮日记MoodsDiary/
+晨暮日记MoodNotes/
 ├── backend/
 │ ├── app.py
 │ ├── models.py
