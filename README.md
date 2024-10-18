@@ -26,7 +26,7 @@
 - **日记**
   - **每日总结:**
     - 文字编辑器页面
-    - 导出为 PDF/MD/HTML
+    - 导出为 PDF/Markdown/HTML
     - 包含天气/情绪
     - 待办事项清单 - 我今天做了...吗?
     - 图片、视频、音频
@@ -213,7 +213,7 @@ MoodNotes is a cross-platform diary application built with Vue.js and Electron. 
 - **Diary**
   - **Daily Summary:**
     - Text editor page
-    - Export as PDF/MD/HTML
+    - Export as PDF/Markdown/HTML
     - Includes weather/emotions
     - To-do list - Did I do this in the day?
     - Image, Video, Audio
