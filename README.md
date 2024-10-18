@@ -23,27 +23,24 @@
 
 ## ✨ 功能
 
-- **日记 - 每日总结:**
-  - 文字编辑器页面
-  - 导出为 PDF/MD/HTML
-  - 包含天气/情绪
-  - 待办事项清单 - 我今天做了...吗?
-  - 图片、视频、音频 
-  - 舒适区条目
-
-- **日记 - 灵感记录 (Diary - Spark):** 便于放在主页
-  - 照片、视频 (Photo, video)
-  - 文字 (Text)
-
-- **去年今日:** 我去年今天做了什么
-
-- **日历 :**
+- **日记**
+  - **每日总结:**
+    - 文字编辑器页面
+    - 导出为 PDF/MD/HTML
+    - 包含天气/情绪
+    - 待办事项清单 - 我今天做了...吗?
+    - 图片、视频、音频
+    - 舒适区条目
+  - **灵感记录 (Spark):** 方便放在主页
+    - 照片、视频
+    - 文字
+- **去年今日:**
+  - 我去年今天做了什么
+- **日历:**
   - 显示当天的日记及表情符号表示情绪
   - 待办事项清单
   - 每日名言
-
 - **跨平台:** 基于Electron构建，支持桌面和移动设备。
-
 - **隐私功能:** 密码保护和私人模式以保持条目安全。
 
 ## 🛠 技术栈
@@ -62,7 +59,14 @@
 
 ## 🏗 架构
 
-晨暮日记遵循客户端-服务器架构，前端与本地SQLite数据库进行通信。该应用程序旨在有效处理日记条目、多媒体附件和用户设置，为用户提供直观的界面来记录日常生活。
+为了简化应用程序并提高性能，晨暮日记尽可能地采用前端技术实现所有功能，减少对后端的依赖。应用程序主要基于Vue.js构建，通过Electron打包为跨平台的桌面应用。数据存储使用SQLite，并通过前端直接与数据库进行交互，实现快速响应和离线使用能力。
+
+**主要组件包括：**
+
+- **Vue.js 前端:** 负责用户界面和用户体验，管理所有用户交互。
+- **Vuex 状态管理:** 管理应用的全局状态，包括日记条目、用户设置等。
+- **SQLite 数据库:** 存储所有日记条目、媒体文件和用户数据，确保数据持久性和快速访问。
+- **Electron 框架:** 将Vue.js应用打包为跨平台的桌面应用，支持Windows、macOS和Linux。
 
 ## 🚀 安装
 
@@ -206,26 +210,24 @@ MoodNotes is a cross-platform diary application built with Vue.js and Electron. 
 
 ## ✨ Features
 
-- **Diary - Daily Summary:**
-  - Text editor page
-  - Export as PDF/MD/HTML
-  - Includes weather/emotions
-  - To-do list - Did I do... today?
-  - Images, videos, audio 
-  - Comfort zone entries
-  - **Diary - Spark:** Easily placed on the homepage
-  - Photos, videos
-  - Text
-
-- **On This Day Last Year:** What did I do on this day last year?
-
+- **Diary**
+  - **Daily Summary:**
+    - Text editor page
+    - Export as PDF/MD/HTML
+    - Includes weather/emotions
+    - To-do list - Did I do this in the day?
+    - Image, Video, Audio
+    - Comfort zone entry
+  - **Spark:** Easily placed on the homepage for convenience
+    - Photo, video
+    - Text
+- **Last Year This Day:**
+  - What did I do last year on this day?
 - **Calendar:**
-  - Displays daily entries with emoji indicating emotions
+  - Show the diary of the day with emojis representing mood
   - To-do list
-  - Daily quotes
-
+  - Daily quote
 - **Cross-Platform:** Built with Electron, supporting desktop and mobile devices.
-
 - **Privacy Features:** Password protection and private mode to keep entries secure.
 
 ## 🛠 Tech Stack
@@ -244,7 +246,14 @@ MoodNotes is a cross-platform diary application built with Vue.js and Electron. 
 
 ## 🏗 Architecture
 
-MoodNotes follows a client-server architecture, communicating the frontend with the local SQLite database. The application is designed to efficiently handle diary entries, multimedia attachments, and user settings to provide an intuitive interface for recording daily life.
+To simplify the application and enhance performance, MoodNotes leverages frontend technologies to implement all functionalities, minimizing backend dependencies. The application is primarily built with Vue.js and packaged with Electron for cross-platform desktop use. Data storage utilizes SQLite, allowing the frontend to interact directly with the database for rapid responses and offline capabilities.
+
+**Key Components:**
+
+- **Vue.js Frontend:** Handles the user interface and experience, managing all user interactions.
+- **Vuex State Management:** Manages the global state of the application, including diary entries and user settings.
+- **SQLite Database:** Stores all diary entries, media files, and user data, ensuring data persistence and quick access.
+- **Electron Framework:** Packages the Vue.js application into a cross-platform desktop app supporting Windows, macOS, and Linux.
 
 ## 🚀 Installation
 
@@ -271,7 +280,7 @@ MoodNotes follows a client-server architecture, communicating the frontend with 
 
 4. **View Past Entries**
 
-   - Access the **On This Day Last Year** feature to review past activities.
+   - Access the **Last Year This Day** feature to review past activities.
 
 5. **Calendar Overview**
 
@@ -319,8 +328,6 @@ MoodNotes/
 ├── README.md
 └── LICENSE
 ```
-
-
 - **backend/**: Contains all backend-related code, including database models and APIs.
 - **frontend/**: Contains the Vue.js frontend application.
 - **requirements.txt**: Lists Python dependencies.
