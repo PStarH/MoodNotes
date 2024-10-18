@@ -299,24 +299,26 @@ MoodNotes is continuously evolving to enhance user experience and functionality.
 ## 📂 Project Structure
 
 MoodNotes/
+```
 ├── backend/
-│ ├── app.py
-│ ├── models.py
-│ ├── database.py
-│ ├── requirements.txt
+│   ├── app.py
+│   ├── models.py
+│   ├── database.py
+│   ├── requirements.txt
 ├── frontend/
-│ ├── src/
-│ │ ├── views/
-│ │ │ ├── DaySummary.vue
-│ │ │ ├── Spark.vue
-│ │ │ └── Calendar.vue
-│ │ ├── store/
-│ │ │ └── index.js
-│ │ ├── components/
-│ ├── public/
-│ ├── package.json
+│   ├── src/
+│   │   ├── views/
+│   │   │   ├── DaySummary.vue
+│   │   │   ├── Spark.vue
+│   │   │   └── Calendar.vue
+│   │   ├── store/
+│   │   │   └── index.js
+│   │   ├── components/
+│   ├── public/
+│   ├── package.json
 ├── README.md
 └── LICENSE
+```
 
 
 - **backend/**: Contains all backend-related code, including database models and APIs.
