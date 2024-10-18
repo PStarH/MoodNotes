@@ -1,0 +1,15 @@
+{
+  "name": "moodnotes-electron",
+  "version": "1.0.0",
+  "main": "main.ts",
+  "scripts": {
+    "start": "tsc && electron .",
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.1",
+    "typescript": "^5.5.3"
+  }
+}
+

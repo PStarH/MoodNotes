@@ -1,20 +1,29 @@
 {
   "name": "moodnotes",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run electron\"",
+    "frontend": "npm run --prefix frontend dev",
+    "backend": "python backend/app.py",
+    "electron": "npm run --prefix electron start",
+    "build": "vue-tsc -b && vite build && npm run build-electron",
+    "build-electron": "npm run --prefix electron build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.10"
+    "axios": "^1.4.0",
+    "electron": "^33.0.1",
+    "vue": "^3.5.10",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
+    "concurrently": "^8.0.1",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
-    "vue-tsc": "^2.1.6"
+    "vue-tsc": "^2.1.6",
+    "tailwindcss": "^3.3.2"
   }
 }
