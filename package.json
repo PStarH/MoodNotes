@@ -16,14 +16,14 @@
     "axios": "^1.4.0",
     "electron": "^33.0.1",
     "vue": "^3.5.10",
-    "vuex": "^4.0.2"
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
     "concurrently": "^8.0.1",
+    "tailwindcss": "^3.3.2",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
-    "vue-tsc": "^2.1.6",
-    "tailwindcss": "^3.3.2"
+    "vue-tsc": "^2.1.6"
   }
 }
