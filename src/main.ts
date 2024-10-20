@@ -1,8 +1,17 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import store from './store/index'
-import './style.css'
+import store from './store'
+import './style.css'  // Import Tailwind CSS
 
 const app = createApp(App)
+
 app.use(store)
+
+store.dispatch('loadSummaries')
+store.dispatch('loadSparks')
+store.dispatch('loadCalendarEntries')
+store.dispatch('loadTasks')
+store.dispatch('loadHabits')
+store.dispatch('loadDaySummaries')
+
 app.mount('#app')

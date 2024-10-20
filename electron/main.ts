@@ -1,9 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
-import { spawn } from 'child_process';
 
 let mainWindow: BrowserWindow | null;
-let backendProcess: any;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -16,8 +14,10 @@ function createWindow() {
     },
   });
 
-  // Load the frontend's index.html
-  mainWindow.loadURL('http://localhost:3000');
+  const startURL = process.env.VITE_DEV_SERVER_URL
+    ? process.env.VITE_DEV_SERVER_URL
+    : `file://${path.join(__dirname, '../dist/index.html')}`;
+  mainWindow.loadURL(startURL);
 
   // Open DevTools if in development mode
   if (!app.isPackaged) {
@@ -26,20 +26,10 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    if (backendProcess) {
-      backendProcess.kill();
-    }
   });
 }
 
 app.whenReady().then(() => {
-  // Start the backend Flask server
-  backendProcess = spawn('python', ['../backend/app.py'], {
-    cwd: path.join(__dirname, '../backend'),
-    stdio: 'inherit',
-    shell: true,
-  });
-
   createWindow();
 
   app.on('activate', () => {

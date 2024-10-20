@@ -1,7 +1,7 @@
 {
   "name": "moodnotes-electron",
   "version": "1.0.0",
-  "main": "main.ts",
+  "main": "dist/main.js",
   "scripts": {
     "start": "tsc && electron .",
     "build": "tsc"

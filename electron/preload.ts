@@ -16,3 +16,8 @@ contextBridge.exposeInMainWorld('api', {
   },
 })
 
+window.addEventListener('DOMContentLoaded', () => {
+  // You can expose APIs to the renderer process here
+  // For example:
+  // window.api = { /* ... */ };
+});
