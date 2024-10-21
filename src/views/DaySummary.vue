@@ -259,19 +259,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useStore } from 'vuex'
 import { Calendar, Cloud, Smile, Bold, Italic, Underline, Strikethrough, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Image, Video, Music, X } from 'lucide-vue-next'
 
-const currentDate = ref(new Date().toISOString().split('T')[0])
+const store = useStore()
+const props = defineProps(['selectedDate'])
+
+const currentDate = ref(props.selectedDate || new Date().toISOString().split('T')[0])
 const weather = ref({ description: 'Loading...' })
 const mood = ref('happy')
 const editor = ref(null)
 const content = ref('')
-const habits = ref([
-    { name: 'Morning Meditation', completed: false, status: null },
-    { name: 'Exercise', completed: false, status: null },
-    { name: 'Read for 30 minutes', completed: false, status: null }
-])
+const habits = ref([])
 const newHabit = ref('')
 const media = ref([])
 const comfortZoneEntry = ref('')
@@ -286,6 +286,34 @@ const newSectionContent = ref('')
 const showAddSection = ref(false)
 const tags = ref([])
 const newTag = ref('')
+
+const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
+
+onMounted(() => {
+    if (daySummary.value) {
+        content.value = daySummary.value.summary
+        mood.value = daySummary.value.mood
+        weather.value.description = daySummary.value.weather
+        habits.value = daySummary.value.habits
+        dailyCheck.value = daySummary.value.dailyCheck
+        comfortZoneEntry.value = daySummary.value.comfortZoneEntry
+        customSections.value = daySummary.value.customSections
+        tags.value = daySummary.value.tags
+        media.value = daySummary.value.media
+    }
+
+    if (editor.value) {
+        editor.value.innerHTML = content.value
+        editor.value.focus()
+    }
+
+    // Simulating weather API call
+    setTimeout(() => {
+        if (!weather.value.description || weather.value.description === 'Loading...') {
+            weather.value = { description: 'Partly cloudy, 22°C' }
+        }
+    }, 1000)
+})
 
 const updateContent = () => {
     content.value = editor.value.innerHTML
@@ -372,7 +400,6 @@ const saveAll = () => {
         media: media.value
     }
     store.dispatch('updateDaySummary', summary)
-    emit('close')
 }
 
 const exportContent = (format) => {
@@ -439,20 +466,8 @@ const exportContent = (format) => {
         console.log('Exporting as HTML:', htmlContent)
     }
 }
-
-onMounted(() => {
-    if (editor.value) {
-        editor.value.focus()
-    }
-
-    // Simulating weather API call
-    setTimeout(() => {
-        weather.value = { description: 'Partly cloudy, 22°C' }
-    }, 1000)
-})
 </script>
 
 <style scoped>
 /* Add any additional styles here */
 </style>
-
