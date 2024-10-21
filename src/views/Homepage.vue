@@ -72,18 +72,66 @@
                 </div>
             </div>
 
+            <!-- Monthly Summary -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div @click="toggleMonthlySummary"
+                    class="bg-[#4E3B2B] p-4 flex justify-between items-center cursor-pointer">
+                    <h3 class="text-xl font-bold text-white">Monthly Summary</h3>
+                    <ChevronDownIcon :class="{ 'transform rotate-180': isMonthlySummaryOpen }"
+                        class="text-white transition-transform duration-300" />
+                </div>
+                <transition enter-active-class="transition-all duration-300 ease-out"
+                    leave-active-class="transition-all duration-300 ease-in" enter-from-class="opacity-0 max-h-0"
+                    enter-to-class="opacity-100 max-h-[1000px]" leave-from-class="opacity-100 max-h-[1000px]"
+                    leave-to-class="opacity-0 max-h-0">
+                    <div v-if="isMonthlySummaryOpen" class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <SummaryCard title="Diary Statistics">
+                                <ul class="space-y-2">
+                                    <li>Cumulative Diary Tags: {{ cumulativeDiaryTags }}</li>
+                                    <li>Max Words per Entry: {{ maxWordsPerEntry }}</li>
+                                    <li>Max Entries per Day: {{ maxEntriesPerDay }}</li>
+                                    <li>Words in Diary: {{ numberOfWordsInDiary }}</li>
+                                    <li>Cumulative Diary: {{ cumulativeDiary }}</li>
+                                    <li>Cumulative Diary Words: {{ cumulativeDiaryWords }}</li>
+                                </ul>
+                            </SummaryCard>
+
+                            <SummaryCard title="Record Statistics">
+                                <ul class="space-y-2">
+                                    <li>Record Days: {{ recordDays }}</li>
+                                    <li>Accumulated Record: {{ accumulatedRecord }}</li>
+                                    <li>Accumulated Word Count: {{ accumulatedWordCount }}</li>
+                                </ul>
+                            </SummaryCard>
+
+                            <SummaryCard title="Mood Distribution">
+                                <ul class="space-y-2">
+                                    <li v-for="emotion in emotionStats" :key="emotion.emoji" class="flex items-center">
+                                        <span class="text-2xl mr-2">{{ emotion.emoji }}</span>
+                                        <span>{{ emotion.count }} days</span>
+                                    </li>
+                                </ul>
+                            </SummaryCard>
+                        </div>
+
+                        <SummaryCard title="Recent Sparks" class="mt-6">
+                            <ul class="space-y-2">
+                                <li v-for="(spark, index) in recentSparks" :key="index">
+                                    {{ spark }}
+                                </li>
+                            </ul>
+                        </SummaryCard>
+                    </div>
+                </transition>
+            </div>
+
             <!-- Day Summary -->
-            <DaySummary 
-                v-if="isDaySummaryFormOpen"
-                :selectedDate="selectedDate"
-                @close="closeDaySummary"
-            />
+            <DaySummary v-if="isDaySummaryFormOpen" :selectedDate="selectedDate" @close="closeDaySummary" />
             <div v-else class="mb-5">
                 <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">Day Summary</h3>
-                <button
-                    @click="isDaySummaryFormOpen = true"
-                    class="flex items-center bg-[#FAF3E0] p-2.5 rounded border-0 cursor-pointer w-full mb-2.5"
-                >
+                <button @click="isDaySummaryFormOpen = true"
+                    class="flex items-center bg-[#FAF3E0] p-2.5 rounded border-0 cursor-pointer w-full mb-2.5">
                     <FileText color="#7D5A36" :size="24" class="mr-2.5" />
                     <span class="text-[#4E3B2B]">Add or edit day summary</span>
                 </button>
@@ -447,7 +495,7 @@ const handleDayClick = (date) => {
     isDaySummaryFormOpen.value = true
     console.log('isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
     console.log('selectedDate:', selectedDate.value)
-    
+
     // Force a re-render
     nextTick(() => {
         console.log('After nextTick - isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
@@ -535,6 +583,128 @@ const testClick = () => {
     console.log('Calendar clicked')
 }
 
+// 1. Cumulative Diary Tags
+const cumulativeDiaryTags = computed(() => {
+    const tagsSet = new Set()
+    daySummaries.value.forEach(summary => {
+        if (summary.tags && Array.isArray(summary.tags)) {
+            summary.tags.forEach(tag => tagsSet.add(tag))
+        }
+    })
+    return tagsSet.size
+})
+
+// 2. Maximum Number of Words per Entry
+const maxWordsPerEntry = computed(() => {
+    let max = 0
+    daySummaries.value.forEach(summary => {
+        if (summary.summary) {
+            const wordCount = summary.summary.split(/\s+/).length
+            if (wordCount > max) {
+                max = wordCount
+            }
+        }
+    })
+    return max
+})
+
+// 3. Maximum Number of Entries per Day
+const maxEntriesPerDay = computed(() => {
+    const entriesPerDay = {}
+    daySummaries.value.forEach(summary => {
+        const date = summary.date
+        if (entriesPerDay[date]) {
+            entriesPerDay[date] += 1
+        } else {
+            entriesPerDay[date] = 1
+        }
+    })
+    let max = 0
+    for (const date in entriesPerDay) {
+        if (entriesPerDay[date] > max) {
+            max = entriesPerDay[date]
+        }
+    }
+    return max
+})
+
+// 4. Number of Words in Diary
+const numberOfWordsInDiary = computed(() => {
+    let totalWords = 0
+    daySummaries.value.forEach(summary => {
+        if (summary.summary) {
+            totalWords += summary.summary.split(/\s+/).length
+        }
+    })
+    return totalWords
+})
+
+// 5. Cumulative Diary
+const cumulativeDiary = computed(() => {
+    return daySummaries.value.length
+})
+
+// 6. Cumulative Diary Words
+const cumulativeDiaryWords = computed(() => {
+    let total = 0
+    daySummaries.value.forEach(summary => {
+        if (summary.summary) {
+            total += summary.summary.split(/\s+/).length
+        }
+    })
+    return total
+})
+
+// 7. Record Days
+const recordDays = computed(() => {
+    // Assuming "record days" are days with entries
+    return daySummaries.value.filter(summary => summary.summary && summary.summary.trim() !== '').length
+})
+
+// 8. Accumulated Record
+const accumulatedRecord = computed(() => {
+    // Define what "accumulated record" means. Assuming total number of entries
+    return daySummaries.value.length
+})
+
+// 9. Accumulated Word Count
+const accumulatedWordCount = computed(() => {
+    return daySummaries.value.reduce((acc, summary) => {
+        if (summary.summary) {
+            return acc + summary.summary.split(/\s+/).length
+        }
+        return acc
+    }, 0)
+})
+
+// 10. Mood Statistics
+const emotionStats = computed(() => {
+    const stats = emotions.map(emotion => ({
+        emoji: emotion.emoji,
+        count: 0
+    }))
+    daySummaries.value.forEach(summary => {
+        if (summary.mood) {
+            const emotion = emotions.find(e => e.emoji === summary.mood.emoji)
+            if (emotion) {
+                const stat = stats.find(s => s.emoji === emotion.emoji)
+                if (stat) {
+                    stat.count += 1
+                }
+            }
+        }
+    })
+    return stats
+})
+
+// 11. Recent Sparks
+const recentSparks = computed(() => {
+    // Assuming sparks are stored in the store
+    // Replace 'sparks' with the actual state property if different
+    return store.state.sparks.slice(-5).reverse() // Last 5 sparks
+})
+
+
 onMounted(() => {
     console.log('Component mounted')
 })
@@ -584,5 +754,51 @@ onMounted(() => {
     right: 2px;
     background-color: #7D5A36;
 }
-</style>
 
+.monthly-summary h3 {
+    border-bottom: 2px solid #4E3B2B;
+    padding-bottom: 4px;
+}
+
+.monthly-summary ul li {
+    margin-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+    .monthly-summary .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .monthly-summary .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.calendar-day {
+
+    @apply flex flex-col items-center justify-center h-16 rounded-lg text-[#4E3B2B] relative;
+}
+
+.calendar-day.empty {
+    @apply bg-transparent;
+}
+
+.emotion-icon {
+    @apply text-2xl mb-1;
+}
+
+.task-indicator,
+.summary-indicator {
+    @apply absolute bottom-1 w-2 h-2 rounded-full;
+}
+
+.task-indicator {
+    @apply left-1 bg-[#4E3B2B];
+}
+
+.summary-indicator {
+    @apply right-1 bg-[#7D5A36];
+}
+</style>

@@ -6,11 +6,6 @@
 
                 <!-- Container for Close Button and Export Options -->
                 <div class="absolute top-4 right-4 flex items-center space-x-4">
-                    <!-- Close Button -->
-                    <button @click="$emit('close')" class="text-[#7D5A36] hover:text-opacity-80">
-                        <X :size="24" />
-                    </button>
-
                     <!-- Export Options -->
                     <div class="flex space-x-2">
                         <button @click="exportContent('pdf')"
@@ -26,6 +21,10 @@
                             HTML
                         </button>
                     </div>
+                    <!-- Close Button -->
+                    <button @click="$emit('close')" class="text-[#7D5A36] hover:text-opacity-80">
+                        <X :size="24" />
+                    </button>
                 </div>
 
                 <!-- Date and Weather/Mood Section -->
