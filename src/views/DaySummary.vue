@@ -80,48 +80,9 @@
                 </div>
             </div>
 
-            <!-- Enhanced Word Editor -->
+            <!-- Enhanced Word Editor with Quill -->
             <div class="mb-6">
-                <div class="bg-white border border-[#D3C9A6] rounded-xl p-2">
-                    <div class="flex flex-wrap space-x-2 mb-2">
-                        <button @click="applyStyle('bold')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <Bold class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('italic')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <Italic class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('underline')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <Underline class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('strikethrough')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <Strikethrough class="text-[#7D5A36]" />
-                        </button>
-                        <select @change="applyHeading($event)" class="bg-[#F0E9D2] text-[#4E3B2B] px-2 py-1 rounded-lg">
-                            <option value="">Heading</option>
-                            <option value="h1">Heading 1</option>
-                            <option value="h2">Heading 2</option>
-                            <option value="h3">Heading 3</option>
-                        </select>
-                        <button @click="applyStyle('insertUnorderedList')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <List class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('insertOrderedList')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <ListOrdered class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('justifyLeft')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <AlignLeft class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('justifyCenter')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <AlignCenter class="text-[#7D5A36]" />
-                        </button>
-                        <button @click="applyStyle('justifyRight')" class="p-1 rounded-lg hover:bg-[#F0E9D2]">
-                            <AlignRight class="text-[#7D5A36]" />
-                        </button>
-                        <input type="color" @input="applyColor($event)" class="w-8 h-8 rounded-lg">
-                    </div>
-                    <div ref="editor" contenteditable="true" class="min-h-[200px] p-2 focus:outline-none"
-                        @input="updateContent"></div>
-                </div>
+                <div ref="quillEditor" class="bg-white border border-[#D3C9A6] rounded-xl p-2"></div>
             </div>
 
             <!-- Habit-based To-do List -->
@@ -255,6 +216,8 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import { Calendar, Cloud, Smile, Bold, Italic, Underline, Strikethrough, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Image, Video, Music, X } from 'lucide-vue-next'
+import Quill from 'quill'
+import 'quill/dist/quill.snow.css' // Import Quill styles
 
 const store = useStore()
 const props = defineProps(['selectedDate'])
@@ -262,7 +225,7 @@ const props = defineProps(['selectedDate'])
 const currentDate = ref(props.selectedDate || new Date().toISOString().split('T')[0])
 const weather = ref({ description: 'Loading...' })
 const mood = ref('happy')
-const editor = ref(null)
+const quillEditor = ref(null)
 const content = ref('')
 const habits = ref([])
 const newHabit = ref('')
@@ -300,9 +263,36 @@ onMounted(() => {
         media.value = daySummary.value.media
     }
 
-    if (editor.value) {
-        editor.value.innerHTML = content.value
-        editor.value.focus()
+    if (quillEditor.value) {
+        const quill = new Quill(quillEditor.value, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                    ['blockquote', 'code-block'],
+
+                    [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                    [{ 'direction': 'rtl' }],                         // text direction
+
+                    [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+                    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults
+                    [{ 'font': [] }],
+                    [{ 'align': [] }],
+
+                    ['clean']                                         // remove formatting button
+                ]
+            }
+        });
+
+        quill.setContents(quill.clipboard.convert(content.value))
+        quill.on('text-change', () => {
+            content.value = quill.root.innerHTML
+        })
     }
 
     // Simulating weather API call
@@ -312,10 +302,6 @@ onMounted(() => {
         }
     }, 1000)
 })
-
-const updateContent = () => {
-    content.value = editor.value.innerHTML
-}
 
 const applyStyle = (style) => {
     document.execCommand(style, false, null)
@@ -387,7 +373,7 @@ const removeTag = (tag) => {
 const saveAll = () => {
     const summary = {
         date: currentDate.value,
-        summary: content.value,
+        summary: content.value, // Content from Quill
         mood: mood.value,
         weather: weather.value.description,
         habits: habits.value,
@@ -469,4 +455,3 @@ const exportContent = (format) => {
 <style scoped>
 /* Add any additional styles here */
 </style>
-

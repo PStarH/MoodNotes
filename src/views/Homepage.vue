@@ -139,9 +139,6 @@
                     <FileText color="#7D5A36" :size="24" class="mr-2.5" />
                     <span class="text-[#4E3B2B]">Add or edit day summary</span>
                 </button>
-                <div v-if="currentDaySummary" class="bg-[#FAF3E0] p-4 rounded-lg">
-                    <p class="text-[#4E3B2B]">{{ currentDaySummary.summary }}</p>
-                </div>
             </div>
 
             <!-- Spark Section -->
@@ -496,9 +493,7 @@ const handleSaveDaySummary = (summary) => {
 
 // Handle day click event
 const handleDayClick = (date) => {
-    console.log('Day clicked:', date)
-    // Format the date as 'YYYY-MM-DD' using local time
-    selectedDate.value = formatDate(date)
+    selectedDate.value = formatDate(date) // Formats to 'YYYY-MM-DD'
     isDaySummaryFormOpen.value = true
     console.log('isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
     console.log('selectedDate:', selectedDate.value)
@@ -523,12 +518,12 @@ const prevMonth = () => {
 }
 
 const hasTasks = (date) => {
-    const dateString = date.toISOString().split('T')[0]
+    const dateString = formatDate(date)
     return tasks.value.some(task => task.dueDate === dateString)
 }
 
 const hasSummary = (date) => {
-    const dateString = date.toISOString().split('T')[0]
+    const dateString = formatDate(date)
     return daySummaries.value.some(summary => summary.date === dateString)
 }
 
@@ -812,6 +807,12 @@ onMounted(() => {
     @apply right-1 bg-[#7D5A36];
 }
 </style>
+
+
+
+
+
+
 
 
 
