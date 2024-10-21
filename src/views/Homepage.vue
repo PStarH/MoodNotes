@@ -127,7 +127,11 @@
             </div>
 
             <!-- Day Summary -->
-            <DaySummary v-if="isDaySummaryFormOpen" :selectedDate="selectedDate" @close="closeDaySummary" />
+            <DaySummary 
+                v-if="isDaySummaryFormOpen" 
+                :selectedDate="selectedDate" 
+                @close="closeDaySummary" 
+            />
             <div v-else class="mb-5">
                 <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">Day Summary</h3>
                 <button @click="isDaySummaryFormOpen = true"
@@ -405,9 +409,9 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, X, CheckCircle2, XCircle, FileText, Edit2 } from 'lucide-vue-next'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight,ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2 } from 'lucide-vue-next'
 import DaySummary from './DaySummary.vue'
-
+import SummaryCard from '../components/SummaryCard.vue'
 const store = useStore()
 
 const emotions = [
@@ -437,7 +441,7 @@ const newDaySummary = ref('')
 const editingHabit = ref(null)
 const currentHabit = ref({ name: '', description: '' })
 const habitStatus = ref({})
-const selectedDate = ref(new Date())
+const selectedDate = ref('')
 
 const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate()
@@ -489,9 +493,12 @@ const handleSaveDaySummary = (summary) => {
     isDaySummaryFormOpen.value = false
 }
 
+
+// Handle day click event
 const handleDayClick = (date) => {
     console.log('Day clicked:', date)
-    selectedDate.value = date
+    // Format the date as 'YYYY-MM-DD' using local time
+    selectedDate.value = formatDate(date)
     isDaySummaryFormOpen.value = true
     console.log('isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
     console.log('selectedDate:', selectedDate.value)
@@ -526,7 +533,10 @@ const hasSummary = (date) => {
 }
 
 const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
 }
 
 const getDateXDaysAgo = (x) => {
@@ -802,3 +812,6 @@ onMounted(() => {
     @apply right-1 bg-[#7D5A36];
 }
 </style>
+
+
+

@@ -9,11 +9,11 @@ const app = createApp(App)
 app.use(store)
 app.use(router)
 
-store.dispatch('loadSummaries')
+// Corrected action dispatch
+store.dispatch('loadDaySummaries')
 store.dispatch('loadSparks')
 store.dispatch('loadCalendarEntries')
 store.dispatch('loadTasks')
 store.dispatch('loadHabits')
-store.dispatch('loadDaySummaries')
 
 app.mount('#app')

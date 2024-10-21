@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Homepage from '@/views/Homepage.vue'
-import DaySummary from '@/views/DaySummary.vue'
+import Homepage from '../views/Homepage.vue'
+import DaySummary from '../views/DaySummary.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {

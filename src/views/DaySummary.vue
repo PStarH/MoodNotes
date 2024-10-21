@@ -145,13 +145,6 @@
                             class="w-6 h-6 rounded-full border border-[#7D5A36]"></button>
                     </div>
                 </div>
-                <div class="flex items-center mt-2">
-                    <input v-model="newHabit" @keyup.enter="addHabit" type="text" placeholder="Add new habit"
-                        class="flex-grow bg-[#F0E9D2] text-[#4E3B2B] px-2 py-1 rounded-lg mr-2">
-                    <button @click="addHabit" class="bg-[#7D5A36] text-white px-4 py-1 rounded-lg hover:bg-opacity-90">
-                        Add
-                    </button>
-                </div>
             </div>
 
             <!-- Daily Check -->
@@ -259,7 +252,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import { Calendar, Cloud, Smile, Bold, Italic, Underline, Strikethrough, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Image, Video, Music, X } from 'lucide-vue-next'
 
@@ -288,6 +281,11 @@ const tags = ref([])
 const newTag = ref('')
 
 const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
+
+// Watch for changes in the selectedDate prop
+watch(() => props.selectedDate, (newDate) => {
+    currentDate.value = newDate || new Date().toISOString().split('T')[0]
+})
 
 onMounted(() => {
     if (daySummary.value) {
@@ -471,3 +469,4 @@ const exportContent = (format) => {
 <style scoped>
 /* Add any additional styles here */
 </style>
+
