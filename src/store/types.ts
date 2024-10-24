@@ -5,7 +5,7 @@ export interface Task {
   dueDate: string
 }
 
-export type Mood = 'happy' | 'neutral' | 'sad' | 'excited' | 'angry'
+export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'angry'
 
 export interface HabitStatus {
   date: string // ISO date string
@@ -35,22 +35,24 @@ export interface MediaItem {
   url: string
 }
 
-export interface DaySummary {
-  date: string // ISO date string
+interface DaySummary {
+  date: string
   summary: string
-  mood: Mood
+  mood: string
   weather: string
-  tags: string[]
-  habits: {
-    id: number
-    name: string
-    description: string
-    completed: boolean
-    status: 'did' | 'partial' | 'not' | null
-  }[]
-  dailyCheck: DailyCheck
+  habits: Array<{ name: string; completed: boolean; status: string | null }>
+  dailyCheck: {
+    energyLevel: number
+    stressLevel: number
+    productivity: number
+  }
   comfortZoneEntry: string
-  customSections: CustomSection[]
-  media: MediaItem[]
+  customSections: Array<{ title: string; content: string }>
+  tags: string[]
+  media: Array<{ type: string; url: string }>
 }
 
+export interface MoodDetails {
+  emoji: string
+  color: string
+}

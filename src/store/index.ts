@@ -7,7 +7,7 @@ import {
   MediaItem,
   CustomSection,
   DailyCheck,
-  Mood,
+  MoodType,
   HabitStatus
 } from './types'
 
@@ -23,6 +23,7 @@ export interface State {
   sparks: string[]
   calendarEntries: { date: string; content: string }[]
 }
+
 
 const store: StoreOptions<State> = {
   state: {
@@ -161,6 +162,63 @@ const store: StoreOptions<State> = {
     getSparks: (state) => state.sparks,
     // Calendar Entries
     getCalendarEntries: (state) => state.calendarEntries,
+    // Getter to calculate total words this month
+    totalWordsThisMonth: (state) => (year: number, month: number): number => {
+      return state.daySummaries
+        .filter(summary => {
+          const date = new Date(summary.date)
+          return date.getFullYear() === year && date.getMonth() === month
+        })
+        .reduce((total, summary) => {
+          const wordCount = summary.summary.split(/\s+/).length
+          return total + wordCount
+        }, 0)
+    },
+
+    // Getter to calculate number of tags this year
+    numberOfTagsThisYear: (state) => (year: number): number => {
+      const tagsSet = new Set<string>()
+      state.daySummaries.forEach(summary => {
+        const date = new Date(summary.date)
+        if (date.getFullYear() === year) {
+          summary.tags.forEach(tag => tagsSet.add(tag))
+        }
+      })
+      return tagsSet.size
+    },
+
+    // Getter to find the most used tag
+    mostUsedTag: (state) => (year: number): string | null => {
+      const tagCount: { [key: string]: number } = {}
+      state.daySummaries.forEach(summary => {
+        const date = new Date(summary.date)
+        if (date.getFullYear() === year) {
+          summary.tags.forEach(tag => {
+            tagCount[tag] = (tagCount[tag] || 0) + 1
+          })
+        }
+      })
+      let maxCount = 0
+      let mostUsed: string | null = null
+      for (const tag in tagCount) {
+        if (tagCount[tag] > maxCount) {
+          maxCount = tagCount[tag]
+          mostUsed = tag
+        }
+      }
+      return mostUsed
+    },
+
+    // Getter to calculate average energy level
+    averageEnergyLevel: (state) => (year: number, month: number): number => {
+      const relevantSummaries = state.daySummaries.filter(summary => {
+        const date = new Date(summary.date)
+        return date.getFullYear() === year && date.getMonth() === month
+      })
+      if (relevantSummaries.length === 0) return 0
+      const totalEnergy = relevantSummaries.reduce((total, summary) => total + summary.dailyCheck.energyLevel, 0)
+      return parseFloat((totalEnergy / relevantSummaries.length).toFixed(2))
+    },
   },
   modules: {
     // Add modules here if needed

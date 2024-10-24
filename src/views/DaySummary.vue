@@ -55,7 +55,6 @@
 
             </div>
 
-
             <!-- Tags Section -->
             <div class="mb-6">
                 <h2 class="text-xxl text-[#4E3B2B] font-bold mb-2" style="text-align: left; align-items: left; align-items: left; font-size: 32px; ">Daily Review</h2>
@@ -87,7 +86,7 @@
 
             <!-- Habit-based To-do List -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2">Daily Habits</h2>
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2" v-if="habits">Daily Habits</h2>
                 <div v-for="(habit, index) in habits" :key="index"
                     class="flex items-center justify-between mb-2 bg-[#F0E9D2] p-2 rounded-lg">
                     <div class="flex items-center">
@@ -212,12 +211,14 @@
     </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Cloud, Smile, Bold, Italic, Underline, Strikethrough, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Image, Video, Music, X } from 'lucide-vue-next'
+import { X, Calendar, Cloud, Smile, Image, Video, Music } from 'lucide-vue-next'
 import Quill from 'quill'
-import 'quill/dist/quill.snow.css' // Import Quill styles
+import 'quill/dist/quill.snow.css'
+import { jsPDF } from 'jspdf'
+import DOMPurify from 'dompurify'
 
 const store = useStore()
 const props = defineProps(['selectedDate'])
@@ -245,85 +246,92 @@ const newTag = ref('')
 
 const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
 
-// Watch for changes in the selectedDate prop
 watch(() => props.selectedDate, (newDate) => {
     currentDate.value = newDate || new Date().toISOString().split('T')[0]
 })
 
-onMounted(() => {
-    if (daySummary.value) {
-        content.value = daySummary.value.summary
-        mood.value = daySummary.value.mood
-        weather.value.description = daySummary.value.weather
-        habits.value = daySummary.value.habits
-        dailyCheck.value = daySummary.value.dailyCheck
-        comfortZoneEntry.value = daySummary.value.comfortZoneEntry
-        customSections.value = daySummary.value.customSections
-        tags.value = daySummary.value.tags
-        media.value = daySummary.value.media
+watch(daySummary, (newSummary) => {
+    if (newSummary) {
+        content.value = newSummary.summary
+        updateQuillContent(content.value)
+    } else {
+        content.value = ''
+        updateQuillContent('')
     }
+})
 
-    if (quillEditor.value) {
-        const quill = new Quill(quillEditor.value, {
+const quillInstance = ref<Quill | null>(null)
+
+const initializeQuill = async () => {
+    await nextTick() // Ensure the DOM is updated
+    if (quillEditor.value && !quillInstance.value) {
+        quillInstance.value = new Quill(quillEditor.value, {
             theme: 'snow',
             modules: {
                 toolbar: [
-                    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                    ['bold', 'italic', 'underline', 'strike'],
                     ['blockquote', 'code-block'],
-
-                    [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+                    [{ 'header': 1 }, { 'header': 2 }],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-                    [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                    [{ 'direction': 'rtl' }],                         // text direction
-
-                    [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
                     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-
-                    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults
+                    [{ 'color': [] }, { 'background': [] }],
                     [{ 'font': [] }],
                     [{ 'align': [] }],
-
-                    ['clean']                                         // remove formatting button
+                    ['clean']
                 ]
             }
         });
 
-        quill.setContents(quill.clipboard.convert(content.value))
-        quill.on('text-change', () => {
-            content.value = quill.root.innerHTML
+        quillInstance.value.on('text-change', () => {
+            content.value = quillInstance.value?.root.innerHTML || ''
         })
-    }
 
-    // Simulating weather API call
+        if (content.value) {
+            updateQuillContent(content.value)
+        }
+    }
+}
+
+const updateQuillContent = (newContent: string) => {
+    if (quillInstance.value) {
+        const currentContent = quillInstance.value.root.innerHTML
+        if (currentContent !== newContent) {
+            quillInstance.value.root.innerHTML = newContent
+        }
+    }
+}
+
+onMounted(async () => {
+    await store.dispatch('loadDaySummaries')
+    store.dispatch('loadTasks')
+    store.dispatch('loadHabits')
+    store.dispatch('loadSparks')
+    store.dispatch('loadCalendarEntries')
+
     setTimeout(() => {
         if (!weather.value.description || weather.value.description === 'Loading...') {
             weather.value = { description: 'Partly cloudy, 22°C' }
         }
     }, 1000)
+
+    await initializeQuill()
 })
 
-const applyStyle = (style) => {
-    document.execCommand(style, false, null)
-}
-
-const applyHeading = (event) => {
-    const heading = event.target.value
-    if (heading) {
-        document.execCommand('formatBlock', false, heading)
+watch(() => daySummary.value, async (newSummary) => {
+    if (newSummary) {
+        content.value = newSummary.summary || ''
+        await nextTick()
+        updateQuillContent(content.value)
+    } else {
+        content.value = ''
+        await nextTick()
+        updateQuillContent('')
     }
-}
-
-const applyColor = (event) => {
-    document.execCommand('foreColor', false, event.target.value)
-}
-
-const addHabit = () => {
-    if (newHabit.value.trim()) {
-        habits.value.push({ name: newHabit.value, completed: false, status: null })
-        newHabit.value = ''
-    }
-}
+})
 
 const cycleHabitStatus = (habit, status) => {
     habit.status = habit.status === status ? null : status
@@ -373,7 +381,7 @@ const removeTag = (tag) => {
 const saveAll = () => {
     const summary = {
         date: currentDate.value,
-        summary: content.value, // Content from Quill
+        summary: content.value,
         mood: mood.value,
         weather: weather.value.description,
         habits: habits.value,
@@ -383,29 +391,59 @@ const saveAll = () => {
         tags: tags.value,
         media: media.value
     }
-    store.dispatch('updateDaySummary', summary)
+
+    // Function to test serialization
+    const testSerialization = (key: string, value: any) => {
+        try {
+            JSON.stringify(value)
+            console.log(`✅ ${key} serialized successfully.`)
+        } catch (error) {
+            console.error(`❌ Error serializing ${key}:`, error)
+        }
+    }
+
+    // Test each field
+    Object.keys(summary).forEach(key => {
+        testSerialization(key, (summary as any)[key])
+    })
+
+    // Proceed to save only if all fields are serializable
+    try {
+        const serializedSummary = JSON.parse(JSON.stringify(summary))
+        store.dispatch('updateDaySummary', serializedSummary)
+            .then(() => {
+                console.log('📦 Day summary saved successfully.')
+            })
+            .catch((error) => {
+                console.error('⚠️ Failed to save day summary:', error)
+            })
+    } catch (serializationError) {
+        console.error('⚠️ Serialization failed. Summary not saved:', serializationError)
+    }
 }
 
-const exportContent = (format) => {
+const exportContent = (format: 'pdf' | 'md' | 'html') => {
+    let sanitizedContent = DOMPurify.sanitize(content.value)
+
     let exportedContent = `
       Date: ${currentDate.value}
       Weather: ${weather.value.description}
       Mood: ${mood.value}
       Tags: ${tags.value.join(', ')}
-  
-      ${content.value}
-  
+
+      ${sanitizedContent}
+
       Daily Habits:
       ${habits.value.map(habit => `- [${habit.completed ? 'x' : ' '}] ${habit.name} (${habit.status || 'not set'})`).join('\n')}
-  
+
       Daily Check:
       - Energy Level: ${dailyCheck.value.energyLevel}/10
       - Stress Level: ${dailyCheck.value.stressLevel}/10
       - Productivity: ${dailyCheck.value.productivity}/10
-  
+
       Comfort Zone Entry:
       ${comfortZoneEntry.value}
-  
+
       ${customSections.value.map(section => `
       ${section.title}:
       ${section.content}
@@ -413,13 +451,18 @@ const exportContent = (format) => {
     `
 
     if (format === 'pdf') {
-        // Implement PDF export (you may need a library like jsPDF)
-        console.log('Exporting as PDF:', exportedContent)
+        const doc = new jsPDF()
+        doc.text(exportedContent, 10, 10)
+        doc.save(`DaySummary_${currentDate.value}.pdf`)
     } else if (format === 'md') {
-        // Implement Markdown export
-        console.log('Exporting as Markdown:', exportedContent)
+        const markdownBlob = new Blob([exportedContent], { type: 'text/markdown' })
+        const url = URL.createObjectURL(markdownBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `DaySummary_${currentDate.value}.md`
+        link.click()
+        URL.revokeObjectURL(url)
     } else if (format === 'html') {
-        // Implement HTML export
         const htmlContent = `
         <html>
           <body>
@@ -427,7 +470,7 @@ const exportContent = (format) => {
             <p>Weather: ${weather.value.description}</p>
             <p>Mood: ${mood.value}</p>
             <p>Tags: ${tags.value.join(', ')}</p>
-            <div>${content.value}</div>
+            <div>${sanitizedContent}</div>
             <h2>Daily Habits</h2>
             <ul>
               ${habits.value.map(habit => `<li><input type="checkbox" ${habit.completed ? 'checked' : ''}> ${habit.name} (${habit.status || 'not set'})</li>`).join('')}
@@ -447,7 +490,13 @@ const exportContent = (format) => {
           </body>
         </html>
       `
-        console.log('Exporting as HTML:', htmlContent)
+        const htmlBlob = new Blob([htmlContent], { type: 'text/html' })
+        const url = URL.createObjectURL(htmlBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `DaySummary_${currentDate.value}.html`
+        link.click()
+        URL.revokeObjectURL(url)
     }
 }
 </script>
@@ -455,3 +504,4 @@ const exportContent = (format) => {
 <style scoped>
 /* Add any additional styles here */
 </style>
+

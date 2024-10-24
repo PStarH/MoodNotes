@@ -4,9 +4,9 @@ import ErrorBoundary from './components/ErrorBoundary.vue';
 </script>
 
 <template>
-    <Homepage>
+    <ErrorBoundary>
       <router-view/>
-    </Homepage>
+    </ErrorBoundary>
 </template>
 
 <style scoped>

@@ -2,7 +2,7 @@
     <div class="min-h-screen flex" style="background-color: #F0E9D2;">
         <!-- Sidebar -->
         <div class="w-64 bg-[#D3C9A6] p-5">
-            <h2 class="text-[#4E3B2B] mb-5 text-xl font-bold">My Diary</h2>
+            <h2 class="text-[#4E3B2B] mb-5 text-xl font-bold">MoodNotes</h2>
             <nav>
                 <ul class="list-none p-0">
                     <li class="mb-2.5">
@@ -61,8 +61,8 @@
                     </div>
                     <template v-for="(day, index) in calendarDays" :key="index">
                         <div v-if="day.type === 'day'" class="calendar-day"
-                            :style="{ backgroundColor: day.emotion.color }" @click="handleDayClick(day.date)">
-                            <div class="emotion-icon">{{ day.emotion.emoji }}</div>
+                            :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }" @click="handleDayClick(day.date)">
+                            <div v-if="hasSummary(day.date)" class="emotion-icon">{{ day.emotion.emoji || '⬜️' }}</div>
                             <span>{{ day.day }}</span>
                             <div v-if="hasTasks(day.date)" class="task-indicator"></div>
                             <div v-if="hasSummary(day.date)" class="summary-indicator"></div>
@@ -86,42 +86,67 @@
                     leave-to-class="opacity-0 max-h-0">
                     <div v-if="isMonthlySummaryOpen" class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <SummaryCard title="Diary Statistics">
-                                <ul class="space-y-2">
-                                    <li>Cumulative Diary Tags: {{ cumulativeDiaryTags }}</li>
-                                    <li>Max Words per Entry: {{ maxWordsPerEntry }}</li>
-                                    <li>Max Entries per Day: {{ maxEntriesPerDay }}</li>
-                                    <li>Words in Diary: {{ numberOfWordsInDiary }}</li>
-                                    <li>Cumulative Diary: {{ cumulativeDiary }}</li>
-                                    <li>Cumulative Diary Words: {{ cumulativeDiaryWords }}</li>
-                                </ul>
+                            
+                            <!-- Total Words This Month -->
+                            <SummaryCard title="Words Written This Month">
+                                <p>{{ totalWordsThisMonth }} words</p>
                             </SummaryCard>
 
-                            <SummaryCard title="Record Statistics">
-                                <ul class="space-y-2">
-                                    <li>Record Days: {{ recordDays }}</li>
-                                    <li>Accumulated Record: {{ accumulatedRecord }}</li>
-                                    <li>Accumulated Word Count: {{ accumulatedWordCount }}</li>
-                                </ul>
+                            <!-- Number of Tags This Year -->
+                            <SummaryCard title="Unique Tags This Year">
+                                <p>{{ numberOfTagsThisYear }} tags</p>
                             </SummaryCard>
 
-                            <SummaryCard title="Mood Distribution">
-                                <ul class="space-y-2">
-                                    <li v-for="emotion in emotionStats" :key="emotion.emoji" class="flex items-center">
-                                        <span class="text-2xl mr-2">{{ emotion.emoji }}</span>
-                                        <span>{{ emotion.count }} days</span>
-                                    </li>
-                                </ul>
+                            <!-- Most Used Tag -->
+                            <SummaryCard title="Most Used Tag">
+                                <p>{{ mostUsedTag || 'No tags used' }}</p>
                             </SummaryCard>
+
+                            <!-- Average Energy Level -->
+                            <SummaryCard title="Average Energy Level This Month">
+                                <p>{{ averageEnergyLevel }}/10</p>
+                            </SummaryCard>
+
+                            <!-- Existing Summary Cards... -->
+                            <SummaryCard title="Cumulative Diary Tags">
+                                <p>{{ cumulativeDiaryTags }} tags</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Max Words per Entry">
+                                <p>{{ maxWordsPerEntry }} words</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Max Entries per Day">
+                                <p>{{ maxEntriesPerDay }} entries</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Number of Words in Diary">
+                                <p>{{ numberOfWordsInDiary }} words</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Cumulative Diary">
+                                <p>{{ cumulativeDiary }} entries</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Cumulative Diary Words">
+                                <p>{{ cumulativeDiaryWords }} words</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Record Days">
+                                <p>{{ recordDays }} days</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Accumulated Record">
+                                <p>{{ accumulatedRecord }}</p>
+                            </SummaryCard>
+
+                            <SummaryCard title="Accumulated Word Count">
+                                <p>{{ accumulatedWordCount }} words</p>
+                            </SummaryCard>
+
+                            <!-- Existing Emotion Stats and Recent Sparks... -->
+
                         </div>
-
-                        <SummaryCard title="Recent Sparks" class="mt-6">
-                            <ul class="space-y-2">
-                                <li v-for="(spark, index) in recentSparks" :key="index">
-                                    {{ spark }}
-                                </li>
-                            </ul>
-                        </SummaryCard>
                     </div>
                 </transition>
             </div>
@@ -297,7 +322,6 @@
                 </div>
 
                 <div>
-                    <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">Legend</h3>
                     <div class="flex gap-5">
                         <div class="flex items-center">
                             <div class="w-3 h-3 rounded-full bg-[#4E3B2B] mr-1.5"></div>
@@ -403,12 +427,13 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight,ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2 } from 'lucide-vue-next'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2 } from 'lucide-vue-next'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
+
 const store = useStore()
 
 const emotions = [
@@ -440,6 +465,7 @@ const currentHabit = ref({ name: '', description: '' })
 const habitStatus = ref({})
 const selectedDate = ref('')
 
+// Helper Functions
 const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate()
 }
@@ -448,6 +474,14 @@ const getFirstDayOfMonth = (year, month) => {
     return new Date(year, month, 1).getDay()
 }
 
+const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+// Updated calendarDays Computed Property
 const calendarDays = computed(() => {
     const year = currentDate.value.getFullYear()
     const month = currentDate.value.getMonth()
@@ -455,18 +489,44 @@ const calendarDays = computed(() => {
     const firstDayOfMonth = getFirstDayOfMonth(year, month)
     const days = []
 
+    // Fill empty slots for previous month days
     for (let i = 0; i < firstDayOfMonth; i++) {
         days.push({ type: 'empty' })
     }
 
+    // Populate days of the current month
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
-        const emotion = emotions[Math.floor(Math.random() * emotions.length)]
+        const dateString = formatDate(date)
+        const daySummary = daySummaries.value.find(summary => summary.date === dateString)
+
+        const emotion = daySummary && daySummary.mood
+            ? mapMoodToEmotion(daySummary.mood)
+            : { emoji: '', color: '#FFFFFF' } // Default blank
+
         days.push({ type: 'day', day, date, emotion })
     }
 
     return days
 })
+
+// Function to map Mood type to emotion details
+const mapMoodToEmotion = (mood) => {
+    switch (mood) {
+        case 'happy':
+            return { emoji: '😄', color: '#FFD700' }
+        case 'neutral':
+            return { emoji: '😐', color: '#ADD8E6' }
+        case 'sad':
+            return { emoji: '😔', color: '#DDA0DD' }
+        case 'excited':
+            return { emoji: '😊', color: '#98FB98' }
+        case 'angry':
+            return { emoji: '😠', color: '#FF6347' }
+        default:
+            return { emoji: '', color: '#FFFFFF' }
+    }
+}
 
 const currentDaySummary = computed(() => {
     const dateString = currentDate.value.toISOString().split('T')[0]
@@ -480,7 +540,7 @@ const handleAddSpark = () => {
 }
 
 const handleSaveTask = () => {
-    tasks.value.push({ ...newTask.value })
+    store.dispatch('addTask', { ...newTask.value, id: Date.now() })
     newTask.value = { description: '', priority: 'Normal', dueDate: '' }
     isTaskFormOpen.value = false
 }
@@ -489,7 +549,6 @@ const handleSaveDaySummary = (summary) => {
     store.dispatch('updateDaySummary', summary)
     isDaySummaryFormOpen.value = false
 }
-
 
 // Handle day click event
 const handleDayClick = (date) => {
@@ -527,13 +586,6 @@ const hasSummary = (date) => {
     return daySummaries.value.some(summary => summary.date === dateString)
 }
 
-const formatDate = (date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-}
-
 const getDateXDaysAgo = (x) => {
     const date = new Date()
     date.setDate(date.getDate() - x)
@@ -558,17 +610,16 @@ const closeHabitModal = () => {
 
 const saveHabit = () => {
     if (editingHabit.value) {
-        const index = habits.value.findIndex(h => h.id === editingHabit.value.id)
-        habits.value[index] = { ...editingHabit.value, ...currentHabit.value }
+        store.dispatch('updateHabit', { ...editingHabit.value, ...currentHabit.value })
     } else {
-        const newId = Math.max(...habits.value.map(h => h.id), 0) + 1
-        habits.value.push({ id: newId, ...currentHabit.value })
+        const newHabit = { id: Date.now(), ...currentHabit.value, statuses: [] }
+        store.dispatch('addHabit', newHabit)
     }
     closeHabitModal()
 }
 
 const getHabitStatusClass = (habit, date) => {
-    const status = habitStatus.value[`${habit.id}-${date.toISOString().split('T')[0]}`]
+    const status = habitStatus.value[`${habit.id}-${formatDate(date)}`]
     if (status === 'did') return 'bg-green-500'
     if (status === 'partial') return 'bg-yellow-500'
     if (status === 'not') return 'bg-red-500'
@@ -576,7 +627,7 @@ const getHabitStatusClass = (habit, date) => {
 }
 
 const cycleHabitStatus = (habit, date) => {
-    const key = `${habit.id}-${date.toISOString().split('T')[0]}`
+    const key = `${habit.id}-${formatDate(date)}`
     const currentStatus = habitStatus.value[key]
     if (!currentStatus) habitStatus.value[key] = 'did'
     else if (currentStatus === 'did') habitStatus.value[key] = 'partial'
@@ -588,7 +639,33 @@ const testClick = () => {
     console.log('Calendar clicked')
 }
 
-// 1. Cumulative Diary Tags
+// Define the current month and year based on currentDate
+const currentYear = computed(() => currentDate.value.getFullYear())
+const currentMonth = computed(() => currentDate.value.getMonth())
+
+// New Computed Properties for Monthly Summary
+
+// Total words written this month
+const totalWordsThisMonth = computed(() => {
+    return store.getters.totalWordsThisMonth(currentYear.value, currentMonth.value)
+})
+
+// Number of unique tags this year
+const numberOfTagsThisYear = computed(() => {
+    return store.getters.numberOfTagsThisYear(currentYear.value)
+})
+
+// Most used tag this year
+const mostUsedTag = computed(() => {
+    return store.getters.mostUsedTag(currentYear.value)
+})
+
+// Average energy level this month
+const averageEnergyLevel = computed(() => {
+    return store.getters.averageEnergyLevel(currentYear.value, currentMonth.value)
+})
+
+// Additional Computed Properties (if needed)
 const cumulativeDiaryTags = computed(() => {
     const tagsSet = new Set()
     daySummaries.value.forEach(summary => {
@@ -599,7 +676,6 @@ const cumulativeDiaryTags = computed(() => {
     return tagsSet.size
 })
 
-// 2. Maximum Number of Words per Entry
 const maxWordsPerEntry = computed(() => {
     let max = 0
     daySummaries.value.forEach(summary => {
@@ -613,16 +689,11 @@ const maxWordsPerEntry = computed(() => {
     return max
 })
 
-// 3. Maximum Number of Entries per Day
 const maxEntriesPerDay = computed(() => {
-    const entriesPerDay = {}
+    const entriesPerDay: { [key: string]: number } = {}
     daySummaries.value.forEach(summary => {
         const date = summary.date
-        if (entriesPerDay[date]) {
-            entriesPerDay[date] += 1
-        } else {
-            entriesPerDay[date] = 1
-        }
+        entriesPerDay[date] = (entriesPerDay[date] || 0) + 1
     })
     let max = 0
     for (const date in entriesPerDay) {
@@ -633,7 +704,6 @@ const maxEntriesPerDay = computed(() => {
     return max
 })
 
-// 4. Number of Words in Diary
 const numberOfWordsInDiary = computed(() => {
     let totalWords = 0
     daySummaries.value.forEach(summary => {
@@ -644,12 +714,10 @@ const numberOfWordsInDiary = computed(() => {
     return totalWords
 })
 
-// 5. Cumulative Diary
 const cumulativeDiary = computed(() => {
     return daySummaries.value.length
 })
 
-// 6. Cumulative Diary Words
 const cumulativeDiaryWords = computed(() => {
     let total = 0
     daySummaries.value.forEach(summary => {
@@ -660,19 +728,16 @@ const cumulativeDiaryWords = computed(() => {
     return total
 })
 
-// 7. Record Days
 const recordDays = computed(() => {
     // Assuming "record days" are days with entries
     return daySummaries.value.filter(summary => summary.summary && summary.summary.trim() !== '').length
 })
 
-// 8. Accumulated Record
 const accumulatedRecord = computed(() => {
     // Define what "accumulated record" means. Assuming total number of entries
     return daySummaries.value.length
 })
 
-// 9. Accumulated Word Count
 const accumulatedWordCount = computed(() => {
     return daySummaries.value.reduce((acc, summary) => {
         if (summary.summary) {
@@ -682,7 +747,6 @@ const accumulatedWordCount = computed(() => {
     }, 0)
 })
 
-// 10. Mood Statistics
 const emotionStats = computed(() => {
     const stats = emotions.map(emotion => ({
         emoji: emotion.emoji,
@@ -690,7 +754,7 @@ const emotionStats = computed(() => {
     }))
     daySummaries.value.forEach(summary => {
         if (summary.mood) {
-            const emotion = emotions.find(e => e.emoji === summary.mood.emoji)
+            const emotion = emotions.find(e => e.emoji === mapMoodToEmotion(summary.mood).emoji)
             if (emotion) {
                 const stat = stats.find(s => s.emoji === emotion.emoji)
                 if (stat) {
@@ -702,15 +766,16 @@ const emotionStats = computed(() => {
     return stats
 })
 
-// 11. Recent Sparks
 const recentSparks = computed(() => {
-    // Assuming sparks are stored in the store
-    // Replace 'sparks' with the actual state property if different
     return store.state.sparks.slice(-5).reverse() // Last 5 sparks
 })
 
-
 onMounted(() => {
+    store.dispatch('loadDaySummaries')
+    store.dispatch('loadTasks')
+    store.dispatch('loadHabits')
+    store.dispatch('loadSparks')
+    store.dispatch('loadCalendarEntries')
     console.log('Component mounted')
 })
 </script>
@@ -782,7 +847,6 @@ onMounted(() => {
 }
 
 .calendar-day {
-
     @apply flex flex-col items-center justify-center h-16 rounded-lg text-[#4E3B2B] relative;
 }
 
@@ -807,12 +871,3 @@ onMounted(() => {
     @apply right-1 bg-[#7D5A36];
 }
 </style>
-
-
-
-
-
-
-
-
-
