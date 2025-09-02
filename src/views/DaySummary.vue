@@ -252,10 +252,28 @@ watch(() => props.selectedDate, (newDate) => {
 
 watch(daySummary, (newSummary) => {
     if (newSummary) {
-        content.value = newSummary.summary
+        // Load all fields from existing summary
+        content.value = newSummary.summary || ''
+        mood.value = newSummary.mood || 'happy'
+        weather.value = { description: newSummary.weather || 'Partly cloudy, 22°C' }
+        habits.value = newSummary.habits || []
+        dailyCheck.value = newSummary.dailyCheck || { energyLevel: 5, stressLevel: 5, productivity: 5 }
+        comfortZoneEntry.value = newSummary.comfortZoneEntry || ''
+        customSections.value = newSummary.customSections || []
+        tags.value = newSummary.tags || []
+        media.value = newSummary.media || []
         updateQuillContent(content.value)
     } else {
+        // Initialize with default values for new entry
         content.value = ''
+        mood.value = 'happy'
+        weather.value = { description: 'Partly cloudy, 22°C' }
+        habits.value = []
+        dailyCheck.value = { energyLevel: 5, stressLevel: 5, productivity: 5 }
+        comfortZoneEntry.value = ''
+        customSections.value = []
+        tags.value = []
+        media.value = []
         updateQuillContent('')
     }
 })
@@ -312,6 +330,24 @@ onMounted(async () => {
     store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
 
+    // Initialize form data for the current date
+    const existingSummary = store.getters.getDaySummary(currentDate.value)
+    if (existingSummary) {
+        // Load all fields from existing summary
+        content.value = existingSummary.summary || ''
+        mood.value = existingSummary.mood || 'happy'
+        weather.value = { description: existingSummary.weather || 'Partly cloudy, 22°C' }
+        habits.value = existingSummary.habits || []
+        dailyCheck.value = existingSummary.dailyCheck || { energyLevel: 5, stressLevel: 5, productivity: 5 }
+        comfortZoneEntry.value = existingSummary.comfortZoneEntry || ''
+        customSections.value = existingSummary.customSections || []
+        tags.value = existingSummary.tags || []
+        media.value = existingSummary.media || []
+    } else {
+        // Initialize with default values for new entry
+        weather.value = { description: 'Partly cloudy, 22°C' }
+    }
+
     setTimeout(() => {
         if (!weather.value.description || weather.value.description === 'Loading...') {
             weather.value = { description: 'Partly cloudy, 22°C' }
@@ -319,18 +355,6 @@ onMounted(async () => {
     }, 1000)
 
     await initializeQuill()
-})
-
-watch(() => daySummary.value, async (newSummary) => {
-    if (newSummary) {
-        content.value = newSummary.summary || ''
-        await nextTick()
-        updateQuillContent(content.value)
-    } else {
-        content.value = ''
-        await nextTick()
-        updateQuillContent('')
-    }
 })
 
 const cycleHabitStatus = (habit, status) => {
@@ -392,33 +416,32 @@ const saveAll = () => {
         media: media.value
     }
 
-    // Function to test serialization
-    const testSerialization = (key: string, value: any) => {
-        try {
-            JSON.stringify(value)
-            console.log(`✅ ${key} serialized successfully.`)
-        } catch (error) {
-            console.error(`❌ Error serializing ${key}:`, error)
-        }
+    console.log('📝 Attempting to save day summary:', summary)
+
+    // Validate required fields
+    if (!summary.date) {
+        console.error('❌ Cannot save: date is required')
+        return
     }
 
-    // Test each field
-    Object.keys(summary).forEach(key => {
-        testSerialization(key, (summary as any)[key])
-    })
-
-    // Proceed to save only if all fields are serializable
+    // Test serialization first
     try {
         const serializedSummary = JSON.parse(JSON.stringify(summary))
+        console.log('✅ Serialization successful')
+        
+        // Save to store
         store.dispatch('updateDaySummary', serializedSummary)
             .then(() => {
-                console.log('📦 Day summary saved successfully.')
+                console.log('✅ Day summary saved successfully to store')
+                alert('✅ Day summary saved successfully!')
             })
             .catch((error) => {
-                console.error('⚠️ Failed to save day summary:', error)
+                console.error('❌ Failed to save day summary to store:', error)
+                alert('❌ Failed to save day summary: ' + error.message)
             })
     } catch (serializationError) {
-        console.error('⚠️ Serialization failed. Summary not saved:', serializationError)
+        console.error('❌ Serialization failed. Summary not saved:', serializationError)
+        alert('❌ Failed to save: Data serialization error')
     }
 }
 
