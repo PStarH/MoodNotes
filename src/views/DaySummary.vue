@@ -1,48 +1,60 @@
 <template>
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-[#FAF3E0] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6 relative">
+    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 overflow-auto p-4">
+        <div class="glass-effect w-full max-w-5xl mx-auto my-4 max-h-[95vh] overflow-y-auto rounded-2xl p-4 sm:p-8 warm-shadow-lg bounce-in custom-scrollbar">
             <!-- Main Container with Padding to Avoid Overlap -->
-            <div class="relative p-8">
+            <div class="relative pb-20">
 
                 <!-- Container for Close Button and Export Options -->
-                <div class="absolute top-4 right-4 flex items-center space-x-4">
-                    <!-- Export Options -->
-                    <div class="flex space-x-2">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-[#D3C9A6]">
+                    <h2 class="text-xl sm:text-2xl font-bold text-[#4E3B2B]">Daily Review</h2>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Export Options -->
                         <button @click="exportContent('pdf')"
-                            class="bg-[#7D5A36] text-white px-3 py-1 rounded-lg text-sm hover:bg-opacity-90">
-                            PDF
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            title="Export as PDF">
+                            <span>📜</span>
                         </button>
                         <button @click="exportContent('md')"
-                            class="bg-[#7D5A36] text-white px-3 py-1 rounded-lg text-sm hover:bg-opacity-90">
-                            MD
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            title="Export as Markdown">
+                            <span>📝</span>
                         </button>
                         <button @click="exportContent('html')"
-                            class="bg-[#7D5A36] text-white px-3 py-1 rounded-lg text-sm hover:bg-opacity-90">
-                            HTML
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            title="Export as HTML">
+                            <span>🌐</span>
+                        </button>
+                        <button @click="deleteDaySummary" v-if="daySummary"
+                            class="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            title="Delete entry">
+                            <span>🗑️</span>
+                        </button>
+                        <!-- Close Button -->
+                        <button @click="$emit('close')"
+                            class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
+                            title="Close">
+                            <X :size="24" />
                         </button>
                     </div>
-                    <!-- Close Button -->
-                    <button @click="$emit('close')" class="text-[#7D5A36] hover:text-opacity-80">
-                        <X :size="24" />
-                    </button>
                 </div>
 
                 <!-- Date and Weather/Mood Section -->
-                <div class="flex justify-between items-center mt-16 mb-6">
-                    <!-- Adjusted top margin (mt-16) to ensure spacing -->
-                    <div class="flex items-center space-x-4">
-                        <Calendar class="text-[#7D5A36]" />
-                        <input type="date" v-model="currentDate"
-                            class="bg-[#F0E9D2] text-[#4E3B2B] px-2 py-1 rounded-lg">
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <Cloud class="text-[#7D5A36] mr-2" />
-                            <span class="text-[#4E3B2B]">{{ weather.description }}</span>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 fade-in">
+                    <div class="flex items-center space-x-4 w-full sm:w-auto">
+                        <div class="p-3 glass-effect rounded-lg">
+                            <Calendar class="text-[#7D5A36]" />
                         </div>
-                        <div class="flex items-center">
-                            <Smile class="text-[#7D5A36] mr-2" />
-                            <select v-model="mood" class="bg-[#F0E9D2] text-[#4E3B2B] px-2 py-1 rounded-lg">
+                        <input type="date" v-model="currentDate"
+                            class="glass-effect text-[#4E3B2B] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all font-medium">
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+                        <div class="flex items-center glass-effect px-4 py-3 rounded-xl w-full sm:w-auto">
+                            <Cloud class="text-[#7D5A36] mr-3" />
+                            <span class="text-[#4E3B2B] font-medium">{{ weather.description }}</span>
+                        </div>
+                        <div class="flex items-center glass-effect px-4 py-3 rounded-xl">
+                            <Smile class="text-[#7D5A36] mr-3" />
+                            <select v-model="mood" class="bg-transparent text-[#4E3B2B] focus:outline-none font-medium">
                                 <option value="happy">😄 Happy</option>
                                 <option value="neutral">😐 Neutral</option>
                                 <option value="sad">😢 Sad</option>
@@ -56,16 +68,16 @@
             </div>
 
             <!-- Tags Section -->
-            <div class="mb-6">
-                <h2 class="text-xxl text-[#4E3B2B] font-bold mb-2" style="text-align: left; align-items: left; align-items: left; font-size: 32px; ">Daily Review</h2>
-                <div class="text-[#4E3B2B]" style="text-align: left; margin-bottom: 8px;">______________</div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <h3 class="text-xl font-semibold text-[#4E3B2B] mb-2">Tags</h3>
+            <div class="mb-8 slide-in">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-xl font-semibold text-[#4E3B2B] mb-2 flex items-center">
+                        <span class="mr-2">🏷️</span>Tags
+                    </h3>
                     <div v-for="tag in tags" :key="tag" 
-                        class="bg-[#7D5A36] text-white px-2 py-1 rounded-full text-sm flex items-center">
+                        class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-full text-sm flex items-center hover-lift transition-all duration-200 warm-shadow">
                         {{ tag }}
                         <button @click="removeTag(tag)" 
-                            class="ml-1 text-xs bg-white text-[#7D5A36] rounded-full w-4 h-4 flex items-center justify-center">
+                            class="ml-2 text-xs bg-white text-[#7D5A36] rounded-full w-5 h-5 flex items-center justify-center hover:bg-gray-100 transition-all">
                             &times;
                         </button>
                     </div>
@@ -74,88 +86,114 @@
                         @keyup.enter="addTag" 
                         type="text" 
                         placeholder="Add a tag" 
-                        class="flex-grow-0 w-32 bg-[#F0E9D2] text-[#4E3B2B] px-2 py-1 rounded-lg text-sm"
+                        class="flex-grow-0 w-36 glass-effect text-[#4E3B2B] px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                     >
                 </div>
             </div>
 
             <!-- Enhanced Word Editor with Quill -->
-            <div class="mb-6">
-                <div ref="quillEditor" class="bg-white border border-[#D3C9A6] rounded-xl p-2"></div>
+            <div class="mb-8 bounce-in">
+                <div class="quill-container">
+                    <div ref="quillEditor" class="bg-white border border-[#D3C9A6] rounded-xl warm-shadow"></div>
+                </div>
             </div>
 
             <!-- Habit-based To-do List -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2" v-if="habits">Daily Habits</h2>
+            <div class="mb-8 fade-in">
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center" v-if="habits.length > 0">
+                    <span class="mr-2">✅</span>Daily Habits
+                </h2>
                 <div v-for="(habit, index) in habits" :key="index"
-                    class="flex items-center justify-between mb-2 bg-[#F0E9D2] p-2 rounded-lg">
+                    class="flex items-center justify-between mb-3 glass-effect p-4 rounded-xl hover-lift transition-all duration-200 warm-shadow">
                     <div class="flex items-center">
-                        <input type="checkbox" :id="'habit-' + index" v-model="habit.completed" class="mr-2">
-                        <label :for="'habit-' + index" class="text-[#4E3B2B]">{{ habit.name }}</label>
+                        <input type="checkbox" :id="'habit-' + index" v-model="habit.completed" class="mr-3 w-4 h-4 text-[#7D5A36] rounded">
+                        <label :for="'habit-' + index" class="text-[#4E3B2B] font-medium">{{ habit.name }}</label>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="cycleHabitStatus(habit, 'did')"
-                            :class="{ 'bg-green-500': habit.status === 'did' }"
-                            class="w-6 h-6 rounded-full border border-[#7D5A36]"></button>
+                            :class="{ 'bg-green-500 scale-110': habit.status === 'did' }"
+                            class="w-8 h-8 rounded-full border-2 border-green-500 hover:bg-green-100 transition-all duration-200 hover-lift"></button>
                         <button @click="cycleHabitStatus(habit, 'partial')"
-                            :class="{ 'bg-yellow-500': habit.status === 'partial' }"
-                            class="w-6 h-6 rounded-full border border-[#7D5A36]"></button>
+                            :class="{ 'bg-yellow-500 scale-110': habit.status === 'partial' }"
+                            class="w-8 h-8 rounded-full border-2 border-yellow-500 hover:bg-yellow-100 transition-all duration-200 hover-lift"></button>
                         <button @click="cycleHabitStatus(habit, 'not')"
-                            :class="{ 'bg-red-500': habit.status === 'not' }"
-                            class="w-6 h-6 rounded-full border border-[#7D5A36]"></button>
+                            :class="{ 'bg-red-500 scale-110': habit.status === 'not' }"
+                            class="w-8 h-8 rounded-full border-2 border-red-500 hover:bg-red-100 transition-all duration-200 hover-lift"></button>
                     </div>
                 </div>
             </div>
 
             <!-- Daily Check -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2">Daily Check</h2>
-                <div class="space-y-2">
-                    <div class="flex items-center">
-                        <span class="mr-2 text-[#4E3B2B]">Energy Level:</span>
-                        <input type="range" v-model="dailyCheck.energyLevel" min="1" max="10" class="w-full">
+            <div class="mb-8 slide-in">
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center">
+                    <span class="mr-2">📊</span>Daily Check
+                </h2>
+                <div class="glass-effect p-6 rounded-xl space-y-4 warm-shadow">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[#4E3B2B] font-medium flex items-center">
+                            <span class="mr-2">⚡</span>Energy Level:
+                        </span>
+                        <div class="flex items-center space-x-3">
+                            <input type="range" v-model="dailyCheck.energyLevel" min="1" max="10" 
+                                   class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider">
+                            <span class="text-[#7D5A36] font-bold w-8 text-center">{{ dailyCheck.energyLevel }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center">
-                        <span class="mr-2 text-[#4E3B2B]">Stress Level:</span>
-                        <input type="range" v-model="dailyCheck.stressLevel" min="1" max="10" class="w-full">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[#4E3B2B] font-medium flex items-center">
+                            <span class="mr-2">😅</span>Stress Level:
+                        </span>
+                        <div class="flex items-center space-x-3">
+                            <input type="range" v-model="dailyCheck.stressLevel" min="1" max="10" 
+                                   class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider">
+                            <span class="text-[#7D5A36] font-bold w-8 text-center">{{ dailyCheck.stressLevel }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center">
-                        <span class="mr-2 text-[#4E3B2B]">Productivity:</span>
-                        <input type="range" v-model="dailyCheck.productivity" min="1" max="10" class="w-full">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[#4E3B2B] font-medium flex items-center">
+                            <span class="mr-2">🎨</span>Productivity:
+                        </span>
+                        <div class="flex items-center space-x-3">
+                            <input type="range" v-model="dailyCheck.productivity" min="1" max="10" 
+                                   class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider">
+                            <span class="text-[#7D5A36] font-bold w-8 text-center">{{ dailyCheck.productivity }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Media Upload -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2">Media</h2>
-                <div class="flex space-x-4">
-                    <label class="cursor-pointer bg-[#7D5A36] text-white px-4 py-2 rounded-lg hover:bg-opacity-90">
-                        <Image class="inline-block mr-2" />
+            <div class="mb-8 bounce-in">
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center">
+                    <span class="mr-2">📷</span>Media
+                </h2>
+                <div class="flex space-x-4 mb-4">
+                    <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow">
+                        <Image class="mr-2" :size="20" />
                         Add Image
                         <input type="file" accept="image/*" @change="handleFileUpload" class="hidden">
                     </label>
-                    <label class="cursor-pointer bg-[#7D5A36] text-white px-4 py-2 rounded-lg hover:bg-opacity-90">
-                        <Video class="inline-block mr-2" />
+                    <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow">
+                        <Video class="mr-2" :size="20" />
                         Add Video
                         <input type="file" accept="video/*" @change="handleFileUpload" class="hidden">
                     </label>
-                    <label class="cursor-pointer bg-[#7D5A36] text-white px-4 py-2 rounded-lg hover:bg-opacity-90">
-                        <Music class="inline-block mr-2" />
+                    <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow">
+                        <Music class="mr-2" :size="20" />
                         Add Audio
                         <input type="file" accept="audio/*" @change="handleFileUpload" class="hidden">
                     </label>
                 </div>
-                <div v-if="media.length > 0" class="mt-4 grid grid-cols-3 gap-4">
-                    <div v-for="(item, index) in media" :key="index" class="relative">
+                <div v-if="media.length > 0" class="grid grid-cols-3 gap-4">
+                    <div v-for="(item, index) in media" :key="index" class="relative glass-effect rounded-xl overflow-hidden warm-shadow hover-lift transition-all duration-200">
                         <img v-if="item.type.startsWith('image')" :src="item.url"
-                            class="w-full h-32 object-cover rounded-lg">
+                            class="w-full h-32 object-cover">
                         <video v-else-if="item.type.startsWith('video')" :src="item.url"
-                            class="w-full h-32 object-cover rounded-lg" controls></video>
-                        <audio v-else-if="item.type.startsWith('audio')" :src="item.url" class="w-full"
+                            class="w-full h-32 object-cover" controls></video>
+                        <audio v-else-if="item.type.startsWith('audio')" :src="item.url" class="w-full p-2"
                             controls></audio>
                         <button @click="removeMedia(index)"
-                            class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 m-1">
+                            class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all hover-lift">
                             <X size="16" />
                         </button>
                     </div>
@@ -163,37 +201,41 @@
             </div>
 
             <!-- Comfort Zone Entry -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2">Comfort Zone Entry</h2>
+            <div class="mb-8 fade-in">
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center">
+                    <span class="mr-2">🌱</span>Comfort Zone Entry
+                </h2>
                 <textarea v-model="comfortZoneEntry"
                     placeholder="Did you step out of your comfort zone today? How did it feel?"
-                    class="w-full h-32 bg-[#F0E9D2] text-[#4E3B2B] p-2 rounded-lg resize-none"></textarea>
+                    class="w-full h-32 glass-effect text-[#4E3B2B] p-4 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all warm-shadow"></textarea>
             </div>
 
             <!-- Custom Sections -->
-            <div v-for="(section, index) in customSections" :key="index" class="mb-6">
-                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-2">{{ section.title }}</h2>
-                <div class="bg-[#F0E9D2] text-[#4E3B2B] p-2 rounded-lg">{{ section.content }}</div>
+            <div v-for="(section, index) in customSections" :key="index" class="mb-6 slide-in">
+                <h2 class="text-xl font-semibold text-[#4E3B2B] mb-3 flex items-center">
+                    <span class="mr-2">📋</span>{{ section.title }}
+                </h2>
+                <div class="glass-effect text-[#4E3B2B] p-4 rounded-xl warm-shadow">{{ section.content }}</div>
             </div>
 
             <!-- Add Custom Section -->
-            <div class="mb-6">
+            <div class="mb-8 bounce-in">
                 <button @click="showAddSection = true" v-if="!showAddSection"
-                    class="bg-[#7D5A36] text-white px-4 py-2 rounded-lg hover:bg-opacity-90">
-                    Add Custom Section
+                    class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow">
+                    <span class="mr-2">➕</span>Add Custom Section
                 </button>
-                <div v-if="showAddSection" class="bg-[#F0E9D2] p-4 rounded-lg">
+                <div v-if="showAddSection" class="glass-effect p-6 rounded-xl warm-shadow space-y-4">
                     <input v-model="newSectionTitle" type="text" placeholder="Section Title"
-                        class="w-full mb-2 px-2 py-1 rounded-lg">
+                        class="w-full px-4 py-3 glass-effect rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all">
                     <textarea v-model="newSectionContent" placeholder="Section Content"
-                        class="w-full h-32 mb-2 px-2 py-1 rounded-lg resize-none"></textarea>
-                    <div class="flex justify-end space-x-2">
+                        class="w-full h-32 glass-effect px-4 py-3 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"></textarea>
+                    <div class="flex justify-end space-x-3">
                         <button @click="saveCustomSection"
-                            class="bg-[#7D5A36] text-white px-4 py-2 rounded-lg hover:bg-opacity-90">
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow">
                             Save Section
                         </button>
                         <button @click="showAddSection = false"
-                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-opacity-90">
+                            class="bg-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-400 transition-all duration-200 font-semibold">
                             Cancel
                         </button>
                     </div>
@@ -202,12 +244,12 @@
         </div>
 
         <!-- Save Button (Bottom Right Corner) -->
-        <div class="fixed bottom-4 right-4">
-            <button @click="saveAll"
-                class="bg-[#7D5A36] text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 shadow-lg">
-                Save All
-            </button>
-        </div>
+        <button @click="saveAll" :disabled="isSaving"
+            class="fixed bottom-6 right-6 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-8 py-4 rounded-full text-lg font-bold hover-lift transition-all duration-200 warm-shadow-lg z-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="{ 'bg-green-500': saveSuccess }">
+            <span class="mr-2">{{ isSaving ? '⏳' : (saveSuccess ? '✅' : '💾') }}</span>
+            {{ isSaving ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save All') }}
+        </button>
     </div>
 </template>
 
@@ -219,9 +261,14 @@ import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { jsPDF } from 'jspdf'
 import DOMPurify from 'dompurify'
+import { DaySummary as DaySummaryType } from '../store/types'
+import { useToast } from '@/composables/useToast'
+
+const emit = defineEmits(['close'])
 
 const store = useStore()
 const props = defineProps(['selectedDate'])
+const toast = useToast()
 
 const currentDate = ref(props.selectedDate || new Date().toISOString().split('T')[0])
 const weather = ref({ description: 'Loading...' })
@@ -243,12 +290,47 @@ const newSectionContent = ref('')
 const showAddSection = ref(false)
 const tags = ref([])
 const newTag = ref('')
+const isSaving = ref(false)
+const saveSuccess = ref(false)
 
 const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
 
+// Define helper functions first
+const updateQuillContent = (newContent: string) => {
+    if (quillInstance.value) {
+        const currentContent = quillInstance.value.root.innerHTML
+        if (currentContent !== newContent) {
+            quillInstance.value.root.innerHTML = newContent
+        }
+    }
+}
+
+// Load existing data function - defined before it's used
+const loadExistingData = () => {
+    const existingSummary = store.getters.getDaySummary(currentDate.value)
+    if (existingSummary) {
+        content.value = existingSummary.summary || ''
+        mood.value = existingSummary.mood || 'happy'
+        weather.value = { description: existingSummary.weather || 'Partly cloudy, 22°C' }
+        habits.value = existingSummary.habits || []
+        dailyCheck.value = existingSummary.dailyCheck || { energyLevel: 5, stressLevel: 5, productivity: 5 }
+        comfortZoneEntry.value = existingSummary.comfortZoneEntry || ''
+        customSections.value = existingSummary.customSections || []
+        tags.value = existingSummary.tags || []
+        media.value = existingSummary.media || []
+        
+        // Update Quill content
+        nextTick(() => {
+            updateQuillContent(content.value)
+        })
+    }
+}
+
+// Watch for selectedDate changes
 watch(() => props.selectedDate, (newDate) => {
     currentDate.value = newDate || new Date().toISOString().split('T')[0]
-})
+    loadExistingData()
+}, { immediate: true })
 
 watch(daySummary, (newSummary) => {
     if (newSummary) {
@@ -296,21 +378,21 @@ const initializeQuill = async () => {
     }
 }
 
-const updateQuillContent = (newContent: string) => {
-    if (quillInstance.value) {
-        const currentContent = quillInstance.value.root.innerHTML
-        if (currentContent !== newContent) {
-            quillInstance.value.root.innerHTML = newContent
-        }
-    }
-}
-
 onMounted(async () => {
     await store.dispatch('loadDaySummaries')
     store.dispatch('loadTasks')
     store.dispatch('loadHabits')
     store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
+
+    // Load habits from store
+    const storeHabits = store.getters.getHabits
+    habits.value = storeHabits.map(habit => ({
+        id: habit.id,
+        name: habit.name,
+        completed: false,
+        status: null
+    }))
 
     setTimeout(() => {
         if (!weather.value.description || weather.value.description === 'Loading...') {
@@ -319,6 +401,7 @@ onMounted(async () => {
     }, 1000)
 
     await initializeQuill()
+    loadExistingData()
 })
 
 watch(() => daySummary.value, async (newSummary) => {
@@ -379,46 +462,53 @@ const removeTag = (tag) => {
 }
 
 const saveAll = () => {
-    const summary = {
+    isSaving.value = true
+    saveSuccess.value = false
+
+    const summaryData: DaySummaryType = {
         date: currentDate.value,
-        summary: content.value,
+        summary: content.value || '',
         mood: mood.value,
         weather: weather.value.description,
         habits: habits.value,
         dailyCheck: dailyCheck.value,
-        comfortZoneEntry: comfortZoneEntry.value,
+        comfortZoneEntry: comfortZoneEntry.value || '',
         customSections: customSections.value,
         tags: tags.value,
         media: media.value
     }
 
-    // Function to test serialization
-    const testSerialization = (key: string, value: any) => {
-        try {
-            JSON.stringify(value)
-            console.log(`✅ ${key} serialized successfully.`)
-        } catch (error) {
-            console.error(`❌ Error serializing ${key}:`, error)
-        }
-    }
+    // Save to store
+    store.dispatch('updateDaySummary', summaryData)
+        .then(() => {
+            isSaving.value = false
+            saveSuccess.value = true
+            toast.success('Your day summary has been saved successfully!', 'Saved')
 
-    // Test each field
-    Object.keys(summary).forEach(key => {
-        testSerialization(key, (summary as any)[key])
-    })
+            // Close after brief success display
+            setTimeout(() => {
+                saveSuccess.value = false
+                emit('close')
+            }, 1500)
+        })
+        .catch((error) => {
+            console.error('⚠️ Failed to save day summary:', error)
+            isSaving.value = false
+            toast.error('Could not save your summary. Please try again.', 'Save Failed')
+        })
+}
 
-    // Proceed to save only if all fields are serializable
-    try {
-        const serializedSummary = JSON.parse(JSON.stringify(summary))
-        store.dispatch('updateDaySummary', serializedSummary)
+const deleteDaySummary = () => {
+    if (confirm('Are you sure you want to delete this day summary? This action cannot be undone.')) {
+        store.dispatch('deleteDaySummary', currentDate.value)
             .then(() => {
-                console.log('📦 Day summary saved successfully.')
+                toast.success('Day summary deleted successfully.', 'Deleted')
+                emit('close')
             })
             .catch((error) => {
-                console.error('⚠️ Failed to save day summary:', error)
+                console.error('⚠️ Failed to delete day summary:', error)
+                toast.error('Could not delete the summary. Please try again.', 'Delete Failed')
             })
-    } catch (serializationError) {
-        console.error('⚠️ Serialization failed. Summary not saved:', serializationError)
     }
 }
 
@@ -454,6 +544,7 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
         const doc = new jsPDF()
         doc.text(exportedContent, 10, 10)
         doc.save(`DaySummary_${currentDate.value}.pdf`)
+        toast.success(`Exported as PDF: DaySummary_${currentDate.value}.pdf`, 'Export Successful')
     } else if (format === 'md') {
         const markdownBlob = new Blob([exportedContent], { type: 'text/markdown' })
         const url = URL.createObjectURL(markdownBlob)
@@ -462,6 +553,7 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
         link.download = `DaySummary_${currentDate.value}.md`
         link.click()
         URL.revokeObjectURL(url)
+        toast.success(`Exported as Markdown: DaySummary_${currentDate.value}.md`, 'Export Successful')
     } else if (format === 'html') {
         const htmlContent = `
         <html>
@@ -497,11 +589,50 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
         link.download = `DaySummary_${currentDate.value}.html`
         link.click()
         URL.revokeObjectURL(url)
+        toast.success(`Exported as HTML: DaySummary_${currentDate.value}.html`, 'Export Successful')
     }
 }
 </script>
 
 <style scoped>
-/* Add any additional styles here */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #F0E9D2;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #7D5A36 0%, #6B4A2E 100%);
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(78, 59, 43, 0.3);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(78, 59, 43, 0.4);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #7D5A36 0%, #6B4A2E 100%);
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(78, 59, 43, 0.3);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(78, 59, 43, 0.4);
+}
 </style>
 

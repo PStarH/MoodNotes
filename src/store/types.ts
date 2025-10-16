@@ -35,7 +35,7 @@ export interface MediaItem {
   url: string
 }
 
-interface DaySummary {
+export interface DaySummary {
   date: string
   summary: string
   mood: string

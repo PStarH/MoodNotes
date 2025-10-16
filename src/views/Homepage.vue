@@ -1,45 +1,77 @@
 <template>
-    <div class="min-h-screen flex" style="background-color: #F0E9D2;">
+    <div class="h-screen flex gradient-bg">
         <!-- Sidebar -->
-        <div class="w-64 bg-[#D3C9A6] p-5">
-            <h2 class="text-[#4E3B2B] mb-5 text-xl font-bold">MoodNotes</h2>
-            <nav>
-                <ul class="list-none p-0">
-                    <li class="mb-2.5">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center">
-                            <List class="mr-2.5" :size="18" />
-                            Home
+        <div class="w-64 sidebar-gradient p-6 warm-shadow-lg flex flex-col h-full">
+            <h2 class="text-[#4E3B2B] mb-8 text-2xl font-bold tracking-wide">📝 MoodNotes</h2>
+            <nav class="flex-1">
+                <ul class="list-none p-0 space-y-2">
+                    <li class="mb-3">
+                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]">
+                            <List class="mr-3" :size="20" />
+                            <span class="font-medium">Home</span>
                         </a>
                     </li>
-                    <li class="mb-2.5">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center"
+                    <li class="mb-3">
+                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
                             @click="isDetailedCalendarOpen = true">
-                            <Calendar class="mr-2.5" :size="18" />
-                            Calendar
+                            <Calendar class="mr-3" :size="20" />
+                            <span class="font-medium">Calendar</span>
+                        </a>
+                    </li>
+                    <li class="mb-3">
+                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                            @click="isHabitPopupOpen = true">
+                            <BookOpen class="mr-3" :size="20" />
+                            <span class="font-medium">Habits</span>
+                        </a>
+                    </li>
+                    <li class="mb-3">
+                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                            @click="isSearchPanelOpen = true">
+                            <Search class="mr-3" :size="20" />
+                            <span class="font-medium">Search</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center"
-                            @click="isHabitPopupOpen = true">
-                            <BookOpen class="mr-2.5" :size="18" />
-                            Habits
+                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                            @click="isBackupPanelOpen = true">
+                            <Download class="mr-3" :size="20" />
+                            <span class="font-medium">Backup</span>
                         </a>
                     </li>
                 </ul>
             </nav>
+            
+            <!-- Theme Switcher -->
+            <div class="mt-4 pt-4 border-t border-[#C5B891]">
+                <ThemeSwitcher />
+            </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-5 overflow-y-auto">
+        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar">
+            <!-- Tab Navigation -->
+            <TabNavigation
+                :tabs="[
+                    { id: 'dashboard', label: 'Dashboard', icon: List },
+                    { id: 'journal', label: 'Journal', icon: BookOpen, badge: daySummaries.length },
+                    { id: 'tasks', label: 'Tasks', icon: CheckCircle2, badge: tasks.length },
+                ]"
+                :activeTab="activeTab"
+                @change="(tab) => activeTab = tab"
+            />
+
+            <!-- Dashboard Tab -->
+            <div v-show="activeTab === 'dashboard'">
             <!-- Daily Quote -->
-            <div class="bg-[#FAF3E0] p-4 rounded-lg mb-5">
-                <p class="text-[#7D5A36] italic text-center">
-                    "The only way to do great work is to love what you do." - Steve Jobs
+            <div class="glass-effect p-6 rounded-xl mb-6 warm-shadow fade-in">
+                <p class="text-[#7D5A36] italic text-center text-lg leading-relaxed">
+                    ✨ "The only way to do great work is to love what you do." - Steve Jobs
                 </p>
             </div>
 
             <!-- Calendar -->
-            <div class="mb-5" @click="testClick">
+            <div class="mb-6 fade-in" @click="testClick">
                 <div class="flex justify-between items-center mb-2.5">
                     <h3 class="text-lg font-bold text-[#4E3B2B]">Calendar</h3>
                     <div>
@@ -54,14 +86,20 @@
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-7 gap-2.5 bg-[#FAF3E0] p-4 rounded-lg">
+                <div class="grid grid-cols-7 gap-3 glass-effect p-5 rounded-xl warm-shadow">
                     <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
                         class="text-center font-bold text-[#7D5A36]">
                         {{ day }}
                     </div>
                     <template v-for="(day, index) in calendarDays" :key="index">
                         <div v-if="day.type === 'day'" class="calendar-day"
-                            :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }" @click="handleDayClick(day.date)">
+                            :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }"
+                            @click="handleDayClick(day.date)"
+                            @keyup.enter="handleDayClick(day.date)"
+                            @keyup.space="handleDayClick(day.date)"
+                            tabindex="0"
+                            role="button"
+                            :aria-label="`Day ${day.day}, ${hasSummary(day.date) ? 'has summary' : 'no summary'}`">
                             <div v-if="hasSummary(day.date)" class="emotion-icon">{{ day.emotion.emoji || '⬜️' }}</div>
                             <span>{{ day.day }}</span>
                             <div v-if="hasTasks(day.date)" class="task-indicator"></div>
@@ -73,10 +111,10 @@
             </div>
 
             <!-- Monthly Summary -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="glass-effect rounded-xl warm-shadow-lg overflow-hidden mb-8 fade-in">
                 <div @click="toggleMonthlySummary"
-                    class="bg-[#4E3B2B] p-4 flex justify-between items-center cursor-pointer">
-                    <h3 class="text-xl font-bold text-white">Monthly Summary</h3>
+                    class="bg-gradient-to-r from-[#4E3B2B] to-[#5D4433] p-5 flex justify-between items-center cursor-pointer hover-lift">
+                    <h3 class="text-xl font-bold text-white flex items-center"><span class="mr-2">📊</span>Monthly Summary</h3>
                     <ChevronDownIcon :class="{ 'transform rotate-180': isMonthlySummaryOpen }"
                         class="text-white transition-transform duration-300" />
                 </div>
@@ -151,98 +189,180 @@
                 </transition>
             </div>
 
-            <!-- Day Summary -->
+            </div>
+
+            <!-- Journal Tab -->
+            <div v-show="activeTab === 'journal'">
+                <div class="mb-6 fade-in">
+                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">📖</span>Your Journal Entries</h3>
+
+                    <EmptyState
+                        v-if="daySummaries.length === 0"
+                        icon="📔"
+                        title="Start your journaling journey"
+                        description="Capture your thoughts, feelings, and experiences. Your first entry is just a click away."
+                        actionText="Write First Entry"
+                        :actionIcon="FileText"
+                        @action="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
+                    />
+
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div
+                            v-for="summary in daySummaries.slice().reverse().slice(0, 10)"
+                            :key="summary.date"
+                            @click="selectedDate = summary.date; isDaySummaryFormOpen = true"
+                            class="glass-effect p-5 rounded-xl cursor-pointer hover-lift transition-all duration-200 warm-shadow"
+                        >
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-[#4E3B2B]">{{ new Date(summary.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</h4>
+                                <span class="text-2xl">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                            </div>
+                            <p class="text-[#7D5A36] text-sm line-clamp-3" v-html="summary.summary?.substring(0, 150) + '...'"></p>
+                            <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 mt-3">
+                                <span
+                                    v-for="tag in summary.tags.slice(0, 3)"
+                                    :key="tag"
+                                    class="text-xs px-2 py-1 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full"
+                                >
+                                    {{ tag }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div v-show="activeTab === 'tasks'">
+                <div class="bounce-in">
+                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>All Tasks</h3>
+                    <button @click="isTaskFormOpen = true"
+                        class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
+                        <Plus color="#7D5A36" :size="24" class="mr-3" />
+                        <span class="text-[#4E3B2B] font-medium">Add new task</span>
+                    </button>
+
+                    <EmptyState
+                        v-if="tasks.length === 0"
+                        icon="📋"
+                        title="No tasks yet"
+                        description="Start organizing your day by adding your first task. Set priorities and due dates to stay on track."
+                        actionText="Add Task"
+                        :actionIcon="Plus"
+                        @action="isTaskFormOpen = true"
+                    />
+
+                    <div v-else v-for="(task, index) in tasks" :key="index"
+                        class="glass-effect p-4 rounded-lg mb-3 flex justify-between items-center hover-lift transition-all duration-200 warm-shadow">
+                        <span class="text-[#4E3B2B] font-medium">{{ task.description }}</span>
+                        <span class="text-[#7D5A36] text-sm font-semibold px-2 py-1 bg-[#7D5A36] bg-opacity-10 rounded-full">{{ task.priority }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day Summary Modal -->
             <DaySummary 
                 v-if="isDaySummaryFormOpen" 
                 :selectedDate="selectedDate" 
                 @close="closeDaySummary" 
             />
-            <div v-else class="mb-5">
-                <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">Day Summary</h3>
+            <div v-else class="mb-6 fade-in">
+                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">📖</span>Day Summary</h3>
                 <button @click="isDaySummaryFormOpen = true"
-                    class="flex items-center bg-[#FAF3E0] p-2.5 rounded border-0 cursor-pointer w-full mb-2.5">
-                    <FileText color="#7D5A36" :size="24" class="mr-2.5" />
-                    <span class="text-[#4E3B2B]">Add or edit day summary</span>
+                    class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
+                    <FileText color="#7D5A36" :size="24" class="mr-3" />
+                    <span class="text-[#4E3B2B] font-medium">Add or edit day summary</span>
                 </button>
             </div>
 
             <!-- Spark Section -->
-            <div class="mb-5">
-                <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">Today's Spark</h3>
-                <div class="flex items-center mb-2.5">
+            <div class="mb-6 slide-in">
+                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">⚡</span>Today's Spark</h3>
+                <div class="flex items-center mb-4">
                     <input v-model="newSpark" type="text" placeholder="Add a new spark..."
-                        class="flex-1 bg-[#FAF3E0] border-0 rounded p-2.5 mr-2.5 text-[#4E3B2B]" />
-                    <button @click="handleAddSpark" class="bg-transparent border-0 cursor-pointer">
-                        <Plus color="#7D5A36" :size="24" />
+                        class="flex-1 glass-effect border-0 rounded-lg px-4 py-3 mr-3 text-[#4E3B2B] focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all" />
+                    <button @click="handleAddSpark" class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white p-3 rounded-lg hover-lift transition-all duration-200 warm-shadow">
+                        <Plus :size="20" />
                     </button>
                 </div>
-                <div class="flex justify-start">
-                    <button class="bg-transparent border-0 cursor-pointer mr-5 flex flex-col items-center">
+                <div class="flex gap-4">
+                    <button class="glass-effect px-4 py-3 rounded-lg border-0 cursor-pointer flex flex-col items-center hover-lift transition-all duration-200 warm-shadow">
                         <Camera color="#7D5A36" :size="24" />
-                        <span class="text-[#4E3B2B] mt-1.5">Photo</span>
+                        <span class="text-[#4E3B2B] mt-2 text-sm font-medium">Photo</span>
                     </button>
-                    <button class="bg-transparent border-0 cursor-pointer flex flex-col items-center">
+                    <button class="glass-effect px-4 py-3 rounded-lg border-0 cursor-pointer flex flex-col items-center hover-lift transition-all duration-200 warm-shadow">
                         <Video color="#7D5A36" :size="24" />
-                        <span class="text-[#4E3B2B] mt-1.5">Video</span>
+                        <span class="text-[#4E3B2B] mt-2 text-sm font-medium">Video</span>
                     </button>
                 </div>
             </div>
 
             <!-- To-Do List -->
-            <div>
-                <h3 class="text-lg font-bold text-[#4E3B2B] mb-2.5">To-Do List</h3>
+            <div class="bounce-in">
+                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>To-Do List</h3>
                 <button @click="isTaskFormOpen = true"
-                    class="flex items-center bg-[#FAF3E0] p-2.5 rounded border-0 cursor-pointer w-full mb-2.5">
-                    <Plus color="#7D5A36" :size="24" class="mr-2.5" />
-                    <span class="text-[#4E3B2B]">Add new task</span>
+                    class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
+                    <Plus color="#7D5A36" :size="24" class="mr-3" />
+                    <span class="text-[#4E3B2B] font-medium">Add new task</span>
                 </button>
-                <div v-for="(task, index) in tasks" :key="index"
-                    class="bg-[#FAF3E0] p-2.5 rounded mb-1.5 flex justify-between items-center">
-                    <span class="text-[#4E3B2B]">{{ task.description }}</span>
-                    <span class="text-[#7D5A36] text-sm">{{ task.priority }}</span>
+
+                <EmptyState
+                    v-if="tasks.length === 0"
+                    icon="📋"
+                    title="No tasks yet"
+                    description="Start organizing your day by adding your first task. Set priorities and due dates to stay on track."
+                    actionText="Add Task"
+                    :actionIcon="Plus"
+                    @action="isTaskFormOpen = true"
+                />
+
+                <div v-else v-for="(task, index) in tasks" :key="index"
+                    class="glass-effect p-4 rounded-lg mb-3 flex justify-between items-center hover-lift transition-all duration-200 warm-shadow">
+                    <span class="text-[#4E3B2B] font-medium">{{ task.description }}</span>
+                    <span class="text-[#7D5A36] text-sm font-semibold px-2 py-1 bg-[#7D5A36] bg-opacity-10 rounded-full">{{ task.priority }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Task Form Modal -->
-        <div v-if="isTaskFormOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-[#4E3B2B]">Create or edit Task</h2>
-                    <button @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80">
+        <div v-if="isTaskFormOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div class="glass-effect max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto rounded-2xl p-8 warm-shadow-lg bounce-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>Create Task</h2>
+                    <button @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all">
                         <X :size="24" />
                     </button>
                 </div>
 
-                <form @submit.prevent="handleSaveTask">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1">Description</label>
+                <form @submit.prevent="handleSaveTask" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-[#4E3B2B]">Description</label>
                         <textarea v-model="newTask.description"
-                            class="w-full px-3 py-2 bg-[#F0E9D2] text-[#4E3B2B] border-[#D3C9A6] rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                            class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                             rows="3" placeholder="Take out the trash"></textarea>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1">Priority</label>
-                        <div class="flex flex-wrap gap-2">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-[#4E3B2B]">Priority</label>
+                        <div class="grid grid-cols-3 gap-2">
                             <label v-for="priority in ['Lowest', 'Low', 'Normal', 'Medium', 'High', 'Highest']"
-                                :key="priority" class="flex items-center">
-                                <input type="radio" :value="priority" v-model="newTask.priority" class="mr-1" />
-                                <span class="text-sm text-[#4E3B2B]">{{ priority }}</span>
+                                :key="priority" class="flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-[#F0E9D2] transition-all">
+                                <input type="radio" :value="priority" v-model="newTask.priority" class="text-[#7D5A36]" />
+                                <span class="text-sm text-[#4E3B2B] font-medium">{{ priority }}</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1">Due Date</label>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-[#4E3B2B]">Due Date</label>
                         <input v-model="newTask.dueDate" type="date"
-                            class="w-full px-3 py-2 bg-[#F0E9D2] text-[#4E3B2B] border-[#D3C9A6] rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50" />
+                            class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all" />
                     </div>
 
                     <div class="flex justify-end">
                         <button type="submit"
-                            class="px-4 py-2 bg-[#7D5A36] text-[#FAF3E0] rounded-md hover:bg-opacity-90 transition-colors">
-                            Save
+                            class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow">
+                            Save Task
                         </button>
                     </div>
                 </form>
@@ -381,7 +501,12 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(habit, index) in habits" :key="index" class="border-t border-[#D3C9A6]">
-                                    <td class="p-3 text-[#4E3B2B]">{{ habit.name }}</td>
+                                    <td class="p-3 text-[#4E3B2B]">
+                                        <div class="flex items-center gap-2">
+                                            <span>{{ habit.name }}</span>
+                                            <HabitStreak v-if="habit.statuses" :habitId="habit.id" :statuses="habit.statuses" />
+                                        </div>
+                                    </td>
                                     <td v-for="day in 10" :key="day" class="p-3 text-center">
                                         <div class="w-6 h-6 rounded-full mx-auto cursor-pointer"
                                             :class="getHabitStatusClass(habit, getDateXDaysAgo(day - 1))"
@@ -392,6 +517,20 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Search Panel -->
+        <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div class="max-w-6xl w-full mx-4">
+                <SearchPanel @close="isSearchPanelOpen = false" @select-entry="handleSelectEntry" />
+            </div>
+        </div>
+
+        <!-- Backup Panel -->
+        <div v-if="isBackupPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div class="max-w-4xl w-full mx-4">
+                <BackupPanel @close="isBackupPanelOpen = false" />
             </div>
         </div>
 
@@ -425,16 +564,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Developer Panel (only in development) -->
+    <DevPanel />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2 } from 'lucide-vue-next'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload } from 'lucide-vue-next'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
+import SearchPanel from '../components/SearchPanel.vue'
+import BackupPanel from '../components/BackupPanel.vue'
+import ThemeSwitcher from '../components/ThemeSwitcher.vue'
+import DevPanel from '../components/DevPanel.vue'
+import EmptyState from '../components/EmptyState.vue'
+import HabitStreak from '../components/HabitStreak.vue'
+import TabNavigation from '../components/TabNavigation.vue'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { useSearch } from '@/composables/useSearch'
+import { useToast } from '@/composables/useToast'
 
 const store = useStore()
+const { addShortcut } = useKeyboardShortcuts()
+const { filteredSummaries } = useSearch()
+const toast = useToast()
 
 const emotions = [
     { emoji: '😄', color: '#FFD700' },
@@ -459,11 +614,19 @@ const newTask = ref({
     priority: 'Normal',
     dueDate: '',
 })
+const isMonthlySummaryOpen = ref(false)
 const newDaySummary = ref('')
 const editingHabit = ref(null)
 const currentHabit = ref({ name: '', description: '' })
 const habitStatus = ref({})
 const selectedDate = ref('')
+const isSearchPanelOpen = ref(false)
+const isBackupPanelOpen = ref(false)
+const activeTab = ref('dashboard')
+
+const toggleMonthlySummary = () => {
+    isMonthlySummaryOpen.value = !isMonthlySummaryOpen.value
+}
 
 // Helper Functions
 const getDaysInMonth = (year, month) => {
@@ -534,13 +697,16 @@ const currentDaySummary = computed(() => {
 })
 
 const handleAddSpark = () => {
-    // Logic to add new spark
-    console.log('New spark:', newSpark.value)
-    newSpark.value = ''
+    if (newSpark.value.trim()) {
+        store.dispatch('addSpark', newSpark.value.trim())
+        toast.success('Spark added!', 'Success')
+        newSpark.value = ''
+    }
 }
 
 const handleSaveTask = () => {
     store.dispatch('addTask', { ...newTask.value, id: Date.now() })
+    toast.success('Task added successfully!', 'Task Created')
     newTask.value = { description: '', priority: 'Normal', dueDate: '' }
     isTaskFormOpen.value = false
 }
@@ -639,6 +805,57 @@ const testClick = () => {
     console.log('Calendar clicked')
 }
 
+const handleSelectEntry = (summary) => {
+    selectedDate.value = summary.date
+    isDaySummaryFormOpen.value = true
+    isSearchPanelOpen.value = false
+}
+
+// Setup keyboard shortcuts
+const setupKeyboardShortcuts = () => {
+    addShortcut({
+        key: 'n',
+        ctrl: true,
+        action: () => {
+            isDaySummaryFormOpen.value = true
+            selectedDate.value = new Date().toISOString().split('T')[0]
+        },
+        description: 'Create new diary entry'
+    })
+
+    addShortcut({
+        key: 'f',
+        ctrl: true,
+        action: () => {
+            isSearchPanelOpen.value = true
+        },
+        description: 'Open search panel'
+    })
+
+    addShortcut({
+        key: 'b',
+        ctrl: true,
+        action: () => {
+            isBackupPanelOpen.value = true
+        },
+        description: 'Open backup panel'
+    })
+
+    addShortcut({
+        key: 'Escape',
+        action: () => {
+            isDaySummaryFormOpen.value = false
+            isSearchPanelOpen.value = false
+            isBackupPanelOpen.value = false
+            isDetailedCalendarOpen.value = false
+            isHabitPopupOpen.value = false
+            isHabitModalOpen.value = false
+            isTaskFormOpen.value = false
+        },
+        description: 'Close modals'
+    })
+}
+
 // Define the current month and year based on currentDate
 const currentYear = computed(() => currentDate.value.getFullYear())
 const currentMonth = computed(() => currentDate.value.getMonth())
@@ -680,7 +897,7 @@ const maxWordsPerEntry = computed(() => {
     let max = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            const wordCount = summary.summary.split(/\s+/).length
+            const wordCount = summary.summary.split(/\s+/).filter(word => word.length > 0).length
             if (wordCount > max) {
                 max = wordCount
             }
@@ -708,7 +925,7 @@ const numberOfWordsInDiary = computed(() => {
     let totalWords = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            totalWords += summary.summary.split(/\s+/).length
+            totalWords += summary.summary.split(/\s+/).filter(word => word.length > 0).length
         }
     })
     return totalWords
@@ -722,7 +939,7 @@ const cumulativeDiaryWords = computed(() => {
     let total = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            total += summary.summary.split(/\s+/).length
+            total += summary.summary.split(/\s+/).filter(word => word.length > 0).length
         }
     })
     return total
@@ -741,7 +958,7 @@ const accumulatedRecord = computed(() => {
 const accumulatedWordCount = computed(() => {
     return daySummaries.value.reduce((acc, summary) => {
         if (summary.summary) {
-            return acc + summary.summary.split(/\s+/).length
+            return acc + summary.summary.split(/\s+/).filter(word => word.length > 0).length
         }
         return acc
     }, 0)
@@ -776,6 +993,7 @@ onMounted(() => {
     store.dispatch('loadHabits')
     store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
+    setupKeyboardShortcuts()
     console.log('Component mounted')
 })
 </script>

@@ -5,23 +5,44 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  },
   build: {
-    outDir: 'dist', // Ensure Electron points to this directory
+    outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'), // Points to root index.html
-      output: {
-        // Asset filenames with relative paths
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]',
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
       },
     },
-    // Set base to relative to handle Electron's file:// protocol
+    rollupOptions: {
+      input: path.resolve(__dirname, 'index.html'),
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: {
+          vendor: ['vue', 'vuex', 'vue-router'],
+          editor: ['quill'],
+          utils: ['localforage', 'dompurify', 'jspdf'],
+          icons: ['lucide-vue-next']
+        }
+      },
+    },
+    chunkSizeWarningLimit: 1000,
     base: './',
   },
   server: {
     host: 'localhost',
-    port: 3000, // Ensure this matches VITE_DEV_SERVER_URL
+    port: 3000,
   },
+  optimizeDeps: {
+    include: ['vue', 'vuex', 'vue-router', 'quill', 'localforage', 'dompurify', 'jspdf']
+  }
 })

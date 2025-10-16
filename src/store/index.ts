@@ -49,6 +49,9 @@ const store: StoreOptions<State> = {
         state.daySummaries.push(updatedSummary)
       }
     },
+    DELETE_DAY_SUMMARY(state, date: string) {
+      state.daySummaries = state.daySummaries.filter(s => s.date !== date)
+    },
     // Tasks
     SET_TASKS(state, tasks: Task[]) {
       state.tasks = tasks
@@ -98,6 +101,10 @@ const store: StoreOptions<State> = {
     },
     async updateDaySummary({ commit, state }, daySummary: DaySummary) {
       commit('UPDATE_DAY_SUMMARY', daySummary)
+      await localforage.setItem('daySummaries', state.daySummaries)
+    },
+    async deleteDaySummary({ commit, state }, date: string) {
+      commit('DELETE_DAY_SUMMARY', date)
       await localforage.setItem('daySummaries', state.daySummaries)
     },
     // Tasks
@@ -170,7 +177,7 @@ const store: StoreOptions<State> = {
           return date.getFullYear() === year && date.getMonth() === month
         })
         .reduce((total, summary) => {
-          const wordCount = summary.summary.split(/\s+/).length
+          const wordCount = summary.summary ? summary.summary.split(/\s+/).filter(word => word.length > 0).length : 0
           return total + wordCount
         }, 0)
     },
@@ -180,7 +187,7 @@ const store: StoreOptions<State> = {
       const tagsSet = new Set<string>()
       state.daySummaries.forEach(summary => {
         const date = new Date(summary.date)
-        if (date.getFullYear() === year) {
+        if (date.getFullYear() === year && summary.tags) {
           summary.tags.forEach(tag => tagsSet.add(tag))
         }
       })
@@ -192,7 +199,7 @@ const store: StoreOptions<State> = {
       const tagCount: { [key: string]: number } = {}
       state.daySummaries.forEach(summary => {
         const date = new Date(summary.date)
-        if (date.getFullYear() === year) {
+        if (date.getFullYear() === year && summary.tags) {
           summary.tags.forEach(tag => {
             tagCount[tag] = (tagCount[tag] || 0) + 1
           })
@@ -213,10 +220,12 @@ const store: StoreOptions<State> = {
     averageEnergyLevel: (state) => (year: number, month: number): number => {
       const relevantSummaries = state.daySummaries.filter(summary => {
         const date = new Date(summary.date)
-        return date.getFullYear() === year && date.getMonth() === month
+        return date.getFullYear() === year && date.getMonth() === month && summary.dailyCheck
       })
       if (relevantSummaries.length === 0) return 0
-      const totalEnergy = relevantSummaries.reduce((total, summary) => total + summary.dailyCheck.energyLevel, 0)
+      const totalEnergy = relevantSummaries.reduce((total, summary) => {
+        return total + (summary.dailyCheck?.energyLevel || 0)
+      }, 0)
       return parseFloat((totalEnergy / relevantSummaries.length).toFixed(2))
     },
   },
