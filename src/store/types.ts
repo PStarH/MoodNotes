@@ -19,6 +19,14 @@ export interface Habit {
   statuses: HabitStatus[] // Track status per date
 }
 
+// Simplified habit interface for day summaries
+export interface DaySummaryHabit {
+  id?: number // Optional ID to link back to the Habit in store
+  name: string
+  completed: boolean
+  status: 'did' | 'partial' | 'not' | null
+}
+
 export interface DailyCheck {
   energyLevel: number // 1 to 10
   stressLevel: number // 1 to 10
@@ -31,7 +39,7 @@ export interface CustomSection {
 }
 
 export interface MediaItem {
-  type: 'image' | 'video' | 'audio'
+  type: string // Full MIME type like 'image/jpeg', 'video/mp4', etc.
   url: string
 }
 
@@ -40,7 +48,7 @@ export interface DaySummary {
   summary: string
   mood: string
   weather: string
-  habits: Array<{ name: string; completed: boolean; status: string | null }>
+  habits: DaySummaryHabit[]
   dailyCheck: {
     energyLevel: number
     stressLevel: number

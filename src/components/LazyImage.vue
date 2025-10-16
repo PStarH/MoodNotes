@@ -9,12 +9,11 @@
       v-if="shouldLoad && !hasError"
       :src="src"
       :alt="alt"
-      :class="imageClass"
+      class="lazy-image"
+      :class="[imageClass, { loaded: isLoaded, loading: isLoading }]"
       :style="imageStyle"
       @load="handleLoad"
       @error="handleError"
-      class="lazy-image"
-      :class="{ 'loaded': isLoaded, 'loading': isLoading }"
     />
     
     <div 

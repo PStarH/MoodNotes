@@ -81,7 +81,7 @@
           class="hidden"
         />
         
-        <div v-if="!selectedFile" class="cursor-pointer" @click="$refs.fileInput?.click()">
+        <div v-if="!selectedFile" class="cursor-pointer" @click="triggerFileSelect">
           <div class="text-4xl mb-3">📁</div>
           <p class="text-[#4E3B2B] font-semibold mb-2">Click to select backup file</p>
           <p class="text-sm text-[#7D5A36]">Only JSON backup files are supported</p>
@@ -175,6 +175,7 @@ const emit = defineEmits(['close'])
 
 const { exportData, importData, isExporting, isImporting, backupProgress } = useDataBackup()
 
+const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
 const message = ref('')
 const messageType = ref<'success' | 'error'>('success')
@@ -199,10 +200,13 @@ const handleFileSelect = (event: Event) => {
 
 const clearSelectedFile = () => {
   selectedFile.value = null
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-  if (fileInput) {
-    fileInput.value = ''
+  if (fileInput.value) {
+    fileInput.value.value = ''
   }
+}
+
+const triggerFileSelect = () => {
+  fileInput.value?.click()
 }
 
 const handleImport = async () => {

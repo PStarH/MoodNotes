@@ -62,16 +62,255 @@
             />
 
             <!-- Dashboard Tab -->
-            <div v-show="activeTab === 'dashboard'">
-            <!-- Daily Quote -->
-            <div class="glass-effect p-6 rounded-xl mb-6 warm-shadow fade-in">
-                <p class="text-[#7D5A36] italic text-center text-lg leading-relaxed">
-                    ✨ "The only way to do great work is to love what you do." - Steve Jobs
-                </p>
-            </div>
+            <div v-show="activeTab === 'dashboard'" class="space-y-6">
+                <div class="grid gap-6 lg:grid-cols-3">
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col justify-between lg:col-span-2">
+                        <div class="flex flex-col gap-6">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-widest text-[#7D5A36]/70">{{ formattedToday }}</p>
+                                    <h2 class="text-3xl sm:text-4xl font-bold text-[#4E3B2B] mt-2">{{ greetingMessage }}, friend 👋</h2>
+                                    <p class="text-[#7D5A36] mt-3 max-w-xl">Here’s a quick snapshot of your mood and memories. Keep the streak going!</p>
+                                </div>
+                                <div class="glass-effect px-4 py-3 rounded-xl min-w-[180px] text-[#4E3B2B] border border-[#D3C9A6]/50">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Current Mood</span>
+                                        <span class="text-3xl">{{ currentMoodEmoji }}</span>
+                                    </div>
+                                    <p class="text-sm mt-2">{{ currentDaySummary?.mood ? currentDaySummary.mood.charAt(0).toUpperCase() + currentDaySummary.mood.slice(1) : 'No entry yet' }}</p>
+                                    <div class="mt-3 flex items-center justify-between text-sm">
+                                        <span class="text-[#7D5A36]/80 uppercase tracking-wide font-semibold">Energy</span>
+                                        <span class="font-semibold text-[#4E3B2B]">{{ currentEnergyLevel !== null ? `${currentEnergyLevel}/10` : '—' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-3">
+                                <button @click="openJournalForToday"
+                                    class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
+                                    <FileText :size="18" />
+                                    New Entry
+                                </button>
+                                <button @click="openTaskModal"
+                                    class="flex items-center gap-2 px-5 py-3 rounded-xl glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] font-semibold hover-lift transition-all duration-200">
+                                    <Plus :size="18" />
+                                    Add Task
+                                </button>
+                                <button @click="openSearchModal"
+                                    class="flex items-center gap-2 px-5 py-3 rounded-xl glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] font-semibold hover-lift transition-all duration-200">
+                                    <Search :size="18" />
+                                    Search Entries
+                                </button>
+                            </div>
+                            <div class="glass-effect px-4 py-3 rounded-xl text-[#7D5A36] italic flex items-start gap-3 border border-[#D3C9A6]/40">
+                                <span class="text-2xl">✨</span>
+                                <p class="text-sm sm:text-base leading-relaxed">"The only way to do great work is to love what you do." — Steve Jobs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow fade-in border border-[#7D5A36]/20 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-bold text-[#4E3B2B] flex items-center">
+                                <span class="mr-2">🕰️</span>Last Year Today
+                            </h3>
+                            <button
+                                @click="selectedDate = lastYearDateString; isDaySummaryFormOpen = true"
+                                class="text-[#7D5A36] hover:text-opacity-80 text-sm font-medium hover:underline"
+                            >
+                                View Entry →
+                            </button>
+                        </div>
+                        <div v-if="hasHistoricalData" class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#4E3B2B] text-sm font-medium">{{ lastYearDateString }}</span>
+                                <span class="text-3xl">{{ mapMoodToEmotion(lastYearMood || 'neutral').emoji }}</span>
+                            </div>
+                            <p class="text-[#7D5A36] text-sm italic line-clamp-3">{{ lastYearSummaryPreview || 'No summary available' }}</p>
+                            <div v-if="lastYearTags.length > 0" class="flex flex-wrap gap-2">
+                                <span
+                                    v-for="tag in lastYearTags.slice(0, 4)"
+                                    :key="tag"
+                                    class="text-xs px-2 py-1 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full"
+                                >
+                                    {{ tag }}
+                                </span>
+                                <span v-if="lastYearTags.length > 4" class="text-xs px-2 py-1 text-[#7D5A36]">
+                                    +{{ lastYearTags.length - 4 }} more
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">No entry from this day last year.</p>
+                            <p>Capture today’s thoughts to unlock throwbacks in the future.</p>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Calendar -->
-            <div class="mb-6 fade-in" @click="testClick">
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div v-for="stat in dashboardStats" :key="stat.label"
+                        class="glass-effect p-5 rounded-2xl warm-shadow hover-lift transition-all duration-200 flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-2xl">{{ stat.icon }}</span>
+                            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]/70">{{ stat.label }}</span>
+                        </div>
+                        <p class="text-3xl font-bold text-[#4E3B2B]">{{ stat.value }}</p>
+                        <p class="text-sm text-[#7D5A36]/80">{{ stat.description }}</p>
+                    </div>
+                </div>
+
+                <div class="grid gap-6 lg:grid-cols-3">
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col gap-4 lg:col-span-2">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
+                                    <span>📖</span>
+                                    Latest Entry
+                                </h3>
+                                <p class="text-sm text-[#7D5A36]/80">A quick peek at what you captured most recently.</p>
+                            </div>
+                            <button v-if="latestSummary"
+                                @click="handleSelectEntry(latestSummary)"
+                                class="text-sm font-semibold text-[#7D5A36] hover:underline">
+                                Open Entry
+                            </button>
+                        </div>
+                        <div v-if="latestSummary" class="space-y-4">
+                            <div class="flex items-center justify-between text-sm text-[#7D5A36]/80">
+                                <span>{{ new Date(latestSummary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}</span>
+                                <span class="flex items-center gap-2">
+                                    <span class="text-xl">{{ mapMoodToEmotion(latestSummary.mood || 'neutral').emoji }}</span>
+                                    {{ latestSummary.mood ? latestSummary.mood.charAt(0).toUpperCase() + latestSummary.mood.slice(1) : 'Mood not set' }}
+                                </span>
+                            </div>
+                            <p class="text-[#4E3B2B] leading-relaxed">{{ latestEntryPreview || 'No content written yet...' }}</p>
+                            <div class="flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/70">
+                                <span class="px-3 py-1.5 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">
+                                    {{ getWordCount(latestSummary.summary) }} words
+                                </span>
+                                <span v-if="latestSummary.dailyCheck" class="px-3 py-1.5 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">
+                                    Energy {{ latestSummary.dailyCheck.energyLevel }}/10
+                                </span>
+                                <span v-if="latestSummary.tags && latestSummary.tags.length" class="flex items-center gap-2">
+                                    <span class="text-[#7D5A36]">Tags:</span>
+                                    <span v-for="tag in latestSummary.tags.slice(0, 3)" :key="tag" class="px-2 py-1 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full">
+                                        #{{ tag }}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">You haven’t logged anything yet.</p>
+                            <p>Start with a quick diary entry to build your personal timeline.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col gap-4">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
+                                    <span>🧾</span>
+                                    Upcoming Tasks
+                                </h3>
+                                <p class="text-sm text-[#7D5A36]/80">Stay ahead with the next few due items.</p>
+                            </div>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full"
+                                :class="overdueTasksCount > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
+                                {{ overdueTasksCount > 0 ? `${overdueTasksCount} overdue` : 'All clear' }}
+                            </span>
+                        </div>
+
+                        <ul v-if="upcomingTasks.length" class="space-y-3">
+                            <li v-for="task in upcomingTasks" :key="task.id"
+                                class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3 flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="font-semibold text-[#4E3B2B]">{{ task.description }}</p>
+                                    <p class="text-xs text-[#7D5A36]/70 mt-1">{{ describeTaskDueDate(task.dueDate) }}</p>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">{{ task.priority }}</span>
+                            </li>
+                        </ul>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">No tasks due this week.</p>
+                            <p>Add a task to keep your plans organized.</p>
+                        </div>
+
+                        <div v-if="tasksWithoutDueDateCount > 0" class="text-xs text-[#7D5A36]/70">
+                            + {{ tasksWithoutDueDateCount }} task{{ tasksWithoutDueDateCount === 1 ? '' : 's' }} without a due date
+                        </div>
+
+                        <button @click="openTaskModal"
+                            class="self-start mt-auto px-5 py-3 rounded-xl bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
+                            Add Task
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid gap-6 lg:grid-cols-3">
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow flex flex-col gap-4">
+                        <div class="flex items-start justify-between">
+                            <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
+                                <span>🔥</span>
+                                Habit Highlight
+                            </h3>
+                            <button @click="isHabitPopupOpen = true" class="text-xs font-semibold text-[#7D5A36] hover:underline">
+                                Manage
+                            </button>
+                        </div>
+                        <div v-if="highlightedHabit" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold text-[#4E3B2B]">{{ highlightedHabit.name }}</p>
+                                    <p class="text-sm text-[#7D5A36]/80">{{ highlightedHabit.description || 'No description added yet.' }}</p>
+                                </div>
+                                <HabitStreak :habit-id="highlightedHabit.id" :statuses="highlightedHabit.statuses" />
+                            </div>
+                            <p class="text-sm text-[#7D5A36]/80">Current streak: <strong class="text-[#4E3B2B]">{{ highlightedHabitStreak }}</strong> day{{ highlightedHabitStreak === 1 ? '' : 's' }}</p>
+                        </div>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">No habits tracked yet.</p>
+                            <p>Add a habit to build healthy routines and see it highlighted here.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow flex flex-col gap-4">
+                        <div class="flex items-start justify-between">
+                            <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
+                                <span>⚡</span>
+                                Recent Sparks
+                            </h3>
+                            <span class="text-xs text-[#7D5A36]/70">{{ recentSparks.length }} logged</span>
+                        </div>
+                        <div v-if="recentSparks.length" class="space-y-3">
+                            <div class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3"
+                                v-for="(spark, index) in recentSparks.slice(0, 3)" :key="index">
+                                <p class="text-sm text-[#4E3B2B]">{{ spark }}</p>
+                            </div>
+                            <p v-if="recentSparks.length > 3" class="text-xs text-[#7D5A36]/70">+ {{ recentSparks.length - 3 }} more sparks</p>
+                        </div>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">Capture a bright idea.</p>
+                            <p>Use the spark field below to jot down inspiration and highlights.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl warm-shadow flex flex-col gap-4">
+                        <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
+                            <span>🧠</span>
+                            Comparison Notes
+                        </h3>
+                        <div v-if="comparisonSummary.exists" class="space-y-3 text-sm text-[#7D5A36]/80">
+                            <p><strong class="text-[#4E3B2B]">Mood match:</strong> {{ comparisonSummary.mood ? comparisonSummary.mood : 'n/a' }}</p>
+                            <p v-if="comparisonSummary.tags && comparisonSummary.tags.length"><strong class="text-[#4E3B2B]">Tags:</strong> {{ comparisonSummary.tags.slice(0, 3).join(', ') }}<span v-if="comparisonSummary.tags.length > 3"> +{{ comparisonSummary.tags.length - 3 }} more</span></p>
+                            <p>{{ comparisonSummary.preview }}</p>
+                        </div>
+                        <div v-else class="text-sm text-[#7D5A36]/80">
+                            <p class="font-medium mb-2">Start your history.</p>
+                            <p>Log entries consistently to see meaningful comparisons a year from now.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar -->
+                <div class="mb-6 fade-in" @click="testClick">
                 <div class="flex justify-between items-center mb-2.5">
                     <h3 class="text-lg font-bold text-[#4E3B2B]">Calendar</h3>
                     <div>
@@ -93,13 +332,15 @@
                     </div>
                     <template v-for="(day, index) in calendarDays" :key="index">
                         <div v-if="day.type === 'day'" class="calendar-day"
+                            :class="{ 'last-year-anniversary': day.isLastYearAnniversary }"
                             :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }"
                             @click="handleDayClick(day.date)"
                             @keyup.enter="handleDayClick(day.date)"
                             @keyup.space="handleDayClick(day.date)"
                             tabindex="0"
                             role="button"
-                            :aria-label="`Day ${day.day}, ${hasSummary(day.date) ? 'has summary' : 'no summary'}`">
+                            :aria-label="`Day ${day.day}, ${hasSummary(day.date) ? 'has summary' : 'no summary'}${day.isLastYearAnniversary ? ', anniversary of last year' : ''}`">
+                            <div v-if="day.isLastYearAnniversary" class="anniversary-badge">🕰️</div>
                             <div v-if="hasSummary(day.date)" class="emotion-icon">{{ day.emotion.emoji || '⬜️' }}</div>
                             <span>{{ day.day }}</span>
                             <div v-if="hasTasks(day.date)" class="task-indicator"></div>
@@ -194,7 +435,22 @@
             <!-- Journal Tab -->
             <div v-show="activeTab === 'journal'">
                 <div class="mb-6 fade-in">
-                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">📖</span>Your Journal Entries</h3>
+                    <!-- Header with Actions -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-[#4E3B2B] flex items-center">
+                                <span class="mr-3 text-3xl">📖</span>Your Journal
+                            </h3>
+                            <p class="text-[#7D5A36] text-sm mt-1">{{ daySummaries.length }} entries captured</p>
+                        </div>
+                        <button
+                            @click="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow font-semibold"
+                        >
+                            <FileText class="mr-2" :size="20" />
+                            New Entry
+                        </button>
+                    </div>
 
                     <EmptyState
                         v-if="daySummaries.length === 0"
@@ -206,26 +462,96 @@
                         @action="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
                     />
 
-                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Journal Entries Grid -->
+                    <div v-else class="space-y-4">
                         <div
-                            v-for="summary in daySummaries.slice().reverse().slice(0, 10)"
+                            v-for="summary in daySummaries.slice().reverse()"
                             :key="summary.date"
                             @click="selectedDate = summary.date; isDaySummaryFormOpen = true"
-                            class="glass-effect p-5 rounded-xl cursor-pointer hover-lift transition-all duration-200 warm-shadow"
+                            class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group"
                         >
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-[#4E3B2B]">{{ new Date(summary.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</h4>
-                                <span class="text-2xl">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                            <!-- Entry Header -->
+                            <div class="bg-gradient-to-r from-[#7D5A36]/5 to-[#6B4A2E]/5 p-5 border-b border-[#D3C9A6]/30">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span class="text-4xl">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                                            <div>
+                                                <h4 class="text-lg font-bold text-[#4E3B2B]">
+                                                    {{ new Date(summary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
+                                                </h4>
+                                                <p class="text-xs text-[#7D5A36]/70">{{ formatRelativeTime(summary.date) }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Entry Indicators -->
+                                    <div class="flex gap-2">
+                                        <span v-if="summary.media && summary.media.length > 0"
+                                            class="px-2 py-1 bg-[#7D5A36]/10 rounded-lg text-xs text-[#7D5A36] flex items-center gap-1"
+                                            :title="`${summary.media.length} media file(s)`">
+                                            <Camera :size="14" />
+                                            {{ summary.media.length }}
+                                        </span>
+                                        <span v-if="summary.habits && summary.habits.length > 0"
+                                            class="px-2 py-1 bg-green-500/10 rounded-lg text-xs text-green-700 flex items-center gap-1"
+                                            :title="`${summary.habits.filter(h => h.completed).length}/${summary.habits.length} habits completed`">
+                                            ✓ {{ summary.habits.filter(h => h.completed).length }}/{{ summary.habits.length }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-[#7D5A36] text-sm line-clamp-3" v-html="summary.summary?.substring(0, 150) + '...'"></p>
-                            <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 mt-3">
-                                <span
-                                    v-for="tag in summary.tags.slice(0, 3)"
-                                    :key="tag"
-                                    class="text-xs px-2 py-1 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full"
-                                >
-                                    {{ tag }}
-                                </span>
+
+                            <!-- Entry Content -->
+                            <div class="p-5">
+                                <p class="text-[#4E3B2B] text-base leading-relaxed line-clamp-4 mb-4">
+                                    {{ stripHtml(summary.summary || '') || 'No content written yet...' }}
+                                </p>
+
+                                <!-- Tags and Metadata -->
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 flex-1">
+                                        <span
+                                            v-for="tag in summary.tags.slice(0, 5)"
+                                            :key="tag"
+                                            class="text-xs px-3 py-1.5 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full font-medium hover:bg-[#7D5A36]/20 transition-colors"
+                                        >
+                                            #{{ tag }}
+                                        </span>
+                                        <span v-if="summary.tags.length > 5" class="text-xs px-3 py-1.5 text-[#7D5A36]/60">
+                                            +{{ summary.tags.length - 5 }} more
+                                        </span>
+                                    </div>
+
+                                    <!-- Word Count -->
+                                    <div class="text-xs text-[#7D5A36]/60 font-medium">
+                                        {{ getWordCount(summary.summary) }} words
+                                    </div>
+                                </div>
+
+                                <!-- Daily Check Preview -->
+                                <div v-if="summary.dailyCheck" class="mt-4 pt-4 border-t border-[#D3C9A6]/30 flex gap-4 text-xs">
+                                    <div class="flex items-center gap-1.5">
+                                        <span>⚡</span>
+                                        <span class="text-[#7D5A36]/70">Energy:</span>
+                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.energyLevel }}/10</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span>😅</span>
+                                        <span class="text-[#7D5A36]/70">Stress:</span>
+                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.stressLevel }}/10</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span>🎨</span>
+                                        <span class="text-[#7D5A36]/70">Productivity:</span>
+                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.productivity }}/10</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hover Action Hint -->
+                            <div class="bg-[#7D5A36]/5 px-5 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <p class="text-xs text-[#7D5A36] text-center font-medium">Click to view and edit this entry</p>
                             </div>
                         </div>
                     </div>
@@ -585,13 +911,32 @@ import TabNavigation from '../components/TabNavigation.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
+import { useHistoricalComparison } from '@/composables/useHistoricalComparison'
+import type { Task, DaySummary as DaySummaryEntry, Habit, HabitStatus } from '@/store/types'
 
 const store = useStore()
 const { addShortcut } = useKeyboardShortcuts()
 const { filteredSummaries } = useSearch()
 const toast = useToast()
 
-const emotions = [
+// Historical comparison for "Last Year Today" feature
+const today = ref(new Date())
+const {
+  hasHistoricalData,
+  lastYearDateString,
+  lastYearMood,
+  lastYearTags,
+  lastYearSummaryPreview,
+  comparisonSummary,
+  lastYearDate
+} = useHistoricalComparison(today)
+
+interface EmotionDetails {
+    emoji: string
+    color: string
+}
+
+const emotions: EmotionDetails[] = [
     { emoji: '😄', color: '#FFD700' },
     { emoji: '😊', color: '#98FB98' },
     { emoji: '😐', color: '#ADD8E6' },
@@ -606,19 +951,18 @@ const isDaySummaryFormOpen = ref(false)
 const isDetailedCalendarOpen = ref(false)
 const isHabitPopupOpen = ref(false)
 const isHabitModalOpen = ref(false)
-const tasks = computed(() => store.state.tasks)
-const daySummaries = computed(() => store.state.daySummaries)
-const habits = computed(() => store.state.habits)
-const newTask = ref({
+const tasks = computed<Task[]>(() => store.state.tasks as Task[])
+const daySummaries = computed<DaySummaryEntry[]>(() => store.state.daySummaries as DaySummaryEntry[])
+const habits = computed<Habit[]>(() => store.state.habits as Habit[])
+const newTask = ref<{ description: string; priority: Task['priority']; dueDate: string }>({
     description: '',
     priority: 'Normal',
     dueDate: '',
 })
 const isMonthlySummaryOpen = ref(false)
 const newDaySummary = ref('')
-const editingHabit = ref(null)
-const currentHabit = ref({ name: '', description: '' })
-const habitStatus = ref({})
+const editingHabit = ref<Habit | null>(null)
+const currentHabit = ref<{ name: string; description: string }>({ name: '', description: '' })
 const selectedDate = ref('')
 const isSearchPanelOpen = ref(false)
 const isBackupPanelOpen = ref(false)
@@ -629,15 +973,15 @@ const toggleMonthlySummary = () => {
 }
 
 // Helper Functions
-const getDaysInMonth = (year, month) => {
+const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate()
 }
 
-const getFirstDayOfMonth = (year, month) => {
+const getFirstDayOfMonth = (year: number, month: number) => {
     return new Date(year, month, 1).getDay()
 }
 
-const formatDate = (date) => {
+const formatDate = (date: Date) => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
@@ -645,16 +989,30 @@ const formatDate = (date) => {
 }
 
 // Updated calendarDays Computed Property
-const calendarDays = computed(() => {
+type CalendarDayItem =
+    | { type: 'empty'; day: null; date: null; emotion: EmotionDetails; isLastYearAnniversary: false }
+    | { type: 'day'; day: number; date: Date; emotion: EmotionDetails; isLastYearAnniversary: boolean }
+
+const calendarDays = computed<CalendarDayItem[]>(() => {
     const year = currentDate.value.getFullYear()
     const month = currentDate.value.getMonth()
     const daysInMonth = getDaysInMonth(year, month)
     const firstDayOfMonth = getFirstDayOfMonth(year, month)
-    const days = []
+    const days: CalendarDayItem[] = []
+
+    // Get last year's date for highlighting
+    const lastYearDay = lastYearDate.value.getDate()
+    const lastYearMonth = lastYearDate.value.getMonth()
 
     // Fill empty slots for previous month days
     for (let i = 0; i < firstDayOfMonth; i++) {
-        days.push({ type: 'empty' })
+        days.push({
+            type: 'empty',
+            day: null,
+            date: null,
+            emotion: { emoji: '', color: 'transparent' },
+            isLastYearAnniversary: false
+        })
     }
 
     // Populate days of the current month
@@ -667,14 +1025,17 @@ const calendarDays = computed(() => {
             ? mapMoodToEmotion(daySummary.mood)
             : { emoji: '', color: '#FFFFFF' } // Default blank
 
-        days.push({ type: 'day', day, date, emotion })
+        // Check if this day is the anniversary of last year's date
+        const isLastYearAnniversary = (day === lastYearDay && month === lastYearMonth)
+
+        days.push({ type: 'day', day, date, emotion, isLastYearAnniversary })
     }
 
     return days
 })
 
 // Function to map Mood type to emotion details
-const mapMoodToEmotion = (mood) => {
+const mapMoodToEmotion = (mood: string): EmotionDetails => {
     switch (mood) {
         case 'happy':
             return { emoji: '😄', color: '#FFD700' }
@@ -691,9 +1052,212 @@ const mapMoodToEmotion = (mood) => {
     }
 }
 
-const currentDaySummary = computed(() => {
+// Utility function to strip HTML tags for safe display
+const stripHtml = (html: string): string => {
+    const tmp = document.createElement('DIV')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+}
+
+// Format relative time (Today, Yesterday, 2 days ago, etc.)
+const formatRelativeTime = (dateString: string): string => {
+    const entryDate = new Date(dateString)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    entryDate.setHours(0, 0, 0, 0)
+
+    const diffTime = today.getTime() - entryDate.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) {
+        const weeks = Math.floor(diffDays / 7)
+        return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`
+    }
+    if (diffDays < 365) {
+        const months = Math.floor(diffDays / 30)
+        return months === 1 ? '1 month ago' : `${months} months ago`
+    }
+    const years = Math.floor(diffDays / 365)
+    return years === 1 ? '1 year ago' : `${years} years ago`
+}
+
+// Get word count from HTML content
+const getWordCount = (html: string): number => {
+    if (!html) return 0
+    const text = stripHtml(html)
+    return text.split(/\s+/).filter(word => word.length > 0).length
+}
+
+const currentDaySummary = computed<DaySummaryEntry | undefined>(() => {
     const dateString = currentDate.value.toISOString().split('T')[0]
-    return daySummaries.value.find(summary => summary.date === dateString)
+    return daySummaries.value.find((summary: DaySummaryEntry) => summary.date === dateString)
+})
+
+const greetingMessage = computed(() => {
+    const hour = today.value.getHours()
+    if (hour < 12) return 'Good morning'
+    if (hour < 18) return 'Good afternoon'
+    return 'Good evening'
+})
+
+const formattedToday = computed(() => {
+    return today.value.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+    })
+})
+
+const entriesThisMonthCount = computed(() => {
+    return daySummaries.value.filter((summary: DaySummaryEntry) => {
+        if (!summary?.date) return false
+        const date = new Date(summary.date)
+        return date.getFullYear() === currentYear.value && date.getMonth() === currentMonth.value
+    }).length
+})
+
+type TaskWithMeta = Task & { dueDateObj: Date | null }
+
+const tasksWithMeta = computed<TaskWithMeta[]>(() => {
+    return tasks.value.map((task: Task) => {
+        if (!task.dueDate) {
+            return { ...task, dueDateObj: null }
+        }
+
+        const dueDateObj = new Date(task.dueDate)
+        if (Number.isNaN(dueDateObj.getTime())) {
+            return { ...task, dueDateObj: null }
+        }
+
+        dueDateObj.setHours(0, 0, 0, 0)
+        return { ...task, dueDateObj }
+    })
+})
+
+const sortedTasksByDueDate = computed<TaskWithMeta[]>(() => {
+    return [...tasksWithMeta.value].sort((a, b) => {
+        const aTime = a.dueDateObj ? a.dueDateObj.getTime() : Number.POSITIVE_INFINITY
+        const bTime = b.dueDateObj ? b.dueDateObj.getTime() : Number.POSITIVE_INFINITY
+        return aTime - bTime
+    })
+})
+
+const overdueTasksCount = computed(() => {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    return sortedTasksByDueDate.value.filter((task: TaskWithMeta) => task.dueDateObj && task.dueDateObj.getTime() < todayStart.getTime()).length
+})
+
+const upcomingTasks = computed<TaskWithMeta[]>(() => {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const withinWeek = new Date(todayStart)
+    withinWeek.setDate(withinWeek.getDate() + 7)
+
+    return sortedTasksByDueDate.value
+        .filter((task: TaskWithMeta) => task.dueDateObj && task.dueDateObj.getTime() >= todayStart.getTime() && task.dueDateObj.getTime() <= withinWeek.getTime())
+        .slice(0, 3)
+})
+
+const tasksWithoutDueDateCount = computed(() => {
+    return tasksWithMeta.value.filter((task: TaskWithMeta) => !task.dueDateObj).length
+})
+
+const latestSummary = computed<DaySummaryEntry | null>(() => {
+    if (!daySummaries.value.length) return null
+    return [...daySummaries.value]
+        .sort((a: DaySummaryEntry, b: DaySummaryEntry) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+})
+
+const latestEntryPreview = computed(() => {
+    if (!latestSummary.value || !latestSummary.value.summary) return ''
+    const text = stripHtml(latestSummary.value.summary)
+    return text.length > 140 ? `${text.slice(0, 140)}…` : text
+})
+
+const currentMoodEmoji = computed(() => {
+    if (!currentDaySummary.value || !currentDaySummary.value.mood) return '🙂'
+    return mapMoodToEmotion(currentDaySummary.value.mood).emoji
+})
+
+const currentEnergyLevel = computed(() => {
+    return currentDaySummary.value?.dailyCheck?.energyLevel ?? null
+})
+
+const highlightedHabit = computed<Habit | null>(() => {
+    if (!habits.value || habits.value.length === 0) return null
+    return [...habits.value]
+        .sort((a: Habit, b: Habit) => (b.statuses?.length || 0) - (a.statuses?.length || 0))[0]
+})
+
+const highlightedHabitStreak = computed(() => {
+    const habit = highlightedHabit.value
+    if (!habit || !habit.statuses || habit.statuses.length === 0) return 0
+
+    const sortedStatuses = [...habit.statuses].sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
+    let streak = 0
+
+    for (let i = 0; i < sortedStatuses.length; i++) {
+        const statusDate = new Date(sortedStatuses[i].date)
+        statusDate.setHours(0, 0, 0, 0)
+
+        const diffDays = Math.floor((todayStart.getTime() - statusDate.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (diffDays !== i) break
+
+        if (sortedStatuses[i].status === 'did') {
+            streak++
+        } else {
+            break
+        }
+    }
+
+    return streak
+})
+
+interface DashboardStat {
+    label: string
+    icon: string
+    value: string
+    description: string
+}
+
+const dashboardStats = computed<DashboardStat[]>(() => {
+    return [
+        {
+            label: 'Entries this month',
+            icon: '🗓️',
+            value: entriesThisMonthCount.value.toString(),
+            description: entriesThisMonthCount.value > 0 ? 'Great consistency!' : 'Start with a reflection today'
+        },
+        {
+            label: 'Words written',
+            icon: '✍️',
+            value: totalWordsThisMonth.value.toLocaleString(),
+            description: 'This month'
+        },
+        {
+            label: 'Average energy',
+            icon: '⚡',
+            value: averageEnergyLevel.value ? `${averageEnergyLevel.value}/10` : '—',
+            description: 'Based on daily check-ins'
+        },
+        {
+            label: 'Tasks queued',
+            icon: '🧾',
+            value: tasks.value.length.toString(),
+            description: overdueTasksCount.value > 0 ? `${overdueTasksCount.value} overdue` : 'You are on track'
+        }
+    ]
 })
 
 const handleAddSpark = () => {
@@ -711,27 +1275,83 @@ const handleSaveTask = () => {
     isTaskFormOpen.value = false
 }
 
-const handleSaveDaySummary = (summary) => {
-    store.dispatch('updateDaySummary', summary)
+const openJournalForToday = () => {
+    isDaySummaryFormOpen.value = true
+    selectedDate.value = new Date().toISOString().split('T')[0]
+}
+
+const openTaskModal = () => {
+    isTaskFormOpen.value = true
+}
+
+const openSearchModal = () => {
+    isSearchPanelOpen.value = true
+}
+
+const formatTaskDueDate = (dateString?: string) => {
+    if (!dateString) return 'No due date'
+    const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) return 'No due date'
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const describeTaskDueDate = (dateString?: string) => {
+    if (!dateString) return 'Anytime'
+    const due = new Date(dateString)
+    if (Number.isNaN(due.getTime())) return 'Anytime'
+
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    due.setHours(0, 0, 0, 0)
+
+    const diffDays = Math.floor((due.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return 'Due today'
+    if (diffDays === 1) return 'Due tomorrow'
+    if (diffDays < 0) return `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} overdue`
+    return `Due in ${diffDays} days`
+}
+
+const handleSaveDaySummary = (payload: DaySummaryEntry | Event) => {
+    if (payload instanceof Event) {
+        payload.preventDefault()
+        const dateString = formatDate(currentDate.value)
+        const existing = currentDaySummary.value
+
+        const fallbackDailyCheck = existing?.dailyCheck ?? { energyLevel: 5, stressLevel: 5, productivity: 5 }
+
+        const summary: DaySummaryEntry = {
+            date: dateString,
+            summary: newDaySummary.value,
+            mood: existing?.mood ?? 'neutral',
+            weather: existing?.weather ?? '',
+            habits: existing?.habits ?? [],
+            dailyCheck: fallbackDailyCheck,
+            comfortZoneEntry: existing?.comfortZoneEntry ?? '',
+            customSections: existing?.customSections ?? [],
+            tags: existing?.tags ?? [],
+            media: existing?.media ?? []
+        }
+
+        store.dispatch('updateDaySummary', summary)
+        newDaySummary.value = ''
+        isDaySummaryFormOpen.value = false
+        return
+    }
+
+    store.dispatch('updateDaySummary', payload)
     isDaySummaryFormOpen.value = false
 }
 
 // Handle day click event
-const handleDayClick = (date) => {
-    selectedDate.value = formatDate(date) // Formats to 'YYYY-MM-DD'
+const handleDayClick = (date?: Date) => {
+    if (!date) return
+    selectedDate.value = formatDate(date)
     isDaySummaryFormOpen.value = true
-    console.log('isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
-    console.log('selectedDate:', selectedDate.value)
-
-    // Force a re-render
-    nextTick(() => {
-        console.log('After nextTick - isDaySummaryFormOpen:', isDaySummaryFormOpen.value)
-    })
 }
 
 const closeDaySummary = () => {
     isDaySummaryFormOpen.value = false
-    console.log('Day summary closed')
 }
 
 const nextMonth = () => {
@@ -742,17 +1362,19 @@ const prevMonth = () => {
     currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
 }
 
-const hasTasks = (date) => {
+const hasTasks = (date?: Date) => {
+    if (!date) return false
     const dateString = formatDate(date)
-    return tasks.value.some(task => task.dueDate === dateString)
+    return tasks.value.some((task: Task) => task.dueDate === dateString)
 }
 
-const hasSummary = (date) => {
+const hasSummary = (date?: Date) => {
+    if (!date) return false
     const dateString = formatDate(date)
-    return daySummaries.value.some(summary => summary.date === dateString)
+    return daySummaries.value.some((summary: DaySummaryEntry) => summary.date === dateString)
 }
 
-const getDateXDaysAgo = (x) => {
+const getDateXDaysAgo = (x: number) => {
     const date = new Date()
     date.setDate(date.getDate() - x)
     return date
@@ -764,7 +1386,7 @@ const openAddHabitModal = () => {
     isHabitModalOpen.value = true
 }
 
-const openEditHabitModal = (habit) => {
+const openEditHabitModal = (habit: Habit) => {
     editingHabit.value = habit
     currentHabit.value = { ...habit }
     isHabitModalOpen.value = true
@@ -776,7 +1398,12 @@ const closeHabitModal = () => {
 
 const saveHabit = () => {
     if (editingHabit.value) {
-        store.dispatch('updateHabit', { ...editingHabit.value, ...currentHabit.value })
+        const updatedHabit: Habit = {
+            ...editingHabit.value,
+            name: currentHabit.value.name,
+            description: currentHabit.value.description,
+        }
+        store.dispatch('updateHabit', updatedHabit)
     } else {
         const newHabit = { id: Date.now(), ...currentHabit.value, statuses: [] }
         store.dispatch('addHabit', newHabit)
@@ -784,28 +1411,50 @@ const saveHabit = () => {
     closeHabitModal()
 }
 
-const getHabitStatusClass = (habit, date) => {
-    const status = habitStatus.value[`${habit.id}-${formatDate(date)}`]
+const getHabitStatusClass = (habit: Habit, date: Date) => {
+    const dateString = formatDate(date)
+    const statusEntry = habit.statuses?.find((s: HabitStatus) => s.date === dateString)
+    const status = statusEntry?.status
+
     if (status === 'did') return 'bg-green-500'
     if (status === 'partial') return 'bg-yellow-500'
     if (status === 'not') return 'bg-red-500'
     return 'bg-gray-200'
 }
 
-const cycleHabitStatus = (habit, date) => {
-    const key = `${habit.id}-${formatDate(date)}`
-    const currentStatus = habitStatus.value[key]
-    if (!currentStatus) habitStatus.value[key] = 'did'
-    else if (currentStatus === 'did') habitStatus.value[key] = 'partial'
-    else if (currentStatus === 'partial') habitStatus.value[key] = 'not'
-    else delete habitStatus.value[key]
+const cycleHabitStatus = async (habit: Habit, date: Date) => {
+    const dateString = formatDate(date)
+    const statusEntry = habit.statuses?.find((s: HabitStatus) => s.date === dateString)
+    const currentStatus = statusEntry?.status
+
+    let newStatus: 'did' | 'partial' | 'not' | null = null
+
+    if (!currentStatus) {
+        newStatus = 'did'
+    } else if (currentStatus === 'did') {
+        newStatus = 'partial'
+    } else if (currentStatus === 'partial') {
+        newStatus = 'not'
+    } else {
+        newStatus = null // Reset to no status
+    }
+
+    try {
+        await store.dispatch('updateHabitStatus', {
+            habitId: habit.id,
+            date: dateString,
+            status: newStatus
+        })
+    } catch (error) {
+        toast.error('Failed to update habit status', 'Error')
+    }
 }
 
 const testClick = () => {
-    console.log('Calendar clicked')
+    // Calendar container click handler
 }
 
-const handleSelectEntry = (summary) => {
+const handleSelectEntry = (summary: DaySummaryEntry) => {
     selectedDate.value = summary.date
     isDaySummaryFormOpen.value = true
     isSearchPanelOpen.value = false
@@ -885,7 +1534,7 @@ const averageEnergyLevel = computed(() => {
 // Additional Computed Properties (if needed)
 const cumulativeDiaryTags = computed(() => {
     const tagsSet = new Set()
-    daySummaries.value.forEach(summary => {
+    daySummaries.value.forEach((summary: DaySummaryEntry) => {
         if (summary.tags && Array.isArray(summary.tags)) {
             summary.tags.forEach(tag => tagsSet.add(tag))
         }
@@ -994,7 +1643,6 @@ onMounted(() => {
     store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
     setupKeyboardShortcuts()
-    console.log('Component mounted')
 })
 </script>
 
@@ -1064,28 +1712,53 @@ onMounted(() => {
     }
 }
 
-.calendar-day {
-    @apply flex flex-col items-center justify-center h-16 rounded-lg text-[#4E3B2B] relative;
+/* Anniversary highlighting for last year's date */
+.last-year-anniversary {
+    border: 2px solid #7D5A36 !important;
+    box-shadow: 0 0 12px rgba(125, 90, 54, 0.4);
+    animation: pulse-glow 2s ease-in-out infinite;
 }
 
-.calendar-day.empty {
-    @apply bg-transparent;
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(125, 90, 54, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(125, 90, 54, 0.6);
+    }
 }
 
-.emotion-icon {
-    @apply text-2xl mb-1;
+.anniversary-badge {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 12px;
+    z-index: 10;
 }
 
-.task-indicator,
-.summary-indicator {
-    @apply absolute bottom-1 w-2 h-2 rounded-full;
+/* Journal Entry Styling */
+.journal-entry {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.task-indicator {
-    @apply left-1 bg-[#4E3B2B];
+.journal-entry:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(78, 59, 43, 0.15);
 }
 
-.summary-indicator {
-    @apply right-1 bg-[#7D5A36];
+.journal-entry .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    line-clamp: 4;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    overflow: hidden;
 }
 </style>

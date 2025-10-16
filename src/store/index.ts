@@ -72,6 +72,26 @@ const store: StoreOptions<State> = {
         state.habits[index] = updatedHabit
       }
     },
+    UPDATE_HABIT_STATUS(state, payload: { habitId: number; date: string; status: 'did' | 'partial' | 'not' | null }) {
+      const habit = state.habits.find(h => h.id === payload.habitId)
+      if (habit) {
+        const existingStatusIndex = habit.statuses.findIndex(s => s.date === payload.date)
+
+        if (payload.status === null) {
+          // Remove status if null
+          if (existingStatusIndex !== -1) {
+            habit.statuses.splice(existingStatusIndex, 1)
+          }
+        } else {
+          // Update or add status
+          if (existingStatusIndex !== -1) {
+            habit.statuses[existingStatusIndex].status = payload.status
+          } else {
+            habit.statuses.push({ date: payload.date, status: payload.status })
+          }
+        }
+      }
+    },
     // Sparks
     SET_SPARKS(state, sparks: string[]) {
       state.sparks = sparks
@@ -90,70 +110,145 @@ const store: StoreOptions<State> = {
   actions: {
     // Loaders
     async loadDaySummaries({ commit }) {
-      const daySummaries = (await localforage.getItem('daySummaries')) as DaySummary[] | null
-      if (daySummaries) {
-        commit('SET_DAY_SUMMARIES', daySummaries)
+      try {
+        const daySummaries = (await localforage.getItem('daySummaries')) as DaySummary[] | null
+        if (daySummaries) {
+          commit('SET_DAY_SUMMARIES', daySummaries)
+        }
+      } catch (error) {
+        console.error('Failed to load day summaries:', error)
+        // Return empty array on error to prevent app crash
+        commit('SET_DAY_SUMMARIES', [])
       }
     },
     async addDaySummary({ commit, state }, daySummary: DaySummary) {
-      commit('ADD_DAY_SUMMARY', daySummary)
-      await localforage.setItem('daySummaries', state.daySummaries)
+      try {
+        commit('ADD_DAY_SUMMARY', daySummary)
+        await localforage.setItem('daySummaries', state.daySummaries)
+      } catch (error) {
+        console.error('Failed to add day summary:', error)
+        throw new Error('Failed to save day summary. Please try again.')
+      }
     },
     async updateDaySummary({ commit, state }, daySummary: DaySummary) {
-      commit('UPDATE_DAY_SUMMARY', daySummary)
-      await localforage.setItem('daySummaries', state.daySummaries)
+      try {
+        commit('UPDATE_DAY_SUMMARY', daySummary)
+        await localforage.setItem('daySummaries', state.daySummaries)
+      } catch (error) {
+        console.error('Failed to update day summary:', error)
+        throw new Error('Failed to update day summary. Please try again.')
+      }
     },
     async deleteDaySummary({ commit, state }, date: string) {
-      commit('DELETE_DAY_SUMMARY', date)
-      await localforage.setItem('daySummaries', state.daySummaries)
+      try {
+        commit('DELETE_DAY_SUMMARY', date)
+        await localforage.setItem('daySummaries', state.daySummaries)
+      } catch (error) {
+        console.error('Failed to delete day summary:', error)
+        throw new Error('Failed to delete day summary. Please try again.')
+      }
     },
     // Tasks
     async loadTasks({ commit }) {
-      const tasks = (await localforage.getItem('tasks')) as Task[] | null
-      if (tasks) {
-        commit('SET_TASKS', tasks)
+      try {
+        const tasks = (await localforage.getItem('tasks')) as Task[] | null
+        if (tasks) {
+          commit('SET_TASKS', tasks)
+        }
+      } catch (error) {
+        console.error('Failed to load tasks:', error)
+        commit('SET_TASKS', [])
       }
     },
     async addTask({ commit, state }, task: Task) {
-      commit('ADD_TASK', task)
-      await localforage.setItem('tasks', state.tasks)
+      try {
+        commit('ADD_TASK', task)
+        await localforage.setItem('tasks', state.tasks)
+      } catch (error) {
+        console.error('Failed to add task:', error)
+        throw new Error('Failed to add task. Please try again.')
+      }
     },
     // Habits
     async loadHabits({ commit }) {
-      const habits = (await localforage.getItem('habits')) as Habit[] | null
-      if (habits) {
-        commit('SET_HABITS', habits)
+      try {
+        const habits = (await localforage.getItem('habits')) as Habit[] | null
+        if (habits) {
+          commit('SET_HABITS', habits)
+        }
+      } catch (error) {
+        console.error('Failed to load habits:', error)
+        commit('SET_HABITS', [])
       }
     },
     async addHabit({ commit, state }, habit: Habit) {
-      commit('ADD_HABIT', habit)
-      await localforage.setItem('habits', state.habits)
+      try {
+        commit('ADD_HABIT', habit)
+        await localforage.setItem('habits', state.habits)
+      } catch (error) {
+        console.error('Failed to add habit:', error)
+        throw new Error('Failed to add habit. Please try again.')
+      }
     },
     async updateHabit({ commit, state }, habit: Habit) {
-      commit('UPDATE_HABIT', habit)
-      await localforage.setItem('habits', state.habits)
+      try {
+        commit('UPDATE_HABIT', habit)
+        await localforage.setItem('habits', state.habits)
+      } catch (error) {
+        console.error('Failed to update habit:', error)
+        throw new Error('Failed to update habit. Please try again.')
+      }
+    },
+    async updateHabitStatus({ commit, state }, payload: { habitId: number; date: string; status: 'did' | 'partial' | 'not' | null }) {
+      try {
+        commit('UPDATE_HABIT_STATUS', payload)
+        await localforage.setItem('habits', state.habits)
+      } catch (error) {
+        console.error('Failed to update habit status:', error)
+        throw new Error('Failed to update habit status. Please try again.')
+      }
     },
     // Sparks
     async loadSparks({ commit }) {
-      const sparks = (await localforage.getItem('sparks')) as string[] | null
-      if (sparks) {
-        commit('SET_SPARKS', sparks)
+      try {
+        const sparks = (await localforage.getItem('sparks')) as string[] | null
+        if (sparks) {
+          commit('SET_SPARKS', sparks)
+        }
+      } catch (error) {
+        console.error('Failed to load sparks:', error)
+        commit('SET_SPARKS', [])
       }
     },
     async addSpark({ commit, state }, spark: string) {
-      commit('ADD_SPARK', spark)
-      await localforage.setItem('sparks', state.sparks)
+      try {
+        commit('ADD_SPARK', spark)
+        await localforage.setItem('sparks', state.sparks)
+      } catch (error) {
+        console.error('Failed to add spark:', error)
+        throw new Error('Failed to add spark. Please try again.')
+      }
     },
     // Calendar Entries
     async loadCalendarEntries({ commit }) {
-      const entries = (await localforage.getItem('calendarEntries')) as { date: string; content: string }[] | null
-      if (entries) {
-        commit('SET_CALENDAR_ENTRIES', entries)
+      try {
+        const entries = (await localforage.getItem('calendarEntries')) as { date: string; content: string }[] | null
+        if (entries) {
+          commit('SET_CALENDAR_ENTRIES', entries)
+        }
+      } catch (error) {
+        console.error('Failed to load calendar entries:', error)
+        commit('SET_CALENDAR_ENTRIES', [])
       }
     },
     async addCalendarEntry({ commit, state }, entry: { date: string; content: string }) {
-      commit('ADD_CALENDAR_ENTRY', entry)
-      await localforage.setItem('calendarEntries', state.calendarEntries)
+      try {
+        commit('ADD_CALENDAR_ENTRY', entry)
+        await localforage.setItem('calendarEntries', state.calendarEntries)
+      } catch (error) {
+        console.error('Failed to add calendar entry:', error)
+        throw new Error('Failed to add calendar entry. Please try again.')
+      }
     },
   },
   getters: {

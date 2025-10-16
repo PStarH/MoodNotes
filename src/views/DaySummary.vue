@@ -194,7 +194,7 @@
                             controls></audio>
                         <button @click="removeMedia(index)"
                             class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all hover-lift">
-                            <X size="16" />
+                            <X :size="16" />
                         </button>
                     </div>
                 </div>
@@ -254,14 +254,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch, nextTick, onUnmounted, Ref } from 'vue'
 import { useStore } from 'vuex'
 import { X, Calendar, Cloud, Smile, Image, Video, Music } from 'lucide-vue-next'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { jsPDF } from 'jspdf'
 import DOMPurify from 'dompurify'
-import { DaySummary as DaySummaryType } from '../store/types'
+import { DaySummary as DaySummaryType, DaySummaryHabit, MediaItem, CustomSection, HabitStatus } from '../store/types'
 import { useToast } from '@/composables/useToast'
 
 const emit = defineEmits(['close'])
@@ -275,20 +275,20 @@ const weather = ref({ description: 'Loading...' })
 const mood = ref('happy')
 const quillEditor = ref(null)
 const content = ref('')
-const habits = ref([])
+const habits: Ref<DaySummaryHabit[]> = ref([])
 const newHabit = ref('')
-const media = ref([])
+const media: Ref<MediaItem[]> = ref([])
 const comfortZoneEntry = ref('')
 const dailyCheck = ref({
     energyLevel: 5,
     stressLevel: 5,
     productivity: 5
 })
-const customSections = ref([])
+const customSections: Ref<CustomSection[]> = ref([])
 const newSectionTitle = ref('')
 const newSectionContent = ref('')
 const showAddSection = ref(false)
-const tags = ref([])
+const tags: Ref<string[]> = ref([])
 const newTag = ref('')
 const isSaving = ref(false)
 const saveSuccess = ref(false)
@@ -385,14 +385,18 @@ onMounted(async () => {
     store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
 
-    // Load habits from store
+    // Load habits from store and populate with current day's status
     const storeHabits = store.getters.getHabits
-    habits.value = storeHabits.map(habit => ({
-        id: habit.id,
-        name: habit.name,
-        completed: false,
-        status: null
-    }))
+    habits.value = storeHabits.map((habit: any) => {
+        // Find status for current date
+        const todayStatus = habit.statuses?.find((s: HabitStatus) => s.date === currentDate.value)
+        return {
+            id: habit.id,
+            name: habit.name,
+            completed: todayStatus?.status === 'did',
+            status: todayStatus?.status || null
+        }
+    })
 
     setTimeout(() => {
         if (!weather.value.description || weather.value.description === 'Loading...') {
@@ -416,25 +420,75 @@ watch(() => daySummary.value, async (newSummary) => {
     }
 })
 
-const cycleHabitStatus = (habit, status) => {
-    habit.status = habit.status === status ? null : status
-}
+const cycleHabitStatus = async (habit: DaySummaryHabit, status: 'did' | 'partial' | 'not') => {
+    const newStatus = habit.status === status ? null : status
+    habit.status = newStatus
 
-const handleFileUpload = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            media.value.push({
-                type: file.type,
-                url: e.target.result
-            })
-        }
-        reader.readAsDataURL(file)
+    // Update in store for persistence
+    try {
+        await store.dispatch('updateHabitStatus', {
+            habitId: habit.id,
+            date: currentDate.value,
+            status: newStatus
+        })
+
+        // Also update completed checkbox based on status
+        habit.completed = newStatus === 'did'
+    } catch (error) {
+        toast.error('Failed to update habit status', 'Error')
     }
 }
 
-const removeMedia = (index) => {
+const handleFileUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) return
+
+    // File size limit: 10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+        toast.error(`File size must be less than 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`, 'File Too Large')
+        target.value = '' // Reset input
+        return
+    }
+
+    // Validate file type
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg']
+    const validAudioTypes = ['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm']
+    const validTypes = [...validImageTypes, ...validVideoTypes, ...validAudioTypes]
+
+    if (!validTypes.includes(file.type)) {
+        toast.error('Invalid file type. Please upload images (JPEG, PNG, GIF, WebP), videos (MP4, WebM, OGG), or audio (MP3, OGG, WAV, WebM)', 'Invalid File Type')
+        target.value = '' // Reset input
+        return
+    }
+
+    // Limit total media files to prevent memory issues
+    const MAX_MEDIA_COUNT = 20
+    if (media.value.length >= MAX_MEDIA_COUNT) {
+        toast.error(`Maximum ${MAX_MEDIA_COUNT} media files allowed per entry`, 'Media Limit Reached')
+        target.value = '' // Reset input
+        return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+        media.value.push({
+            type: file.type,
+            url: e.target?.result as string
+        })
+        toast.success('Media file added successfully', 'Success')
+        target.value = '' // Reset input for next upload
+    }
+    reader.onerror = () => {
+        toast.error('Failed to read file. Please try again.', 'Upload Failed')
+        target.value = ''
+    }
+    reader.readAsDataURL(file)
+}
+
+const removeMedia = (index: number) => {
     media.value.splice(index, 1)
 }
 
@@ -457,7 +511,7 @@ const addTag = () => {
     }
 }
 
-const removeTag = (tag) => {
+const removeTag = (tag: string) => {
     tags.value = tags.value.filter(t => t !== tag)
 }
 
@@ -592,6 +646,13 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
         toast.success(`Exported as HTML: DaySummary_${currentDate.value}.html`, 'Export Successful')
     }
 }
+
+// Cleanup on unmount to prevent memory leaks
+onUnmounted(() => {
+    if (quillInstance.value) {
+        quillInstance.value = null
+    }
+})
 </script>
 
 <style scoped>
