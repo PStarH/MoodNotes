@@ -769,46 +769,6 @@
             </div>
         </div>
 
-        <!-- Day Summary Form Modal -->
-        <div v-if="isDaySummaryFormOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="presentation">
-            <div
-                ref="quickSummaryRef"
-                class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="quick-summary-title"
-                aria-describedby="quick-summary-description"
-            >
-                <div class="flex justify-between items-center mb-4">
-                    <h2 id="quick-summary-title" class="text-xl font-bold text-[#4E3B2B]">Day Summary</h2>
-                    <button type="button" @click="isDaySummaryFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close quick day summary">
-                        <X :size="24" />
-                    </button>
-                </div>
-
-                <form @submit.prevent="handleSaveDaySummary">
-                    <p id="quick-summary-description" class="text-sm text-[#7D5A36]/80 mb-3">
-                        Capture a quick snapshot of your day. You can always open the full editor for richer details.
-                    </p>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1" for="quick-summary-textarea">Summary for {{
-                            currentDate.toDateString()
-                            }}</label>
-                        <textarea id="quick-summary-textarea" v-model="newDaySummary"
-                            class="w-full px-3 py-2 bg-[#F0E9D2] text-[#4E3B2B] border-[#D3C9A6] rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                            rows="5" placeholder="Write your day summary here..."></textarea>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit"
-                            class="px-4 py-2 bg-[#7D5A36] text-[#FAF3E0] rounded-md hover:bg-opacity-90 transition-colors">
-                            Save
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
         <!-- Detailed Calendar Popup -->
         <div v-if="isDetailedCalendarOpen"
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
@@ -1017,6 +977,7 @@ import EnergyStressChart from '../components/EnergyStressChart.vue'
 import TodayHabitCompletion from '../components/TodayHabitCompletion.vue'
 import TodaySummary from '../components/TodaySummary.vue'
 import HabitTrendInsights from '../components/HabitTrendInsights.vue'
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
@@ -1131,7 +1092,6 @@ const newTask = ref<{ description: string; priority: Task['priority']; dueDate: 
     dueDate: '',
 })
 const isMonthlySummaryOpen = ref(false)
-const newDaySummary = ref('')
 const editingHabit = ref<Habit | null>(null)
 const currentHabit = ref<{ name: string; description: string }>({ name: '', description: '' })
 const selectedDate = ref('')
@@ -1172,14 +1132,6 @@ const { containerRef: taskFormRef } = useModalFocus({
     returnFocus: true,
     onEscape: () => {
         isTaskFormOpen.value = false
-    }
-})
-
-const { containerRef: quickSummaryRef } = useModalFocus({
-    initialFocus: '#quick-summary-textarea',
-    returnFocus: true,
-    onEscape: () => {
-        isDaySummaryFormOpen.value = false
     }
 })
 
@@ -1565,37 +1517,6 @@ const describeTaskDueDate = (dateString?: string) => {
     if (diffDays === 1) return 'Due tomorrow'
     if (diffDays < 0) return `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} overdue`
     return `Due in ${diffDays} days`
-}
-
-const handleSaveDaySummary = (payload: DaySummaryEntry | Event) => {
-    if (payload instanceof Event) {
-        payload.preventDefault()
-        const dateString = formatDate(currentDate.value)
-        const existing = currentDaySummary.value
-
-        const fallbackDailyCheck = existing?.dailyCheck ?? { energyLevel: 5, stressLevel: 5, productivity: 5 }
-
-        const summary: DaySummaryEntry = {
-            date: dateString,
-            summary: newDaySummary.value,
-            mood: existing?.mood ?? 'neutral',
-            weather: existing?.weather ?? '',
-            habits: existing?.habits ?? [],
-            dailyCheck: fallbackDailyCheck,
-            comfortZoneEntry: existing?.comfortZoneEntry ?? '',
-            customSections: existing?.customSections ?? [],
-            tags: existing?.tags ?? [],
-            media: existing?.media ?? []
-        }
-
-        store.dispatch('updateDaySummary', summary)
-        newDaySummary.value = ''
-        isDaySummaryFormOpen.value = false
-        return
-    }
-
-    store.dispatch('updateDaySummary', payload)
-    isDaySummaryFormOpen.value = false
 }
 
 // Handle day click event
