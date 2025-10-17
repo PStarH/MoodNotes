@@ -1,6 +1,6 @@
 MoodNotes — Current Functionality and Outline
 
-Updated: 2025-10-16
+Updated: 2025-10-17
 
 This document summarizes what’s implemented today, how it’s wired, and light gaps to help prioritize next steps.
 
@@ -108,3 +108,48 @@ Quick reference
 - Panels: src/components/SearchPanel.vue, src/components/BackupPanel.vue
 - Theming: src/composables/useTheme.ts
 - Desktop: electron/main.ts, electron/preload.ts
+
+Note for incoming PM
+---------------------
+
+Welcome — below is a concise handoff to help you onboard quickly. I focused this summary on what exists today, decisions that were made, where to look for implementation details, and the top-priority workstreams.
+
+1) What’s implemented (short)
+	- Full single-device journaling experience: monthly calendar, rich-text daily editor (Quill), mood/tags, media attachments stored as data URLs, and daily check sliders.
+	- Tasks, Habits, Sparks, and Search with multi-filtering and live stats.
+	- Backup & Import (JSON merge), CSV/Markdown summary export, and simple restore flows using `useDataBackup`.
+	- Theming (light/dark/auto), keyboard shortcuts, toast notifications, and a small Dev panel for perf metrics.
+
+2) Important technical choices
+	- Framework: Vue 3 + Vite. State: Vuex (single store at `src/store/index.ts`).
+	- Persistence: localforage (IndexedDB) for all collections. No server or auth exists.
+	- Electron: basic shell present under `/electron` used for desktop builds; preload exposes a tiny whitelist (contextIsolation enabled).
+	- Media: stored inline as data URLs inside entries. This is simple but creates bloat and transfer-size concerns.
+
+3) Where to start in the codebase
+	- App shell & routing: `src/main.ts`, `src/router/index.ts`, `src/views/Homepage.vue`.
+	- Data model & persistence: `src/store/index.ts`, `src/store/types.ts`, `src/composables/useDataBackup.ts`.
+	- Editor & exports: Quill usage in Journal components and `src/utils` for PDF/MD helpers.
+	- Desktop integration: `electron/main.ts`, `electron/preload.ts`.
+
+4) Immediate risks and blockers
+	- Data growth: media as data URLs may make IndexedDB huge and slow; migrate to filesystem or external storage for desktop or use blob storage with references.
+	- Merge conflicts during import: import currently attempts a merge but lacks robust conflict resolution UI (duplicates, timestamps, and tag de-duping are simplistic).
+	- Habit persistence: UI grid exists but syncing per-day statuses back to the Habit.statuses array is incomplete.
+
+5) Recommended priorities (first 30 days)
+	- Fix habit persistence and surface habit history in DaySummary.
+	- Implement media migration strategy (electron file paths or FS Access API) with size/type validation and a migration path for existing data URLs.
+	- Harden import/backup flows: add replace/preview/conflict resolution and automated tests for sample datasets.
+	- Accessibility & focus management for modals/panels (focus traps and ARIA labels).
+
+6) Developer notes — running and building
+	- Local dev (app + electron): npm run dev (starts vite + electron). See `package.json` scripts.
+	- Build: npm run build (builds web assets then electron build via `electron` package.json).
+	- Key dev scripts: `dev`, `vite`, `electron`, `build`, `preview`.
+
+7) Tests and observability
+	- There are currently no unit or e2e tests. Add small unit tests around store mutations and import/export logic first.
+	- DevPanel exposes some performance metrics; use it to reproduce slow loads when testing large datasets.
+
+If you want, I can also open a small PR that implements one of the 30-day priority items (habit persistence or media migration starter), or prepare a short test plan and sample dataset to exercise the import/export paths.

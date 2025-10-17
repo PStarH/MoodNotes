@@ -351,6 +351,16 @@
                 </div>
             </div>
 
+            <!-- Analytics Charts -->
+            <div class="grid gap-6 lg:grid-cols-2 mb-6">
+                <MoodTrendChart />
+                <WordCountChart />
+            </div>
+
+            <div class="mb-6">
+                <EnergyStressChart />
+            </div>
+
             <!-- Monthly Summary -->
             <div class="glass-effect rounded-xl warm-shadow-lg overflow-hidden mb-8 fade-in">
                 <div @click="toggleMonthlySummary"
@@ -908,6 +918,9 @@ import DevPanel from '../components/DevPanel.vue'
 import EmptyState from '../components/EmptyState.vue'
 import HabitStreak from '../components/HabitStreak.vue'
 import TabNavigation from '../components/TabNavigation.vue'
+import MoodTrendChart from '../components/MoodTrendChart.vue'
+import WordCountChart from '../components/WordCountChart.vue'
+import EnergyStressChart from '../components/EnergyStressChart.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'

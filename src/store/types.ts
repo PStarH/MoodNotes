@@ -41,6 +41,8 @@ export interface CustomSection {
 export interface MediaItem {
   type: string // Full MIME type like 'image/jpeg', 'video/mp4', etc.
   url: string
+  filename?: string // Optional filename for new media system
+  id?: string // Optional ID for new media system
 }
 
 export interface DaySummary {

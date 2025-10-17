@@ -102,6 +102,60 @@ body {
   border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
+.themed-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 0.65rem 2.75rem 0.65rem 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(125, 90, 54, 0.25);
+  background-color: rgba(75, 73, 66, 0.92);
+  color: var(--color-text);
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(78, 59, 43, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%237D5A36' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 1rem) 50%;
+  background-size: 14px 8px;
+}
+
+.themed-select:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(78, 59, 43, 0.16);
+  border-color: rgba(125, 90, 54, 0.45);
+}
+
+.themed-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(125, 90, 54, 0.2);
+  background-color: rgba(250, 243, 224, 0.98);
+}
+
+.themed-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.theme-dark .themed-select {
+  border-color: rgba(99, 102, 241, 0.35);
+  background-color: rgba(30, 41, 59, 0.82);
+  color: var(--color-text);
+  box-shadow: 0 10px 28px rgba(8, 16, 28, 0.38);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23A5B4FC' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+}
+
+.theme-dark .themed-select:hover {
+  border-color: rgba(129, 140, 248, 0.6);
+  box-shadow: 0 14px 32px rgba(8, 16, 28, 0.5);
+}
+
+.theme-dark .themed-select:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+  background-color: rgba(30, 41, 59, 0.9);
+}
+
 /* Ensure all interactive elements have dark theme variants */
 .theme-dark .calendar-day {
   color: var(--color-text);

@@ -129,6 +129,11 @@
       </div>
     </div>
 
+    <!-- Data Migration -->
+    <div class="mb-8">
+      <DataMigration />
+    </div>
+
     <!-- Backup Tips -->
     <div class="glass-effect p-4 rounded-xl warm-shadow">
       <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center">
@@ -170,6 +175,7 @@
 import { ref } from 'vue'
 import { X, FileText, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { useDataBackup } from '@/composables/useDataBackup'
+import DataMigration from './DataMigration.vue'
 
 const emit = defineEmits(['close'])
 

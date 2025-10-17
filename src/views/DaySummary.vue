@@ -52,15 +52,44 @@
                             <Cloud class="text-[#7D5A36] mr-3" />
                             <span class="text-[#4E3B2B] font-medium">{{ weather.description }}</span>
                         </div>
-                        <div class="flex items-center glass-effect px-4 py-3 rounded-xl">
-                            <Smile class="text-[#7D5A36] mr-3" />
-                            <select v-model="mood" class="bg-transparent text-[#4E3B2B] focus:outline-none font-medium">
-                                <option value="happy">😄 Happy</option>
-                                <option value="neutral">😐 Neutral</option>
-                                <option value="sad">😢 Sad</option>
-                                <option value="excited">🎉 Excited</option>
-                                <option value="angry">😠 Angry</option>
-                            </select>
+                        <div class="glass-effect px-4 py-4 rounded-xl w-full sm:w-auto">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0 p-3 rounded-2xl bg-white/60 shadow-inner">
+                                    <Smile class="text-[#7D5A36]" />
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-xs font-semibold tracking-wide text-[#7D5A36]/80 uppercase">Current Mood</span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-2xl">{{ selectedMoodDetails.emoji }}</span>
+                                        <p class="text-base font-semibold text-[#4E3B2B]">{{ selectedMoodDetails.label }}</p>
+                                    </div>
+                                    <p class="text-xs text-[#7D5A36]/70 mt-1">{{ selectedMoodDetails.caption }}</p>
+
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <label
+                                            v-for="option in moodOptions"
+                                            :key="option.value"
+                                            class="mood-option"
+                                            :class="{ 'mood-option-active': mood === option.value }"
+                                        >
+                                            <input
+                                                type="radio"
+                                                class="sr-only"
+                                                :value="option.value"
+                                                v-model="mood"
+                                                :aria-label="option.label"
+                                            />
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-2xl">{{ option.emoji }}</span>
+                                                <div class="text-left">
+                                                    <p class="mood-label">{{ option.label }}</p>
+                                                    <p class="mood-caption">{{ option.caption }}</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -254,7 +283,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick, onUnmounted, Ref } from 'vue'
+import { ref, onMounted, computed, watch, watchEffect, nextTick, onUnmounted, Ref } from 'vue'
 import { useStore } from 'vuex'
 import { X, Calendar, Cloud, Smile, Image, Video, Music } from 'lucide-vue-next'
 import Quill from 'quill'
@@ -263,12 +292,14 @@ import { jsPDF } from 'jspdf'
 import DOMPurify from 'dompurify'
 import { DaySummary as DaySummaryType, DaySummaryHabit, MediaItem, CustomSection, HabitStatus } from '../store/types'
 import { useToast } from '@/composables/useToast'
+import { useMediaManager, type MediaFile } from '@/composables/useMediaManager'
 
 const emit = defineEmits(['close'])
 
 const store = useStore()
 const props = defineProps(['selectedDate'])
 const toast = useToast()
+const { uploadFile, getDisplayUrl, isElectron } = useMediaManager()
 
 const currentDate = ref(props.selectedDate || new Date().toISOString().split('T')[0])
 const weather = ref({ description: 'Loading...' })
@@ -292,6 +323,24 @@ const tags: Ref<string[]> = ref([])
 const newTag = ref('')
 const isSaving = ref(false)
 const saveSuccess = ref(false)
+
+const moodOptions = [
+    { value: 'happy', label: 'Happy', emoji: '😄', caption: 'Bright and optimistic vibes' },
+    { value: 'neutral', label: 'Neutral', emoji: '😐', caption: 'Steady and grounded today' },
+    { value: 'sad', label: 'Sad', emoji: '😢', caption: 'A softer, reflective mood' },
+    { value: 'excited', label: 'Excited', emoji: '🎉', caption: 'Energized and full of spark' },
+    { value: 'angry', label: 'Angry', emoji: '😠', caption: 'Tension worth unpacking' }
+]
+
+const selectedMoodDetails = computed(() => {
+    return moodOptions.find(option => option.value === mood.value) || moodOptions[0]
+})
+
+watchEffect(() => {
+    if (!moodOptions.some(option => option.value === mood.value)) {
+        mood.value = moodOptions[0].value
+    }
+})
 
 const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
 
@@ -439,30 +488,10 @@ const cycleHabitStatus = async (habit: DaySummaryHabit, status: 'did' | 'partial
     }
 }
 
-const handleFileUpload = (event: Event) => {
+const handleFileUpload = async (event: Event) => {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
     if (!file) return
-
-    // File size limit: 10MB
-    const MAX_FILE_SIZE = 10 * 1024 * 1024
-    if (file.size > MAX_FILE_SIZE) {
-        toast.error(`File size must be less than 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`, 'File Too Large')
-        target.value = '' // Reset input
-        return
-    }
-
-    // Validate file type
-    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg']
-    const validAudioTypes = ['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm']
-    const validTypes = [...validImageTypes, ...validVideoTypes, ...validAudioTypes]
-
-    if (!validTypes.includes(file.type)) {
-        toast.error('Invalid file type. Please upload images (JPEG, PNG, GIF, WebP), videos (MP4, WebM, OGG), or audio (MP3, OGG, WAV, WebM)', 'Invalid File Type')
-        target.value = '' // Reset input
-        return
-    }
 
     // Limit total media files to prevent memory issues
     const MAX_MEDIA_COUNT = 20
@@ -472,20 +501,21 @@ const handleFileUpload = (event: Event) => {
         return
     }
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
+    // Upload using media manager (handles validation and storage)
+    const mediaFile = await uploadFile(file)
+
+    if (mediaFile) {
+        // Convert MediaFile to MediaItem format for backward compatibility
         media.value.push({
-            type: file.type,
-            url: e.target?.result as string
+            type: mediaFile.type,
+            url: mediaFile.url,
+            filename: mediaFile.filename,
+            id: mediaFile.id
         })
-        toast.success('Media file added successfully', 'Success')
-        target.value = '' // Reset input for next upload
+        // Note: toast is already shown by uploadFile
     }
-    reader.onerror = () => {
-        toast.error('Failed to read file. Please try again.', 'Upload Failed')
-        target.value = ''
-    }
-    reader.readAsDataURL(file)
+
+    target.value = '' // Reset input for next upload
 }
 
 const removeMedia = (index: number) => {
@@ -656,6 +686,61 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.mood-option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(125, 90, 54, 0.2);
+    background: rgba(250, 243, 224, 0.7);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.mood-option:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(78, 59, 43, 0.15);
+}
+
+.mood-option-active {
+    border-color: rgba(125, 90, 54, 0.6);
+    background: rgba(125, 90, 54, 0.1);
+    box-shadow: 0 10px 28px rgba(78, 59, 43, 0.18);
+}
+
+.mood-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4E3B2B;
+}
+
+.mood-caption {
+    font-size: 0.75rem;
+    color: rgba(125, 90, 54, 0.75);
+}
+
+:global(.theme-dark) .mood-option {
+    border-color: rgba(99, 102, 241, 0.25);
+    background: rgba(30, 41, 59, 0.7);
+    color: var(--color-text);
+    box-shadow: 0 6px 18px rgba(8, 16, 28, 0.35);
+}
+
+:global(.theme-dark) .mood-option:hover {
+    box-shadow: 0 10px 26px rgba(8, 16, 28, 0.45);
+}
+
+:global(.theme-dark) .mood-option-active {
+    border-color: rgba(129, 140, 248, 0.6);
+    background: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 12px 30px rgba(8, 16, 28, 0.55);
+}
+
+:global(.theme-dark) .mood-caption {
+    color: rgba(165, 180, 252, 0.75);
+}
+
 .slider {
   -webkit-appearance: none;
   appearance: none;

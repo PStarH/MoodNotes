@@ -49,7 +49,7 @@
         <label class="block text-sm font-semibold text-[#4E3B2B]">Mood</label>
         <select
           v-model="searchFilters.mood"
-          class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+          class="themed-select w-full text-[#4E3B2B]"
         >
           <option value="">All Moods</option>
           <option value="happy">😄 Happy</option>
@@ -225,6 +225,7 @@ watch([searchFilters], () => {
 <style scoped>
 .line-clamp-2 {
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
