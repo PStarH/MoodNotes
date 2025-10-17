@@ -5,6 +5,7 @@
     role="dialog"
     aria-labelledby="search-panel-title"
     aria-modal="true"
+    :aria-describedby="searchHint ? 'search-panel-hint' : undefined"
   >
     <!-- Search Header -->
     <div class="flex justify-between items-center mb-6">
@@ -88,8 +89,7 @@
             <input
               id="tags-autocomplete"
               v-model="tagQuery"
-              @keydown.enter.prevent="handleTagSubmit"
-              @keydown.tab="handleTagSubmit"
+                @keydown="handleTagInputKeydown"
               type="text"
               placeholder="Type to find tags..."
               class="w-full px-4 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
@@ -98,6 +98,7 @@
               :aria-expanded="matchingTags.length > 0"
               aria-controls="tag-suggestion-list"
               aria-describedby="tag-helper-text"
+                :aria-activedescendant="activeTagId"
               autocomplete="off"
             />
             <ul
@@ -107,26 +108,31 @@
               role="listbox"
             >
               <li
-                v-for="tag in matchingTags"
-                :key="tag"
-                role="option"
-              >
+                  v-for="(tag, index) in matchingTags"
+                  :key="tag"
+                  role="option"
+                  :id="`tag-option-${index}`"
+                  :aria-selected="index === activeTagIndex"
+                >
                 <button
                   type="button"
-                  class="w-full text-left px-4 py-2 text-sm text-[#4E3B2B] hover:bg-[#7D5A36]/10 transition-colors"
-                  @mousedown.prevent="handleTagSelection(tag)"
-                  @click.prevent="handleTagSelection(tag)"
-                  :aria-label="`Add tag ${tag}`"
-                >
-                  #{{ tag }}
-                </button>
+                    class="w-full text-left px-4 py-2 text-sm text-[#4E3B2B] transition-colors"
+                    :class="index === activeTagIndex ? 'bg-[#7D5A36]/15 font-semibold' : 'hover:bg-[#7D5A36]/10'"
+                    @mousedown.prevent="handleTagSelection(tag)"
+                    @click.prevent="handleTagSelection(tag)"
+                    @mouseenter="setActiveTag(index)"
+                    @focus="setActiveTag(index)"
+                    :aria-label="`Add tag ${tag}`"
+                  >
+                    #{{ tag }}
+                  </button>
               </li>
             </ul>
             <p v-else-if="tagQuery" class="absolute left-0 right-0 mt-2 px-4 py-2 text-xs text-[#7D5A36]/80 bg-[#FAF3E0] rounded-lg shadow" role="status">
               No matching tags yet.
             </p>
           </div>
-          <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">Press Enter to add the first suggestion or pick from the list.</p>
+            <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">Use ↑ ↓ to highlight a suggestion, then press Enter to add it.</p>
           <div v-if="searchFilters.tags.length > 0" class="flex flex-wrap gap-2">
             <span
               v-for="tag in searchFilters.tags"
@@ -149,6 +155,16 @@
         </div>
       </div>
     </div>
+
+    <p
+      v-if="searchHint"
+      id="search-panel-hint"
+      class="-mt-2 mb-6 text-xs text-[#7D5A36]/80"
+      role="status"
+      aria-live="polite"
+    >
+      {{ searchHint }}
+    </p>
 
     <!-- Additional Filters -->
     <div class="flex flex-wrap gap-4 mb-6" role="group" aria-label="Additional filters">
@@ -273,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { X, Search } from 'lucide-vue-next'
 import { useSearch } from '@/composables/useSearch'
 import { useModalFocus } from '@/composables/useFocusTrap'
@@ -293,6 +309,7 @@ const {
 const { containerRef: panelRef } = useModalFocus({ initialFocus: '#search-input', returnFocus: true, onEscape: () => emit('close') })
 const searchInput = ref('')
 const tagQuery = ref('')
+const activeTagIndex = ref(-1)
 
 const matchingTags = computed(() => {
   const query = tagQuery.value.trim().toLowerCase()
@@ -306,6 +323,20 @@ const matchingTags = computed(() => {
     .filter(tag => !exclude.has(tag))
     .filter(tag => tag.toLowerCase().includes(query))
     .slice(0, 8)
+})
+
+const activeTagId = computed(() => {
+  return activeTagIndex.value >= 0 ? `tag-option-${activeTagIndex.value}` : undefined
+})
+
+watch(matchingTags, tags => {
+  activeTagIndex.value = tags.length > 0 ? 0 : -1
+})
+
+watch(tagQuery, value => {
+  if (!value.trim()) {
+    activeTagIndex.value = -1
+  }
 })
 
 const handleSearch = (event: Event) => {
@@ -327,6 +358,7 @@ const addTagFilter = (tag: string) => {
 const handleTagSelection = (tag: string) => {
   addTagFilter(tag)
   tagQuery.value = ''
+  activeTagIndex.value = -1
 }
 
 const handleTagSubmit = () => {
@@ -336,6 +368,7 @@ const handleTagSubmit = () => {
     addTagFilter(matched)
   }
   tagQuery.value = ''
+  activeTagIndex.value = -1
 }
 
 const removeTag = (tag: string) => {
@@ -346,6 +379,53 @@ const handleClearFilters = () => {
   clearFilters()
   tagQuery.value = ''
   searchInput.value = ''
+  activeTagIndex.value = -1
+}
+
+const handleTagInputKeydown = (event: KeyboardEvent) => {
+  const hasSuggestions = matchingTags.value.length > 0
+
+  switch (event.key) {
+    case 'ArrowDown':
+      if (!hasSuggestions) return
+      event.preventDefault()
+      activeTagIndex.value = (activeTagIndex.value + 1) % matchingTags.value.length
+      break
+    case 'ArrowUp':
+      if (!hasSuggestions) return
+      event.preventDefault()
+      activeTagIndex.value =
+        activeTagIndex.value <= 0 ? matchingTags.value.length - 1 : activeTagIndex.value - 1
+      break
+    case 'Enter':
+      event.preventDefault()
+      if (hasSuggestions && activeTagIndex.value >= 0) {
+        handleTagSelection(matchingTags.value[activeTagIndex.value])
+      } else {
+        handleTagSubmit()
+      }
+      break
+    case 'Tab':
+      if (hasSuggestions && activeTagIndex.value >= 0) {
+        handleTagSelection(matchingTags.value[activeTagIndex.value])
+      } else if (!hasSuggestions && tagQuery.value.trim()) {
+        handleTagSubmit()
+      }
+      break
+    case 'Escape':
+      if (tagQuery.value) {
+        event.preventDefault()
+        tagQuery.value = ''
+        activeTagIndex.value = -1
+      }
+      break
+    default:
+      break
+  }
+}
+
+const setActiveTag = (index: number) => {
+  activeTagIndex.value = index
 }
 
 const formatDate = (dateString?: string) => {
@@ -373,6 +453,29 @@ const getPreviewText = (text: string) => {
   const plainText = text.replace(/<[^>]*>/g, '').trim()
   return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText
 }
+
+const searchHint = computed(() => {
+  const stats = searchStats.value
+  if (!stats) return ''
+
+  if (stats.filteredEntries === 0) {
+    return 'No entries match yet — try broadening the filters or date range.'
+  }
+
+  const parts: string[] = []
+  parts.push(`${stats.filteredEntries} ${stats.filteredEntries === 1 ? 'entry' : 'entries'}`)
+  parts.push(`${stats.tagCount} unique ${stats.tagCount === 1 ? 'tag' : 'tags'}`)
+
+  if (stats.appliedTagCount > 0) {
+    parts.push(`${stats.appliedTagCount} active tag filter${stats.appliedTagCount === 1 ? '' : 's'}`)
+  }
+
+  if (stats.dateSpanLabel && stats.dateRange) {
+    parts.push(stats.dateSpanLabel)
+  }
+
+  return `Showing ${parts.join(' • ')}`
+})
 </script>
 
 <style scoped>

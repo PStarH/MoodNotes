@@ -50,13 +50,19 @@ const moodToValue = (mood: string | undefined): number => {
     return mood ? moodMap[mood] || 3 : 3
 }
 
+// Optimization: Create a Map for O(1) lookups instead of O(n) find operations
+const summariesByDate = computed(() => {
+    const summaries = store.state.daySummaries as DaySummary[]
+    const map = new Map<string, DaySummary>()
+    summaries.forEach(summary => {
+        map.set(summary.date, summary)
+    })
+    return map
+})
+
 // Get data for the selected time range
 const chartDataPoints = computed(() => {
-    const summaries = store.state.daySummaries as DaySummary[]
     const today = new Date()
-    const startDate = new Date(today)
-    startDate.setDate(startDate.getDate() - timeRange.value)
-
     const days: string[] = []
     const values: number[] = []
 
@@ -65,7 +71,9 @@ const chartDataPoints = computed(() => {
         const date = new Date(today)
         date.setDate(date.getDate() - i)
         const dateString = date.toISOString().split('T')[0]
-        const summary = summaries.find(s => s.date === dateString)
+
+        // O(1) lookup instead of O(n) find
+        const summary = summariesByDate.value.get(dateString)
 
         days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
         values.push(summary ? moodToValue(summary.mood) : 3) // Default to neutral if no entry
@@ -96,6 +104,10 @@ const chartData = computed(() => ({
 const chartOptions = computed(() => ({
     responsive: true,
     maintainAspectRatio: false,
+    // Disable animations for better performance with larger datasets
+    animation: {
+        duration: chartDataPoints.value.days.length > 30 ? 0 : 750
+    },
     plugins: {
         legend: {
             display: false

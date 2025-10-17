@@ -52,18 +52,33 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const store = useStore()
 const timeRange = ref(7)
 
-// Helper function to count words
+// Optimized: Helper function to count words - use DOMParser instead of createElement
 const getWordCount = (html: string): number => {
     if (!html) return 0
-    const tmp = document.createElement('DIV')
-    tmp.innerHTML = html
-    const text = tmp.textContent || tmp.innerText || ''
+    // Use DOMParser for better performance than createElement
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const text = doc.body.textContent || doc.body.innerText || ''
     return text.split(/\s+/).filter(word => word.length > 0).length
 }
 
+// Optimization: Create Map for O(1) lookups and cache word counts
+const summariesByDateWithWordCount = computed(() => {
+    const summaries = store.state.daySummaries as DaySummary[]
+    const map = new Map<string, { summary: DaySummary; wordCount: number }>()
+
+    summaries.forEach(summary => {
+        map.set(summary.date, {
+            summary,
+            wordCount: getWordCount(summary.summary) // Cache word count calculation
+        })
+    })
+
+    return map
+})
+
 // Get data for the selected time range
 const chartDataPoints = computed(() => {
-    const summaries = store.state.daySummaries as DaySummary[]
     const today = new Date()
 
     const days: string[] = []
@@ -74,10 +89,12 @@ const chartDataPoints = computed(() => {
         const date = new Date(today)
         date.setDate(date.getDate() - i)
         const dateString = date.toISOString().split('T')[0]
-        const summary = summaries.find(s => s.date === dateString)
+
+        // O(1) lookup with cached word count
+        const data = summariesByDateWithWordCount.value.get(dateString)
 
         days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
-        wordCounts.push(summary ? getWordCount(summary.summary) : 0)
+        wordCounts.push(data ? data.wordCount : 0)
     }
 
     return { days, wordCounts }
@@ -114,6 +131,10 @@ const chartData = computed(() => ({
 const chartOptions = computed(() => ({
     responsive: true,
     maintainAspectRatio: false,
+    // Disable animations for better performance with larger datasets
+    animation: {
+        duration: chartDataPoints.value.days.length > 30 ? 0 : 750
+    },
     plugins: {
         legend: {
             display: false

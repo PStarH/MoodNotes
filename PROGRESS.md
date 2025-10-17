@@ -100,6 +100,13 @@ Prioritized next steps for PM
 	 - Weather API integration with caching
 	 - Optional cloud sync/auth (out of scope of MVP)
 
+Active TODOs
+--------------
+
+- [ ] Modal focus management and ARIA polish — ensure modals and side panels trap focus correctly on open/close and supply thorough ARIA labels for screen reader usability.
+- [ ] Daily quote enhancements — provide random selection with caching, leave hooks for future API integration, and refine responsive styling across breakpoints.
+- [ ] Search panel autocomplete and hints — add tag autocomplete plus realtime stats guidance (entry count, tag count, time span) without regressing existing filter behaviors.
+
 Quick reference
 
 - Routes: src/router/index.ts
@@ -153,3 +160,37 @@ Welcome — below is a concise handoff to help you onboard quickly. I focused th
 	- DevPanel exposes some performance metrics; use it to reproduce slow loads when testing large datasets.
 
 If you want, I can also open a small PR that implements one of the 30-day priority items (habit persistence or media migration starter), or prepare a short test plan and sample dataset to exercise the import/export paths.
+
+Recent updates (what was added since last snapshot)
+--------------------------------------------------
+
+These items were added in recent commits — useful to know where momentum has gone and what to validate first:
+
+- Media migration and management
+	- New composables: `src/composables/useDataMigration.ts`, `src/composables/useMediaManager.ts`.
+	- Components: `src/components/DataMigration.vue` to run migrations and a `BackupPanel.vue` update that surfaces migration status.
+	- Electron updates: `electron/main.ts`, `electron/preload.ts` updated to support media handling on desktop builds.
+
+- Charts and insights
+	- New chart components: `src/components/MoodTrendChart.vue`, `src/components/WordCountChart.vue`, `src/components/EnergyStressChart.vue` added and wired into `DaySummary`/Homepage views for trend visualizations.
+
+- Import/backup UX improvements
+	- Import preview and conflict helpers: `src/components/ImportPreview.vue`, composable `src/composables/useImportConflict.ts` to detect and present conflicts.
+	- Backup panel updates: `src/components/BackupPanel.vue` includes more options and migration triggers.
+
+- Habit flow and UI
+	- Today habit completion: `src/components/TodayHabitCompletion.vue` and changes to `src/composables/useHistoricalComparison.ts` and store types to track improvements to habit status persistence.
+
+- Misc and polish
+	- Performance & lazy-loading: `src/components/LazyImage.vue` added for media rendering; `useFocusTrap.ts` composable added for modal focus management.
+	- Search and UI tweaks: `src/components/SearchPanel.vue` updated; `useDailyQuote.ts` added for daily quote handling.
+
+Suggested validations after these changes
+---------------------------------------
+
+1. Media migration path — run the DataMigration component on a sample large dataset and verify media files are accessible, no duplicates, and DB size drops.
+2. Charts — verify data bounds, missing-data handling, and that rendering is performant on large datasets.
+3. Import preview/conflict resolution — exercise with overlapping datasets to ensure the conflict UI surfaces actionable choices.
+4. Habit persistence — confirm `TodayHabitCompletion` updates `store.index` and historical queries reflect updates in `DaySummary`.
+
+See the git history for the exact commits adding these files; they should be close to the top of the log.

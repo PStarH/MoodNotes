@@ -99,6 +99,40 @@
                     <span aria-hidden="true">⚠️</span> {{ progress.failed }} file{{ progress.failed === 1 ? '' : 's' }} failed to migrate
                 </p>
             </div>
+
+            <!-- Detailed File List -->
+            <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto">
+                <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
+                    <span aria-hidden="true">📋</span>
+                    File Status
+                </h4>
+                <div class="space-y-2">
+                    <div
+                        v-for="(file, index) in progress.files"
+                        :key="index"
+                        class="flex items-center justify-between p-2 rounded-lg transition-colors"
+                        :class="{
+                            'bg-green-500/10': file.status === 'success',
+                            'bg-orange-500/10': file.status === 'failed',
+                            'bg-blue-500/10': file.status === 'migrating',
+                            'bg-gray-500/10': file.status === 'pending'
+                        }"
+                    >
+                        <div class="flex-1 min-w-0 mr-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg" aria-hidden="true">
+                                    {{ file.status === 'success' ? '✅' : file.status === 'failed' ? '❌' : file.status === 'migrating' ? '⏳' : '⏸️' }}
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-[#4E3B2B] truncate">{{ file.filename }}</p>
+                                    <p class="text-xs text-[#7D5A36]/70">{{ file.summaryDate }}</p>
+                                    <p v-if="file.error" class="text-xs text-red-600 mt-1">{{ file.error }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Migration Complete -->
@@ -120,6 +154,46 @@
                 <p class="text-sm text-[#7D5A36]/80">
                     {{ progress.failed }} file{{ progress.failed === 1 ? '' : 's' }} could not be migrated. Original data has been preserved.
                 </p>
+            </div>
+
+            <!-- Detailed File List with Retry -->
+            <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto">
+                <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
+                    <span aria-hidden="true">📋</span>
+                    Migration Results
+                </h4>
+                <div class="space-y-2">
+                    <div
+                        v-for="(file, index) in progress.files"
+                        :key="index"
+                        class="flex items-center justify-between p-2 rounded-lg transition-colors"
+                        :class="{
+                            'bg-green-500/10': file.status === 'success',
+                            'bg-orange-500/10': file.status === 'failed'
+                        }"
+                    >
+                        <div class="flex-1 min-w-0 mr-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg" aria-hidden="true">
+                                    {{ file.status === 'success' ? '✅' : '❌' }}
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-[#4E3B2B] truncate">{{ file.filename }}</p>
+                                    <p class="text-xs text-[#7D5A36]/70">{{ file.summaryDate }}</p>
+                                    <p v-if="file.error" class="text-xs text-red-600 mt-1">{{ file.error }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            v-if="file.status === 'failed'"
+                            @click="handleRetry(file)"
+                            class="px-3 py-1 bg-[#7D5A36] text-white text-xs rounded-lg hover:bg-[#6B4A2E] transition-colors"
+                            aria-label="Retry migration for this file"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <button
@@ -158,11 +232,16 @@
 
 <script setup lang="ts">
 import { useDataMigration } from '@/composables/useDataMigration'
+import type { MigrationFileInfo } from '@/composables/useDataMigration'
 
-const { progress, migrateAllData, needsMigration, scanForDataUrls, resetProgress } = useDataMigration()
+const { progress, migrateAllData, needsMigration, scanForDataUrls, resetProgress, retryFile } = useDataMigration()
 
 const startMigration = async () => {
     await migrateAllData()
+}
+
+const handleRetry = async (fileInfo: MigrationFileInfo) => {
+    await retryFile(fileInfo)
 }
 </script>
 

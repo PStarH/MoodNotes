@@ -56,9 +56,30 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend)
 const store = useStore()
 const timeRange = ref(7)
 
+// Color points based on mood
+const getPointColor = (mood: string): string => {
+    const colorMap: { [key: string]: string } = {
+        'happy': '#4ade80',
+        'excited': '#22c55e',
+        'neutral': '#94a3b8',
+        'sad': '#60a5fa',
+        'angry': '#f87171'
+    }
+    return colorMap[mood] || '#94a3b8'
+}
+
+// Optimization: Create Map for O(1) lookups
+const summariesByDate = computed(() => {
+    const summaries = store.state.daySummaries as DaySummary[]
+    const map = new Map<string, DaySummary>()
+    summaries.forEach(summary => {
+        map.set(summary.date, summary)
+    })
+    return map
+})
+
 // Get scatter plot data
 const scatterData = computed(() => {
-    const summaries = store.state.daySummaries as DaySummary[]
     const today = new Date()
     const points: { x: number; y: number; date: string; mood: string }[] = []
 
@@ -66,7 +87,9 @@ const scatterData = computed(() => {
         const date = new Date(today)
         date.setDate(date.getDate() - i)
         const dateString = date.toISOString().split('T')[0]
-        const summary = summaries.find(s => s.date === dateString)
+
+        // O(1) lookup instead of O(n) find
+        const summary = summariesByDate.value.get(dateString)
 
         if (summary?.dailyCheck) {
             points.push({
@@ -81,18 +104,6 @@ const scatterData = computed(() => {
     return points
 })
 
-// Color points based on mood
-const getPointColor = (mood: string): string => {
-    const colorMap: { [key: string]: string } = {
-        'happy': '#4ade80',
-        'excited': '#22c55e',
-        'neutral': '#94a3b8',
-        'sad': '#60a5fa',
-        'angry': '#f87171'
-    }
-    return colorMap[mood] || '#94a3b8'
-}
-
 const optimalCount = computed(() => {
     return scatterData.value.filter(p => p.y >= 7 && p.x <= 4).length
 })
@@ -101,24 +112,34 @@ const burnoutCount = computed(() => {
     return scatterData.value.filter(p => p.y <= 4 && p.x >= 7).length
 })
 
-const chartData = computed(() => ({
-    datasets: [
-        {
-            label: 'Energy vs Stress',
-            data: scatterData.value.map(point => ({ x: point.x, y: point.y })),
-            backgroundColor: scatterData.value.map(point => getPointColor(point.mood)),
-            borderColor: scatterData.value.map(point => getPointColor(point.mood)),
-            pointRadius: 8,
-            pointHoverRadius: 12,
-            pointBorderWidth: 2,
-            pointBorderColor: '#FAF3E0'
-        }
-    ]
-}))
+// Optimization: Pre-compute colors and data structure to avoid redundant map operations
+const chartData = computed(() => {
+    const data = scatterData.value.map(point => ({ x: point.x, y: point.y }))
+    const colors = scatterData.value.map(point => getPointColor(point.mood))
+
+    return {
+        datasets: [
+            {
+                label: 'Energy vs Stress',
+                data,
+                backgroundColor: colors,
+                borderColor: colors,
+                pointRadius: 8,
+                pointHoverRadius: 12,
+                pointBorderWidth: 2,
+                pointBorderColor: '#FAF3E0'
+            }
+        ]
+    }
+})
 
 const chartOptions = computed(() => ({
     responsive: true,
     maintainAspectRatio: false,
+    // Disable animations for better performance with larger datasets
+    animation: {
+        duration: scatterData.value.length > 30 ? 0 : 750
+    },
     plugins: {
         legend: {
             display: false

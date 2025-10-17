@@ -1,7 +1,11 @@
 <template>
     <div class="h-screen flex gradient-bg">
         <!-- Sidebar -->
-        <div class="w-64 sidebar-gradient p-6 warm-shadow-lg flex flex-col h-full">
+        <div
+            class="w-64 sidebar-gradient p-6 warm-shadow-lg flex flex-col h-full"
+            :aria-hidden="isOverlayActive ? 'true' : 'false'"
+            :inert="isOverlayActive"
+        >
             <h2 class="text-[#4E3B2B] mb-8 text-2xl font-bold tracking-wide">📝 MoodNotes</h2>
             <nav class="flex-1">
                 <ul class="list-none p-0 space-y-2">
@@ -49,7 +53,11 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar">
+        <div
+            class="flex-1 p-6 overflow-y-auto custom-scrollbar"
+            :aria-hidden="isOverlayActive ? 'true' : 'false'"
+            :inert="isOverlayActive"
+        >
             <!-- Tab Navigation -->
             <TabNavigation
                 :tabs="[
@@ -63,6 +71,13 @@
 
             <!-- Dashboard Tab -->
             <div v-show="activeTab === 'dashboard'" class="space-y-6">
+                <!-- Today's Summary -->
+                <TodaySummary
+                    @open-entry="openJournalForToday"
+                    @open-habits="isHabitPopupOpen = true"
+                    @view-insights="activeTab = 'journal'"
+                />
+
                 <div class="grid gap-6 lg:grid-cols-3">
                     <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col justify-between lg:col-span-2">
                         <div class="flex flex-col gap-6">
@@ -101,14 +116,45 @@
                                     Search Entries
                                 </button>
                             </div>
-                            <div class="glass-effect px-4 py-3 rounded-xl text-[#7D5A36] italic flex items-start gap-3 border border-[#D3C9A6]/40" role="note" aria-live="polite">
-                                <span class="text-2xl" aria-hidden="true">✨</span>
-                                <p class="text-sm sm:text-base leading-relaxed">
-                                    <span v-if="isQuoteLoading">Loading today's inspiration...</span>
-                                    <span v-else-if="dailyQuote">{{ dailyQuote }}</span>
-                                    <span v-else-if="quoteError">{{ quoteError }}</span>
-                                    <span v-else>Capture your thoughts to unlock more daily inspiration.</span>
-                                </p>
+                            <div
+                                class="daily-quote-card glass-effect px-4 py-4 rounded-2xl text-[#4E3B2B] border border-[#D3C9A6]/40"
+                                role="note"
+                                aria-live="polite"
+                            >
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                    <div class="flex items-start gap-3 flex-1">
+                                        <span class="text-3xl sm:text-4xl" aria-hidden="true">✨</span>
+                                        <div class="space-y-2">
+                                            <p v-if="isQuoteLoading" class="text-sm sm:text-base text-[#7D5A36]">Loading today's inspiration...</p>
+                                            <template v-else-if="quoteText">
+                                                <p class="text-base sm:text-lg font-medium leading-relaxed">“{{ quoteText }}”</p>
+                                                <p v-if="quoteAuthor" class="text-sm text-[#7D5A36]/80">— {{ quoteAuthor }}</p>
+                                            </template>
+                                            <p v-else-if="quoteError" class="text-sm text-red-600">{{ quoteError }}</p>
+                                            <p v-else class="text-sm sm:text-base text-[#7D5A36]">{{ quotePlaceholderCopy }}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-2 self-start sm:self-center px-4 py-2 rounded-xl bg-[#7D5A36] text-white text-sm font-semibold hover:bg-[#6B4A2E] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36] disabled:opacity-60 disabled:cursor-not-allowed"
+                                        @click="refreshQuote"
+                                        :disabled="isQuoteLoading"
+                                        :aria-busy="isQuoteLoading"
+                                        aria-label="Refresh daily quote"
+                                    >
+                                        <RefreshCcw :size="16" aria-hidden="true" />
+                                        <span>{{ isQuoteLoading ? 'Refreshing…' : 'New quote' }}</span>
+                                    </button>
+                                </div>
+                                <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/80">
+                                    <span class="inline-flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-[#7D5A36]" aria-hidden="true"></span>
+                                        <span>{{ quoteSourceLabel }}</span>
+                                    </span>
+                                    <span v-if="quoteUpdatedLabel" :title="quoteUpdatedTitle">Updated {{ quoteUpdatedLabel }}</span>
+                                    <span v-else>Waiting for first quote</span>
+                                    <span v-if="quoteError" class="text-red-600">Offline mode — {{ quoteError }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -364,6 +410,11 @@
 
             <div class="mb-6">
                 <EnergyStressChart />
+            </div>
+
+            <!-- Habit Trend Insights -->
+            <div class="mb-6">
+                <HabitTrendInsights @manage-habits="isHabitPopupOpen = true" />
             </div>
 
             <!-- Monthly Summary -->
@@ -747,7 +798,14 @@
 
         <!-- Day Summary Form Modal -->
         <div v-if="isDaySummaryFormOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="presentation">
-            <div class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6" role="dialog" aria-modal="true" aria-labelledby="quick-summary-title">
+            <div
+                ref="quickSummaryRef"
+                class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="quick-summary-title"
+                aria-describedby="quick-summary-description"
+            >
                 <div class="flex justify-between items-center mb-4">
                     <h2 id="quick-summary-title" class="text-xl font-bold text-[#4E3B2B]">Day Summary</h2>
                     <button type="button" @click="isDaySummaryFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close quick day summary">
@@ -756,6 +814,9 @@
                 </div>
 
                 <form @submit.prevent="handleSaveDaySummary">
+                    <p id="quick-summary-description" class="text-sm text-[#7D5A36]/80 mb-3">
+                        Capture a quick snapshot of your day. You can always open the full editor for richer details.
+                    </p>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-[#4E3B2B] mb-1" for="quick-summary-textarea">Summary for {{
                             currentDate.toDateString()
@@ -965,9 +1026,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload } from 'lucide-vue-next'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw } from 'lucide-vue-next'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
 import SearchPanel from '../components/SearchPanel.vue'
@@ -981,6 +1042,8 @@ import MoodTrendChart from '../components/MoodTrendChart.vue'
 import WordCountChart from '../components/WordCountChart.vue'
 import EnergyStressChart from '../components/EnergyStressChart.vue'
 import TodayHabitCompletion from '../components/TodayHabitCompletion.vue'
+import TodaySummary from '../components/TodaySummary.vue'
+import HabitTrendInsights from '../components/HabitTrendInsights.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
@@ -996,9 +1059,12 @@ const toast = useToast()
 const {
     quoteText,
     quoteAuthor,
+    quoteSource,
+    lastUpdated,
     isLoading: isQuoteLoading,
     error: quoteError,
-    initializeQuote
+    initializeQuote,
+    refreshQuote
 } = useDailyQuote()
 
 // Historical comparison for "Last Year Today" feature
@@ -1013,12 +1079,49 @@ const {
   lastYearDate
 } = useHistoricalComparison(today)
 
-const dailyQuote = computed(() => {
-    if (!quoteText.value) {
-        return ''
-    }
+const quotePlaceholderCopy = 'Capture your thoughts to unlock more daily inspiration.'
 
-    return quoteAuthor.value ? `“${quoteText.value}” — ${quoteAuthor.value}` : `“${quoteText.value}”`
+const formatRelativeTimeFromNow = (date: Date) => {
+    const diffMs = Date.now() - date.getTime()
+    if (diffMs <= 0) return 'just now'
+
+    const minutes = Math.round(diffMs / 60000)
+    if (minutes < 1) return 'just now'
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+
+    const hours = Math.round(minutes / 60)
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+
+    const days = Math.round(hours / 24)
+    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`
+
+    const weeks = Math.round(days / 7)
+    return `${weeks} week${weeks === 1 ? '' : 's'} ago`
+}
+
+const quoteSourceLabel = computed(() => {
+    switch (quoteSource.value) {
+        case 'remote':
+            return 'Fetched online'
+        case 'local':
+            return 'Local library'
+        case 'cache':
+            return 'Cached for today'
+        case 'fallback':
+            return 'Offline fallback'
+        default:
+            return 'Source pending'
+    }
+})
+
+const quoteUpdatedLabel = computed(() => {
+    if (!lastUpdated.value) return null
+    return formatRelativeTimeFromNow(lastUpdated.value)
+})
+
+const quoteUpdatedTitle = computed(() => {
+    if (!lastUpdated.value) return ''
+    return lastUpdated.value.toLocaleString()
 })
 
 interface EmotionDetails {
@@ -1063,11 +1166,47 @@ const isSearchPanelOpen = ref(false)
 const isBackupPanelOpen = ref(false)
 const activeTab = ref('dashboard')
 
+const isOverlayActive = computed(() => [
+    isTaskFormOpen.value,
+    isDaySummaryFormOpen.value,
+    isDetailedCalendarOpen.value,
+    isHabitPopupOpen.value,
+    isHabitModalOpen.value,
+    isSearchPanelOpen.value,
+    isBackupPanelOpen.value
+].some(Boolean))
+
+const previousOverflow = ref('')
+
+watch(isOverlayActive, value => {
+    if (typeof document === 'undefined') return
+
+    if (value) {
+        previousOverflow.value = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+    } else {
+        document.body.style.overflow = previousOverflow.value
+    }
+})
+
+onBeforeUnmount(() => {
+    if (typeof document === 'undefined') return
+    document.body.style.overflow = previousOverflow.value
+})
+
 const { containerRef: taskFormRef } = useModalFocus({
     initialFocus: '#task-description',
     returnFocus: true,
     onEscape: () => {
         isTaskFormOpen.value = false
+    }
+})
+
+const { containerRef: quickSummaryRef } = useModalFocus({
+    initialFocus: '#quick-summary-textarea',
+    returnFocus: true,
+    onEscape: () => {
+        isDaySummaryFormOpen.value = false
     }
 })
 
