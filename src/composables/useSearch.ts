@@ -21,15 +21,17 @@ export function useSearch() {
     // Text search
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase()
-      results = results.filter(summary => 
-        summary.summary.toLowerCase().includes(query) ||
-        summary.tags.some(tag => tag.toLowerCase().includes(query)) ||
-        summary.comfortZoneEntry?.toLowerCase().includes(query) ||
-        summary.customSections.some(section => 
-          section.title.toLowerCase().includes(query) ||
-          section.content.toLowerCase().includes(query)
-        )
-      )
+      results = results.filter(summary => {
+        const summaryText = summary.summary ? summary.summary.toLowerCase() : ''
+        const tagsMatch = (summary.tags || []).some(tag => tag.toLowerCase().includes(query))
+        const comfortZone = summary.comfortZoneEntry ? summary.comfortZoneEntry.toLowerCase() : ''
+        const sectionsMatch = (summary.customSections || []).some(section => {
+          const title = section.title ? section.title.toLowerCase() : ''
+          const content = section.content ? section.content.toLowerCase() : ''
+          return title.includes(query) || content.includes(query)
+        })
+        return summaryText.includes(query) || tagsMatch || comfortZone.includes(query) || sectionsMatch
+      })
     }
 
     // Date range filter
@@ -90,17 +92,50 @@ export function useSearch() {
     return Array.from(tagSet).sort()
   })
 
-  const searchStats = computed(() => ({
-    totalEntries: allSummaries.value.length,
-    filteredEntries: filteredSummaries.value.length,
-    totalWords: filteredSummaries.value.reduce((sum, summary) => 
-      sum + (summary.summary ? summary.summary.split(/\s+/).filter(word => word.length > 0).length : 0), 0
-    ),
-    dateRange: filteredSummaries.value.length > 0 ? {
-      earliest: filteredSummaries.value[filteredSummaries.value.length - 1]?.date,
-      latest: filteredSummaries.value[0]?.date
-    } : null
-  }))
+  const searchStats = computed(() => {
+    const filtered = filteredSummaries.value
+    const totalWords = filtered.reduce((sum, summary) => {
+      if (!summary.summary) return sum
+      return sum + summary.summary.split(/\s+/).filter(word => word.length > 0).length
+    }, 0)
+
+    const tagSet = new Set<string>()
+    filtered.forEach(summary => {
+      (summary.tags || []).forEach(tag => tagSet.add(tag))
+    })
+
+    let dateSpanDays = 0
+    let dateSpanLabel = '—'
+    let earliest: string | undefined
+    let latest: string | undefined
+
+    if (filtered.length > 0) {
+      earliest = filtered[filtered.length - 1]?.date
+      latest = filtered[0]?.date
+
+      const earliestDate = earliest ? new Date(earliest) : null
+      const latestDate = latest ? new Date(latest) : null
+
+      if (earliestDate && latestDate) {
+        earliestDate.setHours(0, 0, 0, 0)
+        latestDate.setHours(0, 0, 0, 0)
+        const diff = Math.abs(latestDate.getTime() - earliestDate.getTime())
+        dateSpanDays = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1
+        dateSpanLabel = dateSpanDays === 1 ? '1 day' : `${dateSpanDays} days`
+      }
+    }
+
+    return {
+      totalEntries: allSummaries.value.length,
+      filteredEntries: filtered.length,
+      totalWords,
+      dateRange: filtered.length > 0 ? { earliest, latest } : null,
+      tagCount: tagSet.size,
+      appliedTagCount: searchFilters.value.tags.length,
+      dateSpanDays,
+      dateSpanLabel
+    }
+  })
 
   return {
     searchQuery,

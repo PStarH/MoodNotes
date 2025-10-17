@@ -1,55 +1,75 @@
 <template>
-  <div class="search-panel glass-effect rounded-2xl p-6 warm-shadow-lg fade-in">
+  <div
+    ref="panelRef"
+    class="search-panel glass-effect rounded-2xl p-6 warm-shadow-lg fade-in"
+    role="dialog"
+    aria-labelledby="search-panel-title"
+    aria-modal="true"
+  >
     <!-- Search Header -->
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-[#4E3B2B] flex items-center">
-        <span class="mr-3">🔍</span>Search & Filter
+      <h2 id="search-panel-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center">
+        <span class="mr-3" aria-hidden="true">🔍</span>Search & Filter
       </h2>
-      <button @click="$emit('close')" 
-              class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all">
-        <X :size="24" />
+      <button
+        type="button"
+        id="search-panel-close"
+        @click="$emit('close')"
+        class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
+        aria-label="Close search panel"
+      >
+        <X :size="24" aria-hidden="true" />
       </button>
     </div>
 
     <!-- Search Input -->
     <div class="mb-6">
+      <label for="search-input" class="sr-only">Search diary entries</label>
       <div class="relative">
         <input
+          id="search-input"
           v-model="searchInput"
           @input="handleSearch"
           type="text"
           placeholder="Search your diary entries..."
           class="w-full px-4 py-3 pl-12 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+          aria-label="Search diary entries"
         />
-        <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#7D5A36]" :size="20" />
+        <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#7D5A36]" :size="20" aria-hidden="true" />
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" role="group" aria-label="Search filters">
       <!-- Date Range -->
       <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[#4E3B2B]">Date Range</label>
+        <label for="date-start" class="block text-sm font-semibold text-[#4E3B2B]">Date Range</label>
         <div class="space-y-2">
           <input
+            id="date-start"
             v-model="searchFilters.dateRange.start"
             type="date"
             class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+            aria-label="Start date"
           />
           <input
+            id="date-end"
             v-model="searchFilters.dateRange.end"
             type="date"
             class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+            aria-label="End date"
           />
         </div>
       </div>
 
       <!-- Mood Filter -->
       <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[#4E3B2B]">Mood</label>
+        <label for="mood-filter" class="block text-sm font-semibold text-[#4E3B2B]">Mood</label>
         <select
+          id="mood-filter"
           v-model="searchFilters.mood"
           class="themed-select w-full text-[#4E3B2B]"
+          aria-label="Filter by mood"
         >
           <option value="">All Moods</option>
           <option value="happy">😄 Happy</option>
@@ -62,70 +82,131 @@
 
       <!-- Tags Filter -->
       <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[#4E3B2B]">Tags</label>
-        <div class="max-h-32 overflow-y-auto custom-scrollbar">
-          <div v-for="tag in availableTags" :key="tag" class="flex items-center space-x-2 py-1">
+        <label id="tags-filter-label" class="block text-sm font-semibold text-[#4E3B2B]">Tags</label>
+        <div class="space-y-3" role="group" aria-labelledby="tags-filter-label">
+          <div class="relative">
             <input
-              type="checkbox"
-              :id="`tag-${tag}`"
-              :value="tag"
-              v-model="searchFilters.tags"
-              class="text-[#7D5A36] rounded"
+              id="tags-autocomplete"
+              v-model="tagQuery"
+              @keydown.enter.prevent="handleTagSubmit"
+              @keydown.tab="handleTagSubmit"
+              type="text"
+              placeholder="Type to find tags..."
+              class="w-full px-4 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-expanded="matchingTags.length > 0"
+              aria-controls="tag-suggestion-list"
+              aria-describedby="tag-helper-text"
+              autocomplete="off"
             />
-            <label :for="`tag-${tag}`" class="text-sm text-[#4E3B2B] cursor-pointer">{{ tag }}</label>
+            <ul
+              v-if="matchingTags.length > 0"
+              id="tag-suggestion-list"
+              class="absolute left-0 right-0 mt-2 max-h-48 overflow-y-auto glass-effect rounded-xl border border-[#D3C9A6]/70 shadow-lg z-10"
+              role="listbox"
+            >
+              <li
+                v-for="tag in matchingTags"
+                :key="tag"
+                role="option"
+              >
+                <button
+                  type="button"
+                  class="w-full text-left px-4 py-2 text-sm text-[#4E3B2B] hover:bg-[#7D5A36]/10 transition-colors"
+                  @mousedown.prevent="handleTagSelection(tag)"
+                  @click.prevent="handleTagSelection(tag)"
+                  :aria-label="`Add tag ${tag}`"
+                >
+                  #{{ tag }}
+                </button>
+              </li>
+            </ul>
+            <p v-else-if="tagQuery" class="absolute left-0 right-0 mt-2 px-4 py-2 text-xs text-[#7D5A36]/80 bg-[#FAF3E0] rounded-lg shadow" role="status">
+              No matching tags yet.
+            </p>
           </div>
+          <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">Press Enter to add the first suggestion or pick from the list.</p>
+          <div v-if="searchFilters.tags.length > 0" class="flex flex-wrap gap-2">
+            <span
+              v-for="tag in searchFilters.tags"
+              :key="tag"
+              class="flex items-center gap-2 px-3 py-1.5 bg-[#7D5A36]/15 text-[#7D5A36] rounded-full text-xs font-medium"
+            >
+              #{{ tag }}
+              <button
+                type="button"
+                class="text-[#7D5A36] hover:text-[#4E3B2B]"
+                @click="removeTag(tag)"
+                :aria-label="`Remove tag ${tag}`"
+              >
+                <X :size="14" aria-hidden="true" />
+              </button>
+            </span>
+          </div>
+          <div v-else class="text-xs text-[#7D5A36]/70">No tag filters applied.</div>
+          <p class="text-xs text-[#7D5A36]/70" aria-live="polite">Applied tags: {{ searchFilters.tags.length }}</p>
         </div>
       </div>
     </div>
 
     <!-- Additional Filters -->
-    <div class="flex flex-wrap gap-4 mb-6">
+    <div class="flex flex-wrap gap-4 mb-6" role="group" aria-label="Additional filters">
       <label class="flex items-center space-x-2 cursor-pointer">
         <input
+          id="has-media-filter"
           type="checkbox"
           v-model="searchFilters.hasMedia"
           class="text-[#7D5A36] rounded"
+          aria-label="Filter entries with media"
         />
         <span class="text-sm text-[#4E3B2B] font-medium">Has Media</span>
       </label>
     </div>
 
     <!-- Search Stats -->
-    <div class="glass-effect p-4 rounded-xl mb-6 warm-shadow">
-      <h3 class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
-        <span class="mr-2">📊</span>Search Results
+    <div class="glass-effect p-4 rounded-xl mb-6 warm-shadow" role="region" aria-labelledby="search-stats-title" aria-live="polite">
+      <h3 id="search-stats-title" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
+        <span class="mr-2" aria-hidden="true">📊</span>Search Results
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div>
-          <p class="text-2xl font-bold text-[#7D5A36]">{{ searchStats.filteredEntries }}</p>
+          <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Number of entries found">{{ searchStats.filteredEntries }}</p>
           <p class="text-sm text-[#4E3B2B]">Entries Found</p>
         </div>
         <div>
-          <p class="text-2xl font-bold text-[#7D5A36]">{{ searchStats.totalWords }}</p>
+          <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Total word count">{{ searchStats.totalWords }}</p>
           <p class="text-sm text-[#4E3B2B]">Total Words</p>
         </div>
-        <div v-if="searchStats.dateRange">
-          <p class="text-sm font-bold text-[#7D5A36]">{{ formatDate(searchStats.dateRange.earliest) }}</p>
-          <p class="text-sm text-[#4E3B2B]">Earliest</p>
+        <div>
+          <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Unique tag count">{{ searchStats.tagCount }}</p>
+          <p class="text-sm text-[#4E3B2B]">Unique Tags</p>
         </div>
-        <div v-if="searchStats.dateRange">
-          <p class="text-sm font-bold text-[#7D5A36]">{{ formatDate(searchStats.dateRange.latest) }}</p>
-          <p class="text-sm text-[#4E3B2B]">Latest</p>
+        <div>
+          <p class="text-sm font-bold text-[#7D5A36]" aria-label="Date range span">{{ searchStats.dateRange ? searchStats.dateSpanLabel : '—' }}</p>
+          <p class="text-sm text-[#4E3B2B]">Time Span</p>
+          <p v-if="searchStats.dateRange" class="text-xs text-[#7D5A36]/80 mt-1" aria-label="Date range details">
+            {{ formatDate(searchStats.dateRange.earliest) }} → {{ formatDate(searchStats.dateRange.latest) }}
+          </p>
         </div>
       </div>
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex justify-end space-x-3">
+    <div class="flex justify-end space-x-3" role="group" aria-label="Search actions">
       <button
-        @click="clearFilters"
+        type="button"
+        @click="handleClearFilters"
         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-all duration-200 font-semibold"
+        aria-label="Clear all search filters"
       >
         Clear All
       </button>
       <button
+        type="button"
         @click="$emit('apply-search', { query: searchQuery, filters: searchFilters })"
         class="px-6 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow"
+        aria-label="Apply search filters"
       >
         Apply Search
       </button>
@@ -133,44 +214,69 @@
 
     <!-- Results Preview -->
     <div v-if="filteredSummaries.length > 0" class="mt-6">
-      <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4 flex items-center">
-        <span class="mr-2">📋</span>Preview Results ({{ Math.min(5, filteredSummaries.length) }} of {{ filteredSummaries.length }})
+      <h3 id="results-preview-title" class="text-lg font-semibold text-[#4E3B2B] mb-4 flex items-center">
+        <span class="mr-2" aria-hidden="true">📋</span>Preview Results ({{ filteredSummaries.length }})
       </h3>
-      <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
-        <div
-          v-for="summary in filteredSummaries.slice(0, 5)"
-          :key="summary.date"
-          class="glass-effect p-4 rounded-lg hover-lift transition-all duration-200 cursor-pointer"
-          @click="$emit('select-entry', summary)"
-        >
-          <div class="flex justify-between items-start mb-2">
-            <span class="font-semibold text-[#4E3B2B]">{{ formatDate(summary.date) }}</span>
-            <span class="text-2xl">{{ getMoodEmoji(summary.mood) }}</span>
-          </div>
-          <p class="text-sm text-[#7D5A36] line-clamp-2">{{ getPreviewText(summary.summary) }}</p>
-          <div v-if="summary.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
-            <span
-              v-for="tag in summary.tags.slice(0, 3)"
-              :key="tag"
-              class="px-2 py-1 bg-[#7D5A36] bg-opacity-20 text-[#7D5A36] text-xs rounded-full"
+      <DynamicScroller
+        :items="filteredSummaries"
+        :min-item-size="120"
+        class="max-h-80 custom-scrollbar"
+        key-field="date"
+        :buffer="200"
+        role="list"
+        aria-labelledby="results-preview-title"
+      >
+        <template #default="{ item: summary, index, active }">
+          <DynamicScrollerItem
+            :item="summary"
+            :active="active"
+            :size-dependencies="[
+              summary.summary,
+              summary.tags?.length
+            ]"
+            :data-index="index"
+            class="mb-3"
+          >
+            <div
+              class="glass-effect p-4 rounded-lg hover-lift transition-all duration-200 cursor-pointer"
+              role="listitem"
+              tabindex="0"
+              @click="$emit('select-entry', summary)"
+              @keydown.enter="$emit('select-entry', summary)"
+              @keydown.space.prevent="$emit('select-entry', summary)"
+              :aria-label="`Entry from ${formatDate(summary.date)} with ${summary.mood} mood`"
             >
-              {{ tag }}
-            </span>
-            <span v-if="summary.tags.length > 3" class="text-xs text-[#7D5A36]">
-              +{{ summary.tags.length - 3 }} more
-            </span>
-          </div>
-        </div>
-      </div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-semibold text-[#4E3B2B]">{{ formatDate(summary.date) }}</span>
+                <span class="text-2xl" aria-hidden="true">{{ getMoodEmoji(summary.mood) }}</span>
+              </div>
+              <p class="text-sm text-[#7D5A36] line-clamp-2">{{ getPreviewText(summary.summary) }}</p>
+              <div v-if="summary.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
+                <span
+                  v-for="tag in summary.tags.slice(0, 3)"
+                  :key="tag"
+                  class="px-2 py-1 bg-[#7D5A36] bg-opacity-20 text-[#7D5A36] text-xs rounded-full"
+                  :aria-label="`Tag: ${tag}`"
+                >
+                  {{ tag }}
+                </span>
+                <span v-if="summary.tags.length > 3" class="text-xs text-[#7D5A36]">
+                  +{{ summary.tags.length - 3 }} more
+                </span>
+              </div>
+            </div>
+          </DynamicScrollerItem>
+        </template>
+      </DynamicScroller>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { X, Search } from 'lucide-vue-next'
 import { useSearch } from '@/composables/useSearch'
-import { DaySummary } from '@/store/types'
+import { useModalFocus } from '@/composables/useFocusTrap'
 
 const emit = defineEmits(['close', 'apply-search', 'select-entry'])
 
@@ -184,14 +290,66 @@ const {
   searchStats
 } = useSearch()
 
+const { containerRef: panelRef } = useModalFocus({ initialFocus: '#search-input', returnFocus: true, onEscape: () => emit('close') })
 const searchInput = ref('')
+const tagQuery = ref('')
+
+const matchingTags = computed(() => {
+  const query = tagQuery.value.trim().toLowerCase()
+  const exclude = new Set(searchFilters.value.tags)
+
+  if (!query) {
+    return []
+  }
+
+  return availableTags.value
+    .filter(tag => !exclude.has(tag))
+    .filter(tag => tag.toLowerCase().includes(query))
+    .slice(0, 8)
+})
 
 const handleSearch = (event: Event) => {
   const target = event.target as HTMLInputElement
   debouncedSearch(target.value)
 }
 
-const formatDate = (dateString: string) => {
+const resolveTagName = (input: string) => {
+  const normalized = input.trim().toLowerCase()
+  return availableTags.value.find(tag => tag.toLowerCase() === normalized) || null
+}
+
+const addTagFilter = (tag: string) => {
+  if (!tag) return
+  if (searchFilters.value.tags.includes(tag)) return
+  searchFilters.value.tags = [...searchFilters.value.tags, tag]
+}
+
+const handleTagSelection = (tag: string) => {
+  addTagFilter(tag)
+  tagQuery.value = ''
+}
+
+const handleTagSubmit = () => {
+  if (!tagQuery.value.trim()) return
+  const matched = resolveTagName(tagQuery.value) || matchingTags.value[0]
+  if (matched) {
+    addTagFilter(matched)
+  }
+  tagQuery.value = ''
+}
+
+const removeTag = (tag: string) => {
+  searchFilters.value.tags = searchFilters.value.tags.filter(existing => existing !== tag)
+}
+
+const handleClearFilters = () => {
+  clearFilters()
+  tagQuery.value = ''
+  searchInput.value = ''
+}
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '—'
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -215,11 +373,6 @@ const getPreviewText = (text: string) => {
   const plainText = text.replace(/<[^>]*>/g, '').trim()
   return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText
 }
-
-// Watch for filter changes and apply them automatically
-watch([searchFilters], () => {
-  // Filters are already reactive through the useSearch composable
-}, { deep: true })
 </script>
 
 <style scoped>

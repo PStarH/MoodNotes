@@ -101,9 +101,14 @@
                                     Search Entries
                                 </button>
                             </div>
-                            <div class="glass-effect px-4 py-3 rounded-xl text-[#7D5A36] italic flex items-start gap-3 border border-[#D3C9A6]/40">
-                                <span class="text-2xl">✨</span>
-                                <p class="text-sm sm:text-base leading-relaxed">"The only way to do great work is to love what you do." — Steve Jobs</p>
+                            <div class="glass-effect px-4 py-3 rounded-xl text-[#7D5A36] italic flex items-start gap-3 border border-[#D3C9A6]/40" role="note" aria-live="polite">
+                                <span class="text-2xl" aria-hidden="true">✨</span>
+                                <p class="text-sm sm:text-base leading-relaxed">
+                                    <span v-if="isQuoteLoading">Loading today's inspiration...</span>
+                                    <span v-else-if="dailyQuote">{{ dailyQuote }}</span>
+                                    <span v-else-if="quoteError">{{ quoteError }}</span>
+                                    <span v-else>Capture your thoughts to unlock more daily inspiration.</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -462,6 +467,11 @@
                         </button>
                     </div>
 
+                    <!-- Today's Habit Completion Module -->
+                    <div class="mb-6">
+                        <TodayHabitCompletion @manage-habits="isHabitPopupOpen = true" />
+                    </div>
+
                     <EmptyState
                         v-if="daySummaries.length === 0"
                         icon="📔"
@@ -472,99 +482,123 @@
                         @action="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
                     />
 
-                    <!-- Journal Entries Grid -->
-                    <div v-else class="space-y-4">
-                        <div
-                            v-for="summary in daySummaries.slice().reverse()"
-                            :key="summary.date"
-                            @click="selectedDate = summary.date; isDaySummaryFormOpen = true"
-                            class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group"
-                        >
-                            <!-- Entry Header -->
-                            <div class="bg-gradient-to-r from-[#7D5A36]/5 to-[#6B4A2E]/5 p-5 border-b border-[#D3C9A6]/30">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <span class="text-4xl">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
-                                            <div>
-                                                <h4 class="text-lg font-bold text-[#4E3B2B]">
-                                                    {{ new Date(summary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
-                                                </h4>
-                                                <p class="text-xs text-[#7D5A36]/70">{{ formatRelativeTime(summary.date) }}</p>
+                    <!-- Journal Entries Grid with Virtual Scrolling -->
+                    <DynamicScroller
+                        v-else
+                        :items="reversedDaySummaries"
+                        :min-item-size="250"
+                        class="space-y-4"
+                        key-field="date"
+                        :buffer="300"
+                    >
+                        <template #default="{ item: summary, index, active }">
+                            <DynamicScrollerItem
+                                :item="summary"
+                                :active="active"
+                                :size-dependencies="[
+                                    summary.summary,
+                                    summary.tags?.length,
+                                    summary.dailyCheck
+                                ]"
+                                :data-index="index"
+                                class="mb-4"
+                            >
+                                <div
+                                    @click="selectedDate = summary.date; isDaySummaryFormOpen = true"
+                                    @keydown.enter="selectedDate = summary.date; isDaySummaryFormOpen = true"
+                                    @keydown.space.prevent="selectedDate = summary.date; isDaySummaryFormOpen = true"
+                                    tabindex="0"
+                                    role="button"
+                                    :aria-label="`Journal entry from ${new Date(summary.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, mood: ${summary.mood || 'neutral'}`"
+                                    class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group"
+                                >
+                                    <!-- Entry Header -->
+                                    <div class="bg-gradient-to-r from-[#7D5A36]/5 to-[#6B4A2E]/5 p-5 border-b border-[#D3C9A6]/30">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-3 mb-2">
+                                                    <span class="text-4xl" aria-hidden="true">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                                                    <div>
+                                                        <h4 class="text-lg font-bold text-[#4E3B2B]">
+                                                            {{ new Date(summary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
+                                                        </h4>
+                                                        <p class="text-xs text-[#7D5A36]/70">{{ formatRelativeTime(summary.date) }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Entry Indicators -->
+                                            <div class="flex gap-2">
+                                                <span v-if="summary.media && summary.media.length > 0"
+                                                    class="px-2 py-1 bg-[#7D5A36]/10 rounded-lg text-xs text-[#7D5A36] flex items-center gap-1"
+                                                    :title="`${summary.media.length} media file(s)`">
+                                                    <Camera :size="14" aria-hidden="true" />
+                                                    {{ summary.media.length }}
+                                                </span>
+                                                <span v-if="summary.habits && summary.habits.length > 0"
+                                                    class="px-2 py-1 bg-green-500/10 rounded-lg text-xs text-green-700 flex items-center gap-1"
+                                                    :title="`${completedHabitCount(summary.habits)}/${summary.habits.length} habits completed`">
+                                                    ✓ {{ completedHabitCount(summary.habits) }}/{{ summary.habits.length }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Entry Indicators -->
-                                    <div class="flex gap-2">
-                                        <span v-if="summary.media && summary.media.length > 0"
-                                            class="px-2 py-1 bg-[#7D5A36]/10 rounded-lg text-xs text-[#7D5A36] flex items-center gap-1"
-                                            :title="`${summary.media.length} media file(s)`">
-                                            <Camera :size="14" />
-                                            {{ summary.media.length }}
-                                        </span>
-                                        <span v-if="summary.habits && summary.habits.length > 0"
-                                            class="px-2 py-1 bg-green-500/10 rounded-lg text-xs text-green-700 flex items-center gap-1"
-                                            :title="`${summary.habits.filter(h => h.completed).length}/${summary.habits.length} habits completed`">
-                                            ✓ {{ summary.habits.filter(h => h.completed).length }}/{{ summary.habits.length }}
-                                        </span>
+                                    <!-- Entry Content -->
+                                    <div class="p-5">
+                                        <p class="text-[#4E3B2B] text-base leading-relaxed line-clamp-4 mb-4">
+                                            {{ stripHtml(summary.summary || '') || 'No content written yet...' }}
+                                        </p>
+
+                                        <!-- Tags and Metadata -->
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 flex-1">
+                                                <span
+                                                    v-for="tag in summary.tags.slice(0, 5)"
+                                                    :key="tag"
+                                                    class="text-xs px-3 py-1.5 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full font-medium hover:bg-[#7D5A36]/20 transition-colors"
+                                                >
+                                                    #{{ tag }}
+                                                </span>
+                                                <span v-if="summary.tags.length > 5" class="text-xs px-3 py-1.5 text-[#7D5A36]/60">
+                                                    +{{ summary.tags.length - 5 }} more
+                                                </span>
+                                            </div>
+
+                                            <!-- Word Count -->
+                                            <div class="text-xs text-[#7D5A36]/60 font-medium">
+                                                {{ getWordCount(summary.summary) }} words
+                                            </div>
+                                        </div>
+
+                                        <!-- Daily Check Preview -->
+                                        <div v-if="summary.dailyCheck" class="mt-4 pt-4 border-t border-[#D3C9A6]/30 flex gap-4 text-xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <span aria-hidden="true">⚡</span>
+                                                <span class="text-[#7D5A36]/70">Energy:</span>
+                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.energyLevel }}/10</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span aria-hidden="true">😅</span>
+                                                <span class="text-[#7D5A36]/70">Stress:</span>
+                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.stressLevel }}/10</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span aria-hidden="true">🎨</span>
+                                                <span class="text-[#7D5A36]/70">Productivity:</span>
+                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.productivity }}/10</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hover Action Hint -->
+                                    <div class="bg-[#7D5A36]/5 px-5 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <p class="text-xs text-[#7D5A36] text-center font-medium">Click to view and edit this entry</p>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Entry Content -->
-                            <div class="p-5">
-                                <p class="text-[#4E3B2B] text-base leading-relaxed line-clamp-4 mb-4">
-                                    {{ stripHtml(summary.summary || '') || 'No content written yet...' }}
-                                </p>
-
-                                <!-- Tags and Metadata -->
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 flex-1">
-                                        <span
-                                            v-for="tag in summary.tags.slice(0, 5)"
-                                            :key="tag"
-                                            class="text-xs px-3 py-1.5 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full font-medium hover:bg-[#7D5A36]/20 transition-colors"
-                                        >
-                                            #{{ tag }}
-                                        </span>
-                                        <span v-if="summary.tags.length > 5" class="text-xs px-3 py-1.5 text-[#7D5A36]/60">
-                                            +{{ summary.tags.length - 5 }} more
-                                        </span>
-                                    </div>
-
-                                    <!-- Word Count -->
-                                    <div class="text-xs text-[#7D5A36]/60 font-medium">
-                                        {{ getWordCount(summary.summary) }} words
-                                    </div>
-                                </div>
-
-                                <!-- Daily Check Preview -->
-                                <div v-if="summary.dailyCheck" class="mt-4 pt-4 border-t border-[#D3C9A6]/30 flex gap-4 text-xs">
-                                    <div class="flex items-center gap-1.5">
-                                        <span>⚡</span>
-                                        <span class="text-[#7D5A36]/70">Energy:</span>
-                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.energyLevel }}/10</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span>😅</span>
-                                        <span class="text-[#7D5A36]/70">Stress:</span>
-                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.stressLevel }}/10</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span>🎨</span>
-                                        <span class="text-[#7D5A36]/70">Productivity:</span>
-                                        <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.productivity }}/10</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Hover Action Hint -->
-                            <div class="bg-[#7D5A36]/5 px-5 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <p class="text-xs text-[#7D5A36] text-center font-medium">Click to view and edit this entry</p>
-                            </div>
-                        </div>
-                    </div>
+                            </DynamicScrollerItem>
+                        </template>
+                    </DynamicScroller>
                 </div>
             </div>
 
@@ -661,19 +695,25 @@
         </div>
 
         <!-- Task Form Modal -->
-        <div v-if="isTaskFormOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
-            <div class="glass-effect max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto rounded-2xl p-8 warm-shadow-lg bounce-in">
+        <div v-if="isTaskFormOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
+            <div
+                ref="taskFormRef"
+                class="glass-effect max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto rounded-2xl p-8 warm-shadow-lg bounce-in"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="task-form-title"
+            >
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>Create Task</h2>
-                    <button @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all">
+                    <h2 id="task-form-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>Create Task</h2>
+                    <button type="button" @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all" aria-label="Close task form">
                         <X :size="24" />
                     </button>
                 </div>
 
                 <form @submit.prevent="handleSaveTask" class="space-y-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B]">Description</label>
-                        <textarea v-model="newTask.description"
+                        <label class="block text-sm font-semibold text-[#4E3B2B]" for="task-description">Description</label>
+                        <textarea id="task-description" v-model="newTask.description"
                             class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                             rows="3" placeholder="Take out the trash"></textarea>
                     </div>
@@ -683,15 +723,15 @@
                         <div class="grid grid-cols-3 gap-2">
                             <label v-for="priority in ['Lowest', 'Low', 'Normal', 'Medium', 'High', 'Highest']"
                                 :key="priority" class="flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-[#F0E9D2] transition-all">
-                                <input type="radio" :value="priority" v-model="newTask.priority" class="text-[#7D5A36]" />
+                                <input type="radio" :value="priority" v-model="newTask.priority" class="text-[#7D5A36]" name="task-priority" />
                                 <span class="text-sm text-[#4E3B2B] font-medium">{{ priority }}</span>
                             </label>
                         </div>
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B]">Due Date</label>
-                        <input v-model="newTask.dueDate" type="date"
+                        <label class="block text-sm font-semibold text-[#4E3B2B]" for="task-due-date">Due Date</label>
+                        <input id="task-due-date" v-model="newTask.dueDate" type="date"
                             class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all" />
                     </div>
 
@@ -706,21 +746,21 @@
         </div>
 
         <!-- Day Summary Form Modal -->
-        <div v-if="isDaySummaryFormOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6">
+        <div v-if="isDaySummaryFormOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="presentation">
+            <div class="bg-[#FAF3E0] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg p-6" role="dialog" aria-modal="true" aria-labelledby="quick-summary-title">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-[#4E3B2B]">Day Summary</h2>
-                    <button @click="isDaySummaryFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80">
+                    <h2 id="quick-summary-title" class="text-xl font-bold text-[#4E3B2B]">Day Summary</h2>
+                    <button type="button" @click="isDaySummaryFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close quick day summary">
                         <X :size="24" />
                     </button>
                 </div>
 
                 <form @submit.prevent="handleSaveDaySummary">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1">Summary for {{
+                        <label class="block text-sm font-medium text-[#4E3B2B] mb-1" for="quick-summary-textarea">Summary for {{
                             currentDate.toDateString()
                             }}</label>
-                        <textarea v-model="newDaySummary"
+                        <textarea id="quick-summary-textarea" v-model="newDaySummary"
                             class="w-full px-3 py-2 bg-[#F0E9D2] text-[#4E3B2B] border-[#D3C9A6] rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50"
                             rows="5" placeholder="Write your day summary here..."></textarea>
                     </div>
@@ -737,11 +777,18 @@
 
         <!-- Detailed Calendar Popup -->
         <div v-if="isDetailedCalendarOpen"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-[#FAF3E0] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6">
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            role="presentation">
+            <div
+                ref="detailedCalendarRef"
+                class="bg-[#FAF3E0] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="detailed-calendar-title"
+            >
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-[#4E3B2B]">Detailed Calendar</h2>
-                    <button @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80">
+                    <h2 id="detailed-calendar-title" class="text-xl font-bold text-[#4E3B2B]">Detailed Calendar</h2>
+                    <button id="detailed-calendar-close" type="button" @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close detailed calendar">
                         <X :size="24" />
                     </button>
                 </div>
@@ -793,11 +840,17 @@
         </div>
 
         <!-- Habit Popup -->
-        <div v-if="isHabitPopupOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-[#FAF3E0] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6">
+        <div v-if="isHabitPopupOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="presentation">
+            <div
+                ref="habitPopupRef"
+                class="bg-[#FAF3E0] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="habit-popup-title"
+            >
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-[#4E3B2B]">Habits</h2>
-                    <button @click="isHabitPopupOpen = false" class="text-[#7D5A36] hover:text-opacity-80">
+                    <h2 id="habit-popup-title" class="text-xl font-bold text-[#4E3B2B]">Habits</h2>
+                    <button id="habit-popup-close" type="button" @click="isHabitPopupOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close habits popup">
                         <X :size="24" />
                     </button>
                 </div>
@@ -857,23 +910,29 @@
         </div>
 
         <!-- Search Panel -->
-        <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+    <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
             <div class="max-w-6xl w-full mx-4">
                 <SearchPanel @close="isSearchPanelOpen = false" @select-entry="handleSelectEntry" />
             </div>
         </div>
 
         <!-- Backup Panel -->
-        <div v-if="isBackupPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+    <div v-if="isBackupPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
             <div class="max-w-4xl w-full mx-4">
                 <BackupPanel @close="isBackupPanelOpen = false" />
             </div>
         </div>
 
         <!-- Add/Edit Habit Modal -->
-        <div v-if="isHabitModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-[#FAF3E0] p-6 rounded-lg w-full max-w-md">
-                <h2 class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? 'Edit' : 'Add' }} Habit</h2>
+        <div v-if="isHabitModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="presentation">
+            <div
+                ref="habitModalRef"
+                class="bg-[#FAF3E0] p-6 rounded-lg w-full max-w-md"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="habit-modal-title"
+            >
+                <h2 id="habit-modal-title" class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? 'Edit' : 'Add' }} Habit</h2>
                 <form @submit.prevent="saveHabit">
                     <div class="mb-4">
                         <label for="habitName" class="block text-[#4E3B2B] mb-2">Habit Name</label>
@@ -921,16 +980,26 @@ import TabNavigation from '../components/TabNavigation.vue'
 import MoodTrendChart from '../components/MoodTrendChart.vue'
 import WordCountChart from '../components/WordCountChart.vue'
 import EnergyStressChart from '../components/EnergyStressChart.vue'
+import TodayHabitCompletion from '../components/TodayHabitCompletion.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
 import { useHistoricalComparison } from '@/composables/useHistoricalComparison'
-import type { Task, DaySummary as DaySummaryEntry, Habit, HabitStatus } from '@/store/types'
+import { useDailyQuote } from '@/composables/useDailyQuote'
+import { useModalFocus } from '@/composables/useFocusTrap'
+import type { Task, DaySummary as DaySummaryEntry, Habit, HabitStatus, DaySummaryHabit } from '@/store/types'
 
 const store = useStore()
 const { addShortcut } = useKeyboardShortcuts()
 const { filteredSummaries } = useSearch()
 const toast = useToast()
+const {
+    quoteText,
+    quoteAuthor,
+    isLoading: isQuoteLoading,
+    error: quoteError,
+    initializeQuote
+} = useDailyQuote()
 
 // Historical comparison for "Last Year Today" feature
 const today = ref(new Date())
@@ -943,6 +1012,14 @@ const {
   comparisonSummary,
   lastYearDate
 } = useHistoricalComparison(today)
+
+const dailyQuote = computed(() => {
+    if (!quoteText.value) {
+        return ''
+    }
+
+    return quoteAuthor.value ? `“${quoteText.value}” — ${quoteAuthor.value}` : `“${quoteText.value}”`
+})
 
 interface EmotionDetails {
     emoji: string
@@ -967,6 +1044,11 @@ const isHabitModalOpen = ref(false)
 const tasks = computed<Task[]>(() => store.state.tasks as Task[])
 const daySummaries = computed<DaySummaryEntry[]>(() => store.state.daySummaries as DaySummaryEntry[])
 const habits = computed<Habit[]>(() => store.state.habits as Habit[])
+
+// Reversed daySummaries for virtual scroller (avoids creating new array on each render)
+const reversedDaySummaries = computed<DaySummaryEntry[]>(() => {
+    return [...daySummaries.value].reverse()
+})
 const newTask = ref<{ description: string; priority: Task['priority']; dueDate: string }>({
     description: '',
     priority: 'Normal',
@@ -980,6 +1062,38 @@ const selectedDate = ref('')
 const isSearchPanelOpen = ref(false)
 const isBackupPanelOpen = ref(false)
 const activeTab = ref('dashboard')
+
+const { containerRef: taskFormRef } = useModalFocus({
+    initialFocus: '#task-description',
+    returnFocus: true,
+    onEscape: () => {
+        isTaskFormOpen.value = false
+    }
+})
+
+const { containerRef: detailedCalendarRef } = useModalFocus({
+    initialFocus: '#detailed-calendar-close',
+    returnFocus: true,
+    onEscape: () => {
+        isDetailedCalendarOpen.value = false
+    }
+})
+
+const { containerRef: habitPopupRef } = useModalFocus({
+    initialFocus: '#habit-popup-close',
+    returnFocus: true,
+    onEscape: () => {
+        isHabitPopupOpen.value = false
+    }
+})
+
+const { containerRef: habitModalRef } = useModalFocus({
+    initialFocus: '#habitName',
+    returnFocus: true,
+    onEscape: () => {
+        isHabitModalOpen.value = false
+    }
+})
 
 const toggleMonthlySummary = () => {
     isMonthlySummaryOpen.value = !isMonthlySummaryOpen.value
@@ -1102,6 +1216,10 @@ const getWordCount = (html: string): number => {
     if (!html) return 0
     const text = stripHtml(html)
     return text.split(/\s+/).filter(word => word.length > 0).length
+}
+
+const completedHabitCount = (habits: DaySummaryHabit[] = []) => {
+    return habits.filter(habit => habit?.completed).length
 }
 
 const currentDaySummary = computed<DaySummaryEntry | undefined>(() => {
@@ -1650,6 +1768,7 @@ const recentSparks = computed(() => {
 })
 
 onMounted(() => {
+    initializeQuote()
     store.dispatch('loadDaySummaries')
     store.dispatch('loadTasks')
     store.dispatch('loadHabits')
