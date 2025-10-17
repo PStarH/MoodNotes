@@ -38,6 +38,8 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
   const previouslyFocusedElement = ref<HTMLElement | null>(null)
   let isActive = false
   let storedTabIndex: string | null = null
+  let previousBodyOverflow: string = ''
+  let previousBodyPaddingRight: string = ''
 
   const {
     initialFocus,
@@ -156,6 +158,20 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
 
     previouslyFocusedElement.value = document.activeElement as HTMLElement | null
 
+    // Prevent background scrolling with fallback for scrollbar width
+    let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    // Fallback to typical scrollbar width if calculation fails or returns unexpected value
+    if (isNaN(scrollbarWidth) || scrollbarWidth < 0 || scrollbarWidth > 100) {
+      scrollbarWidth = 15
+    }
+    previousBodyOverflow = document.body.style.overflow
+    previousBodyPaddingRight = document.body.style.paddingRight
+
+    document.body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
     await nextTick()
 
     const container = containerRef.value
@@ -183,6 +199,10 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
 
     document.removeEventListener('keydown', handleKeyDown)
     document.removeEventListener('focusin', handleFocusIn, true)
+
+    // Restore body scroll
+    document.body.style.overflow = previousBodyOverflow
+    document.body.style.paddingRight = previousBodyPaddingRight
 
     const container = containerRef.value
     if (container) {
@@ -218,7 +238,7 @@ export function useModalFocus(options: FocusTrapOptions = {}) {
   const containerRef = ref<HTMLElement | null>(null)
   const focusTrap = useFocusTrap(containerRef, options)
 
-  watch(containerRef, (element, previousElement) => {
+  const stopWatch = watch(containerRef, (element, previousElement) => {
     if (element) {
       focusTrap.activate()
     } else if (previousElement) {
@@ -227,6 +247,7 @@ export function useModalFocus(options: FocusTrapOptions = {}) {
   })
 
   onBeforeUnmount(() => {
+    stopWatch()
     focusTrap.deactivate()
   })
 

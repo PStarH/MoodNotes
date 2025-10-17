@@ -83,7 +83,7 @@
                 <!-- Progress Bar -->
                 <div class="relative w-full h-3 bg-[#D3C9A6]/30 rounded-full overflow-hidden" role="progressbar" :aria-valuenow="Math.round((progress.processed / progress.total) * 100)" aria-valuemin="0" aria-valuemax="100" :aria-label="`Migration progress: ${progress.processed} of ${progress.total} files processed`">
                     <div
-                        class="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] transition-all duration-300"
+                        class="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] transition-all duration-300 progress-pulse"
                         :style="{ width: `${(progress.processed / progress.total) * 100}%` }"
                     ></div>
                 </div>
@@ -91,6 +91,13 @@
                 <div class="flex justify-between text-sm text-[#7D5A36]/80 mt-2">
                     <span>{{ progress.processed }} / {{ progress.total }} files</span>
                     <span>{{ Math.round((progress.processed / progress.total) * 100) }}%</span>
+                </div>
+
+                <!-- Estimated Time Remaining -->
+                <div v-if="estimatedTimeRemaining" class="mt-2 text-center">
+                    <p class="text-xs text-[#7D5A36]/70">
+                        ⏱️ Estimated time remaining: <span class="font-semibold">{{ estimatedTimeRemaining }}</span>
+                    </p>
                 </div>
             </div>
 
@@ -101,32 +108,67 @@
             </div>
 
             <!-- Detailed File List -->
-            <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto">
+            <div v-if="progress.files.length > 0" ref="fileListRef" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto scroll-smooth">
                 <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
                     <span aria-hidden="true">📋</span>
                     File Status
                 </h4>
-                <div class="space-y-2">
-                    <div
-                        v-for="(file, index) in progress.files"
-                        :key="index"
-                        class="flex items-center justify-between p-2 rounded-lg transition-colors"
-                        :class="{
-                            'bg-green-500/10': file.status === 'success',
-                            'bg-orange-500/10': file.status === 'failed',
-                            'bg-blue-500/10': file.status === 'migrating',
-                            'bg-gray-500/10': file.status === 'pending'
-                        }"
-                    >
-                        <div class="flex-1 min-w-0 mr-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-lg" aria-hidden="true">
-                                    {{ file.status === 'success' ? '✅' : file.status === 'failed' ? '❌' : file.status === 'migrating' ? '⏳' : '⏸️' }}
-                                </span>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-[#4E3B2B] truncate">{{ file.filename }}</p>
-                                    <p class="text-xs text-[#7D5A36]/70">{{ file.summaryDate }}</p>
-                                    <p v-if="file.error" class="text-xs text-red-600 mt-1">{{ file.error }}</p>
+
+                <!-- Pending/In-Progress Files -->
+                <div v-if="pendingFiles.length > 0" class="mb-4">
+                    <h5 class="text-sm font-semibold text-[#7D5A36]/80 mb-2">
+                        ⏳ In Progress ({{ pendingFiles.length }})
+                    </h5>
+                    <div class="space-y-2">
+                        <div
+                            v-for="(file, index) in pendingFiles"
+                            :key="'pending-' + index"
+                            class="flex items-center justify-between p-2 rounded-lg transition-all"
+                            :class="{
+                                'bg-blue-500/10 ring-2 ring-blue-500/30 animate-pulse-subtle active-migrating-file': file.status === 'migrating',
+                                'bg-gray-500/10': file.status === 'pending'
+                            }"
+                        >
+                            <div class="flex-1 min-w-0 mr-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg" aria-hidden="true">
+                                        {{ file.status === 'migrating' ? '⏳' : '⏸️' }}
+                                    </span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-[#4E3B2B] truncate">{{ file.filename }}</p>
+                                        <p class="text-xs text-[#7D5A36]/70">{{ file.summaryDate }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed Files -->
+                <div v-if="completedFiles.length > 0">
+                    <h5 class="text-sm font-semibold text-[#7D5A36]/80 mb-2">
+                        ✓ Completed ({{ completedFiles.length }})
+                    </h5>
+                    <div class="space-y-2">
+                        <div
+                            v-for="(file, index) in completedFiles"
+                            :key="'completed-' + index"
+                            class="flex items-center justify-between p-2 rounded-lg transition-colors"
+                            :class="{
+                                'bg-green-500/10': file.status === 'success',
+                                'bg-orange-500/10': file.status === 'failed'
+                            }"
+                        >
+                            <div class="flex-1 min-w-0 mr-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg" aria-hidden="true">
+                                        {{ file.status === 'success' ? '✅' : '❌' }}
+                                    </span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-[#4E3B2B] truncate">{{ file.filename }}</p>
+                                        <p class="text-xs text-[#7D5A36]/70">{{ file.summaryDate }}</p>
+                                        <p v-if="file.error" class="text-xs text-red-600 mt-1">{{ file.error }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -157,7 +199,7 @@
             </div>
 
             <!-- Detailed File List with Retry -->
-            <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto">
+            <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto scroll-smooth">
                 <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
                     <span aria-hidden="true">📋</span>
                     Migration Results
@@ -166,7 +208,7 @@
                     <div
                         v-for="(file, index) in progress.files"
                         :key="index"
-                        class="flex items-center justify-between p-2 rounded-lg transition-colors"
+                        class="flex items-center justify-between p-2 rounded-lg transition-all"
                         :class="{
                             'bg-green-500/10': file.status === 'success',
                             'bg-orange-500/10': file.status === 'failed'
@@ -187,9 +229,11 @@
                         <button
                             v-if="file.status === 'failed'"
                             @click="handleRetry(file)"
-                            class="px-3 py-1 bg-[#7D5A36] text-white text-xs rounded-lg hover:bg-[#6B4A2E] transition-colors"
+                            class="px-3 py-2 bg-[#7D5A36] text-white text-xs rounded-lg hover:bg-[#6B4A2E] transition-all hover-lift flex items-center gap-1.5 font-semibold warm-shadow"
                             aria-label="Retry migration for this file"
+                            title="Retry this file"
                         >
+                            <span aria-hidden="true">🔄</span>
                             Retry
                         </button>
                     </div>
@@ -231,18 +275,60 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useDataMigration } from '@/composables/useDataMigration'
 import type { MigrationFileInfo } from '@/composables/useDataMigration'
 
 const { progress, migrateAllData, needsMigration, scanForDataUrls, resetProgress, retryFile } = useDataMigration()
 
+// Track start time and calculate ETA
+const migrationStartTime = ref<number>(0)
+const estimatedTimeRemaining = computed(() => {
+    if (progress.value.status !== 'running' || progress.value.processed === 0) return null
+
+    const elapsed = Date.now() - migrationStartTime.value
+    const avgTimePerFile = elapsed / progress.value.processed
+    const remaining = progress.value.total - progress.value.processed
+    const estimatedMs = avgTimePerFile * remaining
+
+    if (estimatedMs < 1000) return 'Less than a second'
+    if (estimatedMs < 60000) return `About ${Math.ceil(estimatedMs / 1000)} seconds`
+    return `About ${Math.ceil(estimatedMs / 60000)} minute${Math.ceil(estimatedMs / 60000) > 1 ? 's' : ''}`
+})
+
+// Group files by status
+const pendingFiles = computed(() =>
+    progress.value.files.filter(f => f.status === 'pending' || f.status === 'migrating')
+)
+const completedFiles = computed(() =>
+    progress.value.files.filter(f => f.status === 'success' || f.status === 'failed')
+)
+
+// Refs for auto-scroll
+const fileListRef = ref<HTMLElement | null>(null)
+
+// Watch for active file changes and scroll to it
+const stopWatch = watch(() => progress.value.files.find(f => f.status === 'migrating'), async (activeFile) => {
+    if (activeFile && fileListRef.value) {
+        await nextTick()
+        const activeElement = fileListRef.value.querySelector('.active-migrating-file')
+        activeElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+})
+
+onBeforeUnmount(() => {
+    stopWatch()
+})
+
 const startMigration = async () => {
+    migrationStartTime.value = Date.now()
     await migrateAllData()
 }
 
 const handleRetry = async (fileInfo: MigrationFileInfo) => {
     await retryFile(fileInfo)
 }
+
 </script>
 
 <style scoped>
@@ -257,5 +343,37 @@ const handleRetry = async (fileInfo: MigrationFileInfo) => {
 
 .animate-spin {
     animation: spin 1s linear infinite;
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.95;
+        transform: scale(1.01);
+    }
+}
+
+.animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes progress-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+.progress-pulse {
+    animation: progress-pulse 1.5s ease-in-out infinite;
+}
+
+.scroll-smooth {
+    scroll-behavior: smooth;
 }
 </style>

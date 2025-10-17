@@ -17,15 +17,18 @@
     </div>
 
     <!-- No Habits State -->
-    <div v-if="habits.length === 0" class="text-center py-12">
-      <p class="text-4xl mb-3">🎯</p>
-      <p class="text-lg font-semibold text-[#4E3B2B] mb-2">Start Tracking Your Habits</p>
-      <p class="text-sm text-[#7D5A36]/80 mb-4">Build consistency and see your progress over time</p>
+    <div v-if="habits.length === 0" class="text-center py-12 px-6 rounded-xl bg-gradient-to-br from-[#FAF3E0] to-[#F0E9D2] border-2 border-dashed border-[#D3C9A6]">
+      <p class="text-5xl mb-4">🎯</p>
+      <p class="text-xl font-bold text-[#4E3B2B] mb-2">Start Building Better Habits</p>
+      <p class="text-sm text-[#7D5A36] mb-4 max-w-md mx-auto">
+        Track your daily routines, build consistency, and watch your progress grow over time. Small steps lead to big changes!
+      </p>
       <button
         @click="$emit('manage-habits')"
-        class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl font-semibold hover-lift transition-all duration-200 warm-shadow"
+        class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl font-semibold hover-lift transition-all duration-200 warm-shadow-strong inline-flex items-center gap-2"
       >
-        Add First Habit
+        <span>➕</span>
+        Add Your First Habit
       </button>
     </div>
 
@@ -34,19 +37,19 @@
       <!-- Overview Stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <!-- Total Habits -->
-        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200" style="border-left: 4px solid #10b981">
+        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #10b981">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]/70">Active Habits</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">Active Habits</span>
             <span class="text-3xl">🎯</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ habits.length }}</p>
-          <p class="text-xs text-[#7D5A36]/80">{{ completedTodayCount }} completed today</p>
+          <p class="text-xs text-[#7D5A36]">{{ completedTodayCount }} completed today</p>
         </div>
 
         <!-- Average Completion Rate -->
-        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200" style="border-left: 4px solid #3b82f6">
+        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #3b82f6">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]/70">This Week</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">This Week</span>
             <span class="text-3xl">📊</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ weeklyCompletionRate }}%</p>
@@ -61,13 +64,13 @@
         </div>
 
         <!-- Best Streak -->
-        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200" style="border-left: 4px solid #f59e0b">
+        <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #f59e0b">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]/70">Best Streak</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">Best Streak</span>
             <span class="text-3xl">🔥</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ longestStreak }}</p>
-          <p class="text-xs text-[#7D5A36]/80">{{ longestStreakHabit || 'Keep going!' }}</p>
+          <p class="text-xs text-[#7D5A36]">{{ longestStreakHabit || 'Keep going!' }}</p>
         </div>
       </div>
 
@@ -79,21 +82,22 @@
         </h3>
 
         <div
-          v-for="habit in habitsWithStats"
+          v-for="(habit, index) in habitsWithStats"
           :key="habit.id"
-          class="glass-effect p-5 rounded-xl hover-lift transition-all duration-200"
+          class="habit-card glass-effect p-5 rounded-xl hover-lift transition-all duration-300 warm-shadow-card"
+          :style="{ animationDelay: `${index * 0.05}s` }"
         >
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
               <h4 class="text-lg font-semibold text-[#4E3B2B] mb-1">{{ habit.name }}</h4>
-              <p v-if="habit.description" class="text-sm text-[#7D5A36]/80">{{ habit.description }}</p>
+              <p v-if="habit.description" class="text-sm text-[#7D5A36]">{{ habit.description }}</p>
             </div>
             <div class="text-right">
               <div class="flex items-center gap-2 mb-1">
                 <span class="text-3xl">🔥</span>
                 <div>
                   <p class="text-2xl font-bold text-[#4E3B2B]">{{ habit.currentStreak }}</p>
-                  <p class="text-xs text-[#7D5A36]/70">current streak</p>
+                  <p class="text-xs text-[#7D5A36]">current streak</p>
                 </div>
               </div>
             </div>
@@ -101,32 +105,32 @@
 
           <!-- Stats Grid -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg">
-              <p class="text-sm text-[#7D5A36]/70 mb-1">This Week</p>
+            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">This Week</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.weeklyRate }}%</p>
             </div>
-            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg">
-              <p class="text-sm text-[#7D5A36]/70 mb-1">This Month</p>
+            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">This Month</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.monthlyRate }}%</p>
             </div>
-            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg">
-              <p class="text-sm text-[#7D5A36]/70 mb-1">Best Streak</p>
+            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">Best Streak</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.longestStreak }}</p>
             </div>
-            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg">
-              <p class="text-sm text-[#7D5A36]/70 mb-1">Total Days</p>
+            <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">Total Days</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.totalCompletions }}</p>
             </div>
           </div>
 
           <!-- Weekly Trend Visualization -->
           <div class="mb-3">
-            <p class="text-xs font-semibold text-[#7D5A36]/70 uppercase tracking-wide mb-2">Last 7 Days</p>
+            <p class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide mb-2">Last 7 Days</p>
             <div class="flex items-center gap-2">
               <div
                 v-for="(day, index) in habit.last7Days"
                 :key="index"
-                class="flex-1 h-10 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                class="flex-1 h-10 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110"
                 :class="getDayStatusClass(day)"
                 :title="day.label"
               >
@@ -136,15 +140,15 @@
               </div>
             </div>
             <div class="flex justify-between mt-1">
-              <span class="text-xs text-[#7D5A36]/60">7 days ago</span>
-              <span class="text-xs text-[#7D5A36]/60">Today</span>
+              <span class="text-xs text-[#7D5A36]/70">7 days ago</span>
+              <span class="text-xs text-[#7D5A36]/70">Today</span>
             </div>
           </div>
 
           <!-- Completion Rate Bar -->
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-[#7D5A36]/70 uppercase tracking-wide">All-Time Rate</span>
+              <span class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide">All-Time Rate</span>
               <span class="text-sm font-semibold text-[#4E3B2B]">{{ habit.allTimeRate }}%</span>
             </div>
             <div class="h-3 bg-[#F0E9D2] rounded-full overflow-hidden">
@@ -169,7 +173,8 @@ const emit = defineEmits(['manage-habits'])
 const store = useStore()
 
 const habits = computed<Habit[]>(() => store.state.habits || [])
-const today = new Date().toISOString().split('T')[0]
+// Get today's date - reactive to handle date changes
+const today = computed(() => new Date().toISOString().split('T')[0])
 
 // Helper: Get date X days ago
 const getDateXDaysAgo = (days: number): string => {
@@ -262,7 +267,7 @@ const calculateLongestStreak = (statuses: HabitStatus[] | undefined): number => 
 // Computed: Habits with detailed statistics
 const habitsWithStats = computed(() => {
   return habits.value.map(habit => {
-    const todayStatus = habit.statuses?.find(s => s.date === today)
+    const todayStatus = habit.statuses?.find(s => s.date === today.value)
     const weekStart = getDateXDaysAgo(6)
     const monthStart = getDateXDaysAgo(29)
 
@@ -282,8 +287,8 @@ const habitsWithStats = computed(() => {
       completedToday: todayStatus?.status === 'did',
       currentStreak: calculateCurrentStreak(habit.statuses),
       longestStreak: calculateLongestStreak(habit.statuses),
-      weeklyRate: calculateCompletionRate(habit.statuses, weekStart, today),
-      monthlyRate: calculateCompletionRate(habit.statuses, monthStart, today),
+      weeklyRate: calculateCompletionRate(habit.statuses, weekStart, today.value),
+      monthlyRate: calculateCompletionRate(habit.statuses, monthStart, today.value),
       allTimeRate: habit.statuses && habit.statuses.length > 0
         ? Math.round((habit.statuses.filter(s => s.status === 'did').length / habit.statuses.length) * 100)
         : 0,
@@ -335,6 +340,19 @@ const getDayStatusClass = (day: any) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.warm-shadow-card {
+  box-shadow: 0 2px 8px rgba(125, 90, 54, 0.1);
+}
+
+.warm-shadow-strong {
+  box-shadow: 0 4px 12px rgba(125, 90, 54, 0.2);
+}
+
+.habit-card {
+  animation: slide-up 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
 .stat-card::before {
   content: '';
   position: absolute;
@@ -357,6 +375,17 @@ const getDayStatusClass = (day: any) => {
   from {
     opacity: 0;
     transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
     opacity: 1;

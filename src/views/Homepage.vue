@@ -680,70 +680,14 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Day Summary Modal -->
-            <DaySummary 
-                v-if="isDaySummaryFormOpen" 
-                :selectedDate="selectedDate" 
-                @close="closeDaySummary" 
-            />
-            <div v-else class="mb-6 fade-in">
-                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">📖</span>Day Summary</h3>
-                <button @click="isDaySummaryFormOpen = true"
-                    class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
-                    <FileText color="#7D5A36" :size="24" class="mr-3" />
-                    <span class="text-[#4E3B2B] font-medium">Add or edit day summary</span>
-                </button>
-            </div>
-
-            <!-- Spark Section -->
-            <div class="mb-6 slide-in">
-                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">⚡</span>Today's Spark</h3>
-                <div class="flex items-center mb-4">
-                    <input v-model="newSpark" type="text" placeholder="Add a new spark..."
-                        class="flex-1 glass-effect border-0 rounded-lg px-4 py-3 mr-3 text-[#4E3B2B] focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all" />
-                    <button @click="handleAddSpark" class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white p-3 rounded-lg hover-lift transition-all duration-200 warm-shadow">
-                        <Plus :size="20" />
-                    </button>
-                </div>
-                <div class="flex gap-4">
-                    <button class="glass-effect px-4 py-3 rounded-lg border-0 cursor-pointer flex flex-col items-center hover-lift transition-all duration-200 warm-shadow">
-                        <Camera color="#7D5A36" :size="24" />
-                        <span class="text-[#4E3B2B] mt-2 text-sm font-medium">Photo</span>
-                    </button>
-                    <button class="glass-effect px-4 py-3 rounded-lg border-0 cursor-pointer flex flex-col items-center hover-lift transition-all duration-200 warm-shadow">
-                        <Video color="#7D5A36" :size="24" />
-                        <span class="text-[#4E3B2B] mt-2 text-sm font-medium">Video</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- To-Do List -->
-            <div class="bounce-in">
-                <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>To-Do List</h3>
-                <button @click="isTaskFormOpen = true"
-                    class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
-                    <Plus color="#7D5A36" :size="24" class="mr-3" />
-                    <span class="text-[#4E3B2B] font-medium">Add new task</span>
-                </button>
-
-                <EmptyState
-                    v-if="tasks.length === 0"
-                    icon="📋"
-                    title="No tasks yet"
-                    description="Start organizing your day by adding your first task. Set priorities and due dates to stay on track."
-                    actionText="Add Task"
-                    :actionIcon="Plus"
-                    @action="isTaskFormOpen = true"
-                />
-
-                <div v-else v-for="(task, index) in tasks" :key="index"
-                    class="glass-effect p-4 rounded-lg mb-3 flex justify-between items-center hover-lift transition-all duration-200 warm-shadow">
-                    <span class="text-[#4E3B2B] font-medium">{{ task.description }}</span>
-                    <span class="text-[#7D5A36] text-sm font-semibold px-2 py-1 bg-[#7D5A36] bg-opacity-10 rounded-full">{{ task.priority }}</span>
-                </div>
-            </div>
         </div>
+
+        <!-- Day Summary Modal -->
+        <DaySummary
+            v-if="isDaySummaryFormOpen"
+            :selectedDate="selectedDate"
+            @close="closeDaySummary"
+        />
 
         <!-- Task Form Modal -->
         <div v-if="isTaskFormOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
@@ -770,12 +714,41 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B]">Priority</label>
-                        <div class="grid grid-cols-3 gap-2">
+                        <label class="block text-sm font-semibold text-[#4E3B2B] mb-3">Priority</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <label v-for="priority in ['Lowest', 'Low', 'Normal', 'Medium', 'High', 'Highest']"
-                                :key="priority" class="flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-[#F0E9D2] transition-all">
-                                <input type="radio" :value="priority" v-model="newTask.priority" class="text-[#7D5A36]" name="task-priority" />
-                                <span class="text-sm text-[#4E3B2B] font-medium">{{ priority }}</span>
+                                :key="priority"
+                                class="relative flex items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border-2"
+                                :class="newTask.priority === priority
+                                    ? 'border-[#7D5A36] bg-gradient-to-br from-[#7D5A36]/10 to-[#6B4A2E]/10 warm-shadow scale-105'
+                                    : 'border-[#D3C9A6]/40 glass-effect hover:border-[#7D5A36]/50 hover:bg-[#F0E9D2]/50'"
+                            >
+                                <input
+                                    type="radio"
+                                    :value="priority"
+                                    v-model="newTask.priority"
+                                    class="sr-only"
+                                    name="task-priority"
+                                />
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="text-lg" :class="newTask.priority === priority ? 'scale-110' : ''">
+                                        {{ getPriorityIcon(priority) }}
+                                    </span>
+                                    <span
+                                        class="text-sm font-semibold transition-colors"
+                                        :class="newTask.priority === priority ? 'text-[#7D5A36]' : 'text-[#4E3B2B]'"
+                                    >
+                                        {{ priority }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="newTask.priority === priority"
+                                    class="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#7D5A36] flex items-center justify-center"
+                                >
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
                             </label>
                         </div>
                     </div>
@@ -1543,6 +1516,18 @@ const handleSaveTask = () => {
     toast.success('Task added successfully!', 'Task Created')
     newTask.value = { description: '', priority: 'Normal', dueDate: '' }
     isTaskFormOpen.value = false
+}
+
+const getPriorityIcon = (priority: string): string => {
+    const icons: Record<string, string> = {
+        'Lowest': '⬇️',
+        'Low': '↘️',
+        'Normal': '➡️',
+        'Medium': '↗️',
+        'High': '⬆️',
+        'Highest': '🔥'
+    }
+    return icons[priority] || '➡️'
 }
 
 const openJournalForToday = () => {
