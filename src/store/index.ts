@@ -16,6 +16,104 @@ localforage.config({
   storeName: 'mood_notes_store',
 })
 
+// Type guard functions for runtime validation
+const isValidMood = (mood: any): mood is MoodType => {
+  return typeof mood === 'string' && ['happy', 'neutral', 'sad', 'excited', 'angry'].includes(mood)
+}
+
+const isDaySummaryHabit = (obj: any): obj is import('./types').DaySummaryHabit => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.name === 'string' &&
+    typeof obj.completed === 'boolean' &&
+    (obj.status === 'did' || obj.status === 'partial' || obj.status === 'not' || obj.status === null)
+  )
+}
+
+const isMediaItem = (obj: any): obj is MediaItem => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.type === 'string' &&
+    typeof obj.url === 'string'
+  )
+}
+
+const isCustomSection = (obj: any): obj is CustomSection => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.title === 'string' &&
+    typeof obj.content === 'string'
+  )
+}
+
+const isDailyCheck = (obj: any): obj is DailyCheck => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.energyLevel === 'number' &&
+    typeof obj.stressLevel === 'number' &&
+    typeof obj.productivity === 'number' &&
+    obj.energyLevel >= 1 && obj.energyLevel <= 10 &&
+    obj.stressLevel >= 1 && obj.stressLevel <= 10 &&
+    obj.productivity >= 1 && obj.productivity <= 10
+  )
+}
+
+const isDaySummary = (obj: any): obj is DaySummary => {
+  if (typeof obj !== 'object' || obj === null) return false
+
+  return (
+    typeof obj.date === 'string' &&
+    typeof obj.summary === 'string' &&
+    typeof obj.mood === 'string' &&
+    typeof obj.weather === 'string' &&
+    Array.isArray(obj.habits) &&
+    obj.habits.every(isDaySummaryHabit) &&
+    isDailyCheck(obj.dailyCheck) &&
+    typeof obj.comfortZoneEntry === 'string' &&
+    Array.isArray(obj.customSections) &&
+    obj.customSections.every(isCustomSection) &&
+    Array.isArray(obj.tags) &&
+    obj.tags.every((tag: any) => typeof tag === 'string') &&
+    Array.isArray(obj.media) &&
+    obj.media.every(isMediaItem) &&
+    // sparks is optional for backward compatibility
+    (obj.sparks === undefined || (Array.isArray(obj.sparks) && obj.sparks.every((spark: any) => typeof spark === 'string')))
+  )
+}
+
+const isTask = (obj: any): obj is Task => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.id === 'number' &&
+    typeof obj.description === 'string' &&
+    ['Lowest', 'Low', 'Normal', 'Medium', 'High', 'Highest'].includes(obj.priority) &&
+    typeof obj.dueDate === 'string'
+  )
+}
+
+const isHabit = (obj: any): obj is Habit => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.id === 'number' &&
+    typeof obj.name === 'string' &&
+    typeof obj.description === 'string' &&
+    Array.isArray(obj.statuses) &&
+    obj.statuses.every((status: any) =>
+      typeof status === 'object' &&
+      status !== null &&
+      typeof status.date === 'string' &&
+      (status.status === 'did' || status.status === 'partial' || status.status === 'not')
+    )
+  )
+}
+
+
 export interface State {
   daySummaries: DaySummary[]
   tasks: Task[]
@@ -111,9 +209,56 @@ const store: StoreOptions<State> = {
     // Loaders
     async loadDaySummaries({ commit }) {
       try {
-        const daySummaries = (await localforage.getItem('daySummaries')) as DaySummary[] | null
-        if (daySummaries) {
-          commit('SET_DAY_SUMMARIES', daySummaries)
+        const data = await localforage.getItem('daySummaries')
+
+        // Validate data type
+        if (!data) {
+          commit('SET_DAY_SUMMARIES', [])
+          return
+        }
+
+        if (!Array.isArray(data)) {
+          console.error('Invalid daySummaries format in storage - expected array')
+          commit('SET_DAY_SUMMARIES', [])
+          return
+        }
+
+        // Filter and validate each day summary using type guards
+        const validSummaries = data.filter((item: any) => {
+          const isValid = isDaySummary(item)
+          if (!isValid) {
+            console.warn('Invalid day summary found and skipped:', item)
+          }
+          return isValid
+        })
+
+        // Clean up any invalid data in valid summaries
+        const cleanedSummaries = validSummaries.map(summary => {
+          const cleaned: any = { ...summary }
+
+          // Ensure sparks field exists (for backward compatibility)
+          if (!cleaned.sparks) {
+            cleaned.sparks = []
+          }
+
+          // Normalize dailyCheck values
+          if (cleaned.dailyCheck) {
+            cleaned.dailyCheck = {
+              energyLevel: Math.min(Math.max(Number(cleaned.dailyCheck.energyLevel) || 5, 1), 10),
+              stressLevel: Math.min(Math.max(Number(cleaned.dailyCheck.stressLevel) || 5, 1), 10),
+              productivity: Math.min(Math.max(Number(cleaned.dailyCheck.productivity) || 5, 1), 10)
+            }
+          }
+
+          return cleaned
+        })
+
+        commit('SET_DAY_SUMMARIES', cleanedSummaries)
+
+        // Save cleaned data back if anything changed
+        if (validSummaries.length !== data.length || JSON.stringify(cleanedSummaries) !== JSON.stringify(data)) {
+          await localforage.setItem('daySummaries', cleanedSummaries)
+          console.log('✨ Cleaned invalid data in existing summaries')
         }
       } catch (error) {
         console.error('Failed to load day summaries:', error)
@@ -124,25 +269,85 @@ const store: StoreOptions<State> = {
     async addDaySummary({ commit, state }, daySummary: DaySummary) {
       try {
         commit('ADD_DAY_SUMMARY', daySummary)
-        await localforage.setItem('daySummaries', state.daySummaries)
-      } catch (error) {
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.daySummaries)
+
+        // Check data size before saving (10MB limit)
+        const size = new Blob([serialized]).size
+        const MAX_STORAGE_SIZE = 10 * 1024 * 1024 // 10MB
+        if (size > MAX_STORAGE_SIZE) {
+          // Rollback the mutation
+          commit('DELETE_DAY_SUMMARY', daySummary.date)
+          throw new Error(`Storage limit exceeded (${(size / 1024 / 1024).toFixed(2)}MB / ${MAX_STORAGE_SIZE / 1024 / 1024}MB). Please export and clean old entries.`)
+        }
+
+        const cleanedSummaries = JSON.parse(serialized)
+        await localforage.setItem('daySummaries', cleanedSummaries)
+      } catch (error: any) {
         console.error('Failed to add day summary:', error)
-        throw new Error('Failed to save day summary. Please try again.')
+
+        // Rollback the mutation on error
+        commit('DELETE_DAY_SUMMARY', daySummary.date)
+
+        if (error.name === 'QuotaExceededError') {
+          throw new Error('Storage quota exceeded. Please export and clean old data to free up space.')
+        } else if (!navigator.onLine) {
+          throw new Error('You appear to be offline. Changes will be saved when you reconnect.')
+        } else if (error.message?.includes('Storage limit exceeded')) {
+          throw error // Re-throw our custom storage limit error
+        } else {
+          throw new Error(`Failed to save: ${error.message}. Please try again or contact support if this persists.`)
+        }
       }
     },
     async updateDaySummary({ commit, state }, daySummary: DaySummary) {
+      // Store the original summary for rollback
+      const originalSummaries = [...state.daySummaries]
+
       try {
         commit('UPDATE_DAY_SUMMARY', daySummary)
-        await localforage.setItem('daySummaries', state.daySummaries)
-      } catch (error) {
+
+        // Use JSON serialization to create a deep clone and remove any non-serializable properties
+        // This ensures the data is completely clean for IndexedDB
+        const serialized = JSON.stringify(state.daySummaries)
+
+        // Check data size before saving (10MB limit)
+        const size = new Blob([serialized]).size
+        const MAX_STORAGE_SIZE = 10 * 1024 * 1024 // 10MB
+        if (size > MAX_STORAGE_SIZE) {
+          // Rollback the mutation
+          commit('SET_DAY_SUMMARIES', originalSummaries)
+          throw new Error(`Storage limit exceeded (${(size / 1024 / 1024).toFixed(2)}MB / ${MAX_STORAGE_SIZE / 1024 / 1024}MB). Please export and clean old entries.`)
+        }
+
+        const cleanedSummaries = JSON.parse(serialized)
+
+        await localforage.setItem('daySummaries', cleanedSummaries)
+      } catch (error: any) {
         console.error('Failed to update day summary:', error)
-        throw new Error('Failed to update day summary. Please try again.')
+        console.error('Error stack:', error)
+
+        // Rollback the mutation on error
+        commit('SET_DAY_SUMMARIES', originalSummaries)
+
+        if (error.name === 'QuotaExceededError') {
+          throw new Error('Storage quota exceeded. Please export and clean old data to free up space.')
+        } else if (!navigator.onLine) {
+          throw new Error('You appear to be offline. Changes will be saved when you reconnect.')
+        } else if (error.message?.includes('Storage limit exceeded')) {
+          throw error // Re-throw our custom storage limit error
+        } else {
+          throw new Error(`Failed to save: ${error.message}. Please try again or contact support if this persists.`)
+        }
       }
     },
     async deleteDaySummary({ commit, state }, date: string) {
       try {
         commit('DELETE_DAY_SUMMARY', date)
-        await localforage.setItem('daySummaries', state.daySummaries)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.daySummaries)
+        const cleanedSummaries = JSON.parse(serialized)
+        await localforage.setItem('daySummaries', cleanedSummaries)
       } catch (error) {
         console.error('Failed to delete day summary:', error)
         throw new Error('Failed to delete day summary. Please try again.')
@@ -151,9 +356,34 @@ const store: StoreOptions<State> = {
     // Tasks
     async loadTasks({ commit }) {
       try {
-        const tasks = (await localforage.getItem('tasks')) as Task[] | null
-        if (tasks) {
-          commit('SET_TASKS', tasks)
+        const data = await localforage.getItem('tasks')
+
+        if (!data) {
+          commit('SET_TASKS', [])
+          return
+        }
+
+        if (!Array.isArray(data)) {
+          console.error('Invalid tasks format in storage - expected array')
+          commit('SET_TASKS', [])
+          return
+        }
+
+        // Filter and validate each task using type guards
+        const validTasks = data.filter((item: any) => {
+          const isValid = isTask(item)
+          if (!isValid) {
+            console.warn('Invalid task found and skipped:', item)
+          }
+          return isValid
+        })
+
+        commit('SET_TASKS', validTasks)
+
+        // Save cleaned data back if anything was filtered
+        if (validTasks.length !== data.length) {
+          await localforage.setItem('tasks', validTasks)
+          console.log('✨ Cleaned invalid tasks')
         }
       } catch (error) {
         console.error('Failed to load tasks:', error)
@@ -163,7 +393,10 @@ const store: StoreOptions<State> = {
     async addTask({ commit, state }, task: Task) {
       try {
         commit('ADD_TASK', task)
-        await localforage.setItem('tasks', state.tasks)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.tasks)
+        const cleanedTasks = JSON.parse(serialized)
+        await localforage.setItem('tasks', cleanedTasks)
       } catch (error) {
         console.error('Failed to add task:', error)
         throw new Error('Failed to add task. Please try again.')
@@ -172,9 +405,34 @@ const store: StoreOptions<State> = {
     // Habits
     async loadHabits({ commit }) {
       try {
-        const habits = (await localforage.getItem('habits')) as Habit[] | null
-        if (habits) {
-          commit('SET_HABITS', habits)
+        const data = await localforage.getItem('habits')
+
+        if (!data) {
+          commit('SET_HABITS', [])
+          return
+        }
+
+        if (!Array.isArray(data)) {
+          console.error('Invalid habits format in storage - expected array')
+          commit('SET_HABITS', [])
+          return
+        }
+
+        // Filter and validate each habit using type guards
+        const validHabits = data.filter((item: any) => {
+          const isValid = isHabit(item)
+          if (!isValid) {
+            console.warn('Invalid habit found and skipped:', item)
+          }
+          return isValid
+        })
+
+        commit('SET_HABITS', validHabits)
+
+        // Save cleaned data back if anything was filtered
+        if (validHabits.length !== data.length) {
+          await localforage.setItem('habits', validHabits)
+          console.log('✨ Cleaned invalid habits')
         }
       } catch (error) {
         console.error('Failed to load habits:', error)
@@ -184,7 +442,10 @@ const store: StoreOptions<State> = {
     async addHabit({ commit, state }, habit: Habit) {
       try {
         commit('ADD_HABIT', habit)
-        await localforage.setItem('habits', state.habits)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.habits)
+        const cleanedHabits = JSON.parse(serialized)
+        await localforage.setItem('habits', cleanedHabits)
       } catch (error) {
         console.error('Failed to add habit:', error)
         throw new Error('Failed to add habit. Please try again.')
@@ -193,7 +454,10 @@ const store: StoreOptions<State> = {
     async updateHabit({ commit, state }, habit: Habit) {
       try {
         commit('UPDATE_HABIT', habit)
-        await localforage.setItem('habits', state.habits)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.habits)
+        const cleanedHabits = JSON.parse(serialized)
+        await localforage.setItem('habits', cleanedHabits)
       } catch (error) {
         console.error('Failed to update habit:', error)
         throw new Error('Failed to update habit. Please try again.')
@@ -202,7 +466,10 @@ const store: StoreOptions<State> = {
     async updateHabitStatus({ commit, state }, payload: { habitId: number; date: string; status: 'did' | 'partial' | 'not' | null }) {
       try {
         commit('UPDATE_HABIT_STATUS', payload)
-        await localforage.setItem('habits', state.habits)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.habits)
+        const cleanedHabits = JSON.parse(serialized)
+        await localforage.setItem('habits', cleanedHabits)
       } catch (error) {
         console.error('Failed to update habit status:', error)
         throw new Error('Failed to update habit status. Please try again.')
@@ -223,7 +490,10 @@ const store: StoreOptions<State> = {
     async addSpark({ commit, state }, spark: string) {
       try {
         commit('ADD_SPARK', spark)
-        await localforage.setItem('sparks', state.sparks)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.sparks)
+        const cleanedSparks = JSON.parse(serialized)
+        await localforage.setItem('sparks', cleanedSparks)
       } catch (error) {
         console.error('Failed to add spark:', error)
         throw new Error('Failed to add spark. Please try again.')
@@ -244,7 +514,10 @@ const store: StoreOptions<State> = {
     async addCalendarEntry({ commit, state }, entry: { date: string; content: string }) {
       try {
         commit('ADD_CALENDAR_ENTRY', entry)
-        await localforage.setItem('calendarEntries', state.calendarEntries)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.calendarEntries)
+        const cleanedEntries = JSON.parse(serialized)
+        await localforage.setItem('calendarEntries', cleanedEntries)
       } catch (error) {
         console.error('Failed to add calendar entry:', error)
         throw new Error('Failed to add calendar entry. Please try again.')
@@ -318,10 +591,16 @@ const store: StoreOptions<State> = {
         return date.getFullYear() === year && date.getMonth() === month && summary.dailyCheck
       })
       if (relevantSummaries.length === 0) return 0
+      
       const totalEnergy = relevantSummaries.reduce((total, summary) => {
-        return total + (summary.dailyCheck?.energyLevel || 0)
+        // Ensure energyLevel is a valid number between 0-10
+        const energyLevel = summary.dailyCheck?.energyLevel || 0
+        const validEnergy = Math.min(Math.max(Number(energyLevel) || 0, 0), 10)
+        return total + validEnergy
       }, 0)
-      return parseFloat((totalEnergy / relevantSummaries.length).toFixed(2))
+      
+      const average = totalEnergy / relevantSummaries.length
+      return parseFloat(average.toFixed(2))
     },
   },
   modules: {

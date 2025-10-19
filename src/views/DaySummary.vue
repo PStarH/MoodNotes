@@ -2,7 +2,7 @@
     <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 overflow-auto p-4">
         <div
             ref="modalRef"
-            class="glass-effect w-full max-w-5xl mx-auto my-4 max-h-[95vh] overflow-y-auto rounded-2xl p-4 sm:p-8 warm-shadow-lg bounce-in custom-scrollbar"
+            class="glass-effect w-full max-w-5xl mx-auto my-4 max-h-[95vh] overflow-y-auto rounded-2xl p-4 sm:p-6 warm-shadow-lg bounce-in custom-scrollbar"
             role="dialog"
             aria-labelledby="day-summary-title"
             aria-modal="true"
@@ -11,27 +11,27 @@
             <div class="relative pb-20">
 
                 <!-- Container for Close Button and Export Options -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-[#D3C9A6]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 pb-3 border-b border-[#D3C9A6]">
                     <h2 id="day-summary-title" class="text-xl sm:text-2xl font-bold text-[#4E3B2B]">Daily Review</h2>
-                    <div class="flex items-center gap-2 flex-wrap" role="group" aria-label="Document actions">
+                    <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Document actions">
                         <!-- Export Options -->
                         <button
                             @click="exportContent('pdf')"
-                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
                             aria-label="Export as PDF"
                         >
                             <span aria-hidden="true">📜</span>
                         </button>
                         <button
                             @click="exportContent('md')"
-                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
                             aria-label="Export as Markdown"
                         >
                             <span aria-hidden="true">📝</span>
                         </button>
                         <button
                             @click="exportContent('html')"
-                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
                             aria-label="Export as HTML"
                         >
                             <span aria-hidden="true">🌐</span>
@@ -39,7 +39,7 @@
                         <button
                             v-if="daySummary"
                             @click="deleteDaySummary"
-                            class="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
+                            class="bg-gradient-to-r from-red-500 to-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
                             aria-label="Delete this entry"
                         >
                             <span aria-hidden="true">🗑️</span>
@@ -48,10 +48,10 @@
                         <button
                             type="button"
                             @click="$emit('close')"
-                            class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
+                            class="text-[#7D5A36] hover:text-opacity-80 p-1.5 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
                             aria-label="Close daily review"
                         >
-                            <X :size="24" aria-hidden="true" />
+                            <X :size="20" aria-hidden="true" />
                         </button>
                     </div>
                 </div>
@@ -59,77 +59,184 @@
                 <div class="daily-review fade-in">
                     <div class="surface-card daily-review__info-card">
                         <div class="daily-review__row">
-                            <div class="meta-icon" aria-hidden="true">
-                                <Calendar class="meta-icon__glyph" />
-                            </div>
                             <div class="flex-1">
                                 <label for="entry-date" class="sr-only">Entry date</label>
-                                <input
-                                    id="entry-date"
-                                    type="date"
+                                <CustomDatePicker
                                     v-model="currentDate"
-                                    class="date-input"
-                                    aria-label="Select entry date"
-                                >
+                                    placeholder="选择日期"
+                                />
                             </div>
                         </div>
-                        <div class="daily-review__row" role="status" aria-live="polite">
-                            <div class="meta-icon" aria-hidden="true">
-                                <Cloud class="meta-icon__glyph" />
+                        <div class="daily-review__combined-row">
+                            <div class="daily-review__row" role="status" aria-live="polite">
+                                <div class="meta-icon" aria-hidden="true">
+                                    <Cloud class="meta-icon__glyph" />
+                                </div>
+                                <div>
+                                    <p class="meta-label">Weather</p>
+                                    <p class="meta-value">{{ weather.description }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="meta-label">Weather</p>
-                                <p class="meta-value">{{ weather.description }}</p>
+                            
+                            <div class="daily-review__inline-section flex-1">
+                                <div class="meta-icon" aria-hidden="true">
+                                    <span class="meta-icon__glyph">🏷️</span>
+                                </div>
+                                <div class="daily-review__tags-flow-inline">
+                                    <div
+                                        v-for="tag in tags"
+                                        :key="tag"
+                                        class="tag-chip-small"
+                                        role="group"
+                                        :aria-label="`Tag: ${tag}`"
+                                    >
+                                        {{ tag }}
+                                        <button
+                                            @click="removeTag(tag)"
+                                            class="tag-chip__remove-small"
+                                            :aria-label="`Remove tag ${tag}`"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                    <label for="new-tag-input" class="sr-only">Add a new tag</label>
+                                    <input
+                                        id="new-tag-input"
+                                        v-model="newTag"
+                                        @keyup.enter="addTag"
+                                        type="text"
+                                        placeholder="Add a tag"
+                                        class="tag-input-small"
+                                        aria-label="Type a new tag and press Enter to add"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="daily-review__mood-section">
+                                <MoodPicker
+                                    v-model="mood"
+                                    :options="moodOptions"
+                                    :default-caption="'😊 Choose a mood'"
+                                    class="mood-picker-inline"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div class="daily-review__split">
-                        <div class="surface-card daily-review__tags-card slide-in">
-                            <h3 id="tags-section" class="card-title flex items-center">
-                                <span class="mr-2" aria-hidden="true">🏷️</span>Tags
-                            </h3>
-                            <div class="daily-review__tags-flow">
-                                <div
-                                    v-for="tag in tags"
-                                    :key="tag"
-                                    class="tag-chip"
-                                    role="group"
-                                    :aria-label="`Tag: ${tag}`"
-                                >
-                                    {{ tag }}
-                                    <button
-                                        @click="removeTag(tag)"
-                                        class="tag-chip__remove"
-                                        :aria-label="`Remove tag ${tag}`"
+                    <!-- Sparks Section -->
+                    <div class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                        <div class="flex items-start gap-3">
+                            <div class="meta-icon flex-shrink-0" aria-hidden="true">
+                                <span class="meta-icon__glyph">✨</span>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">今日灵感 Sparks</label>
+                                <p class="text-xs text-[#7D5A36]/80 mb-3">记录今天的亮点、想法和美好瞬间</p>
+
+                                <!-- Sparks List -->
+                                <div v-if="sparks.length > 0" class="space-y-2 mb-3">
+                                    <div
+                                        v-for="(spark, index) in sparks"
+                                        :key="index"
+                                        class="glass-effect p-3 rounded-lg flex items-start justify-between gap-2 hover-lift transition-all group"
                                     >
-                                        &times;
+                                        <span class="text-sm text-[#4E3B2B] flex-1 whitespace-pre-wrap">{{ spark }}</span>
+                                        <button
+                                            @click="removeSpark(index)"
+                                            class="flex-shrink-0 text-[#7D5A36]/60 hover:text-[#7D5A36] opacity-0 group-hover:opacity-100 transition-opacity"
+                                            :aria-label="`Remove spark: ${spark.substring(0, 30)}`"
+                                            title="移除这条灵感"
+                                        >
+                                            <X :size="16" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Add Spark Input -->
+                                <div class="flex gap-2">
+                                    <textarea
+                                        v-model="newSpark"
+                                        @keydown="handleSparkKeydown"
+                                        placeholder="输入一条灵感... (Enter 添加, Shift+Enter 换行)"
+                                        class="flex-1 px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+                                        rows="2"
+                                        aria-label="输入新的灵感"
+                                    ></textarea>
+                                    <button
+                                        @click="addSpark"
+                                        :disabled="!newSpark.trim()"
+                                        class="px-4 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-lg text-sm font-semibold hover-lift transition-all warm-shadow disabled:opacity-50 disabled:cursor-not-allowed h-fit"
+                                        aria-label="添加灵感"
+                                    >
+                                        添加
                                     </button>
                                 </div>
-                                <label for="new-tag-input" class="sr-only">Add a new tag</label>
-                                <input
-                                    id="new-tag-input"
-                                    v-model="newTag"
-                                    @keyup.enter="addTag"
-                                    type="text"
-                                    placeholder="Add a tag"
-                                    class="tag-input"
-                                    aria-label="Type a new tag and press Enter to add"
-                                >
                             </div>
-                        </div>
-
-                        <div class="surface-card mood-card bounce-in">
-                            <MoodPicker
-                                v-model="mood"
-                                :options="moodOptions"
-                                :default-caption="'Let the journal know how the day feels'"
-                                class="mood-card__picker"
-                            />
                         </div>
                     </div>
 
-                    <div class="surface-card daily-review__editor-card bounce-in">
+                    <!-- Daily Habits Section -->
+                    <div v-if="habits.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                        <div class="flex items-start gap-3">
+                            <div class="meta-icon flex-shrink-0" aria-hidden="true">
+                                <span class="meta-icon__glyph">✅</span>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">今日习惯 Daily Habits</label>
+                                <p class="text-xs text-[#7D5A36]/80 mb-3">跟踪你的日常习惯，保持积极的生活方式</p>
+
+                                <!-- Habits List -->
+                                <div class="space-y-2">
+                                    <div
+                                        v-for="(habit, index) in habits"
+                                        :key="index"
+                                        class="glass-effect p-3 rounded-lg flex items-center justify-between gap-3 hover-lift transition-all"
+                                    >
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <input
+                                                type="checkbox"
+                                                :id="'habit-' + index"
+                                                v-model="habit.completed"
+                                                class="w-4 h-4 text-[#7D5A36] rounded focus:ring-2 focus:ring-[#7D5A36] cursor-pointer"
+                                                :aria-label="`Mark ${habit.name} as completed`"
+                                            >
+                                            <label :for="'habit-' + index" class="text-sm font-medium text-[#4E3B2B] cursor-pointer flex-1">
+                                                {{ habit.name }}
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center gap-2" role="group" aria-label="Habit status options">
+                                            <button
+                                                @click="cycleHabitStatus(habit, 'did')"
+                                                :class="{ 'bg-green-500 scale-110 shadow-md': habit.status === 'did' }"
+                                                class="w-7 h-7 rounded-full border-2 border-green-500 hover:bg-green-100 transition-all duration-200 hover-lift flex-shrink-0"
+                                                :aria-label="`Mark ${habit.name} as completed`"
+                                                :aria-pressed="habit.status === 'did'"
+                                                title="完成"
+                                            ></button>
+                                            <button
+                                                @click="cycleHabitStatus(habit, 'partial')"
+                                                :class="{ 'bg-yellow-500 scale-110 shadow-md': habit.status === 'partial' }"
+                                                class="w-7 h-7 rounded-full border-2 border-yellow-500 hover:bg-yellow-100 transition-all duration-200 hover-lift flex-shrink-0"
+                                                :aria-label="`Mark ${habit.name} as partially completed`"
+                                                :aria-pressed="habit.status === 'partial'"
+                                                title="部分完成"
+                                            ></button>
+                                            <button
+                                                @click="cycleHabitStatus(habit, 'not')"
+                                                :class="{ 'bg-red-500 scale-110 shadow-md': habit.status === 'not' }"
+                                                class="w-7 h-7 rounded-full border-2 border-red-500 hover:bg-red-100 transition-all duration-200 hover-lift flex-shrink-0"
+                                                :aria-label="`Mark ${habit.name} as not completed`"
+                                                :aria-pressed="habit.status === 'not'"
+                                                title="未完成"
+                                            ></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="surface-card daily-review__editor-card bounce-in mb-6">
                         <label for="quill-editor" class="sr-only">Journal entry content</label>
                         <div class="editor-shell">
                             <div
@@ -160,13 +267,274 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Last Year Today Section -->
+                <div v-if="hasHistoricalData" class="mb-6 fade-in">
+                    <div class="glass-effect p-4 rounded-xl warm-shadow border border-[#7D5A36]/30">
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 class="text-lg font-semibold text-[#4E3B2B] flex items-center gap-2">
+                                <span aria-hidden="true">🕰️</span>
+                                Last Year Today
+                            </h3>
+                            <span class="text-xs text-[#7D5A36]/70">{{ lastYearDateString }}</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- Mood Comparison -->
+                            <div v-if="lastYearMood" class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Mood:</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl" aria-hidden="true">{{ moodOptions.find(opt => opt.value === lastYearMood)?.emoji || '😐' }}</span>
+                                    <span class="text-sm font-medium text-[#4E3B2B]">{{ lastYearMood.charAt(0).toUpperCase() + lastYearMood.slice(1) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Summary Preview -->
+                            <div v-if="lastYearSummaryPreview" class="glass-effect p-3 rounded-lg bg-[#F0E9D2]/50">
+                                <p class="text-xs text-[#4E3B2B] italic leading-relaxed">{{ lastYearSummaryPreview }}</p>
+                            </div>
+
+                            <!-- Tags -->
+                            <div v-if="lastYearTags.length > 0" class="flex flex-wrap gap-1.5">
+                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Tags:</span>
+                                <span
+                                    v-for="tag in lastYearTags.slice(0, 6)"
+                                    :key="tag"
+                                    class="text-xs px-2 py-0.5 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full font-medium"
+                                >
+                                    #{{ tag }}
+                                </span>
+                                <span v-if="lastYearTags.length > 6" class="text-xs text-[#7D5A36]/60">
+                                    +{{ lastYearTags.length - 6 }} more
+                                </span>
+                            </div>
+
+                            <!-- Daily Check Comparison -->
+                            <div v-if="lastYearDailyCheck" class="grid grid-cols-3 gap-2 text-xs">
+                                <div class="glass-effect p-2 rounded-lg text-center">
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Energy</div>
+                                    <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.energyLevel }}/10</div>
+                                </div>
+                                <div class="glass-effect p-2 rounded-lg text-center">
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Stress</div>
+                                    <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.stressLevel }}/10</div>
+                                </div>
+                                <div class="glass-effect p-2 rounded-lg text-center">
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Productivity</div>
+                                    <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.productivity }}/10</div>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-[#7D5A36]/60 text-center italic pt-1">
+                                Reflecting on your journey helps you grow 🌱
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Check -->
+                <div class="mb-6 mt-8 slide-in">
+                    <h2 id="daily-check-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
+                        <span class="mr-2" aria-hidden="true">📊</span>Daily Check
+                    </h2>
+                    <div class="glass-effect p-4 rounded-xl space-y-3 warm-shadow">
+                        <div class="flex items-center justify-between">
+                            <label for="energy-level" class="text-[#4E3B2B] font-medium flex items-center">
+                                <span class="mr-2" aria-hidden="true">⚡</span>Energy Level:
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <input
+                                    id="energy-level"
+                                    type="range"
+                                    v-model.number="dailyCheck.energyLevel"
+                                    min="1"
+                                    max="10"
+                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    :aria-label="`Energy level: ${dailyCheck.energyLevel} out of 10`"
+                                    aria-valuemin="1"
+                                    aria-valuemax="10"
+                                    :aria-valuenow="dailyCheck.energyLevel"
+                                >
+                                <span class="text-[#7D5A36] font-bold w-8 text-center" aria-live="polite">{{ dailyCheck.energyLevel }}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="stress-level" class="text-[#4E3B2B] font-medium flex items-center">
+                                <span class="mr-2" aria-hidden="true">😅</span>Stress Level:
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <input
+                                    id="stress-level"
+                                    type="range"
+                                    v-model.number="dailyCheck.stressLevel"
+                                    min="1"
+                                    max="10"
+                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    :aria-label="`Stress level: ${dailyCheck.stressLevel} out of 10`"
+                                    aria-valuemin="1"
+                                    aria-valuemax="10"
+                                    :aria-valuenow="dailyCheck.stressLevel"
+                                >
+                                <span class="text-[#7D5A36] font-bold w-8 text-center" aria-live="polite">{{ dailyCheck.stressLevel }}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="productivity-level" class="text-[#4E3B2B] font-medium flex items-center">
+                                <span class="mr-2" aria-hidden="true">🎨</span>Productivity:
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <input
+                                    id="productivity-level"
+                                    type="range"
+                                    v-model.number="dailyCheck.productivity"
+                                    min="1"
+                                    max="10"
+                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    :aria-label="`Productivity level: ${dailyCheck.productivity} out of 10`"
+                                    aria-valuemin="1"
+                                    aria-valuemax="10"
+                                    :aria-valuenow="dailyCheck.productivity"
+                                >
+                                <span class="text-[#7D5A36] font-bold w-8 text-center" aria-live="polite">{{ dailyCheck.productivity }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Upload -->
+                <div class="mb-6 bounce-in">
+                    <h2 id="media-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
+                        <span class="mr-2" aria-hidden="true">📷</span>Media
+                    </h2>
+                    <div class="flex space-x-3 mb-3" role="group" aria-labelledby="media-section">
+                        <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
+                            <Image class="mr-1.5" :size="18" aria-hidden="true" />
+                            Add Image
+                            <input type="file" accept="image/*" @change="handleFileUpload" class="hidden" aria-label="Upload image file">
+                        </label>
+                        <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
+                            <Video class="mr-1.5" :size="18" aria-hidden="true" />
+                            Add Video
+                            <input type="file" accept="video/*" @change="handleFileUpload" class="hidden" aria-label="Upload video file">
+                        </label>
+                        <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
+                            <Music class="mr-1.5" :size="18" aria-hidden="true" />
+                            Add Audio
+                            <input type="file" accept="audio/*" @change="handleFileUpload" class="hidden" aria-label="Upload audio file">
+                        </label>
+                    </div>
+                    <div v-if="media.length > 0" class="grid grid-cols-3 gap-4" role="list" aria-label="Uploaded media files">
+                        <div
+                            v-for="(item, index) in media"
+                            :key="index"
+                            class="relative glass-effect rounded-xl overflow-hidden warm-shadow hover-lift transition-all duration-200"
+                            role="listitem"
+                        >
+                            <img v-if="item.type.startsWith('image')" :src="item.url" class="w-full h-32 object-cover" :alt="`Uploaded image ${index + 1}`">
+                            <video v-else-if="item.type.startsWith('video')" :src="item.url" class="w-full h-32 object-cover" controls :aria-label="`Uploaded video ${index + 1}`"></video>
+                            <audio v-else-if="item.type.startsWith('audio')" :src="item.url" class="w-full p-2" controls :aria-label="`Uploaded audio ${index + 1}`"></audio>
+                            <button
+                                @click="removeMedia(index)"
+                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all hover-lift"
+                                :aria-label="`Remove media file ${index + 1}`"
+                            >
+                                <X :size="16" aria-hidden="true" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comfort Zone Entry -->
+                <div class="mb-6 fade-in">
+                    <h2 id="comfort-zone-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
+                        <span class="mr-2" aria-hidden="true">🌱</span>Comfort Zone Entry
+                    </h2>
+                    <label for="comfort-zone-textarea" class="sr-only">Comfort zone reflections</label>
+                    <textarea
+                        id="comfort-zone-textarea"
+                        v-model="comfortZoneEntry"
+                        placeholder="Did you step out of your comfort zone today? How did it feel?"
+                        class="w-full h-28 glass-effect text-[#4E3B2B] p-3 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all warm-shadow text-sm"
+                        aria-label="Describe your comfort zone experiences today"
+                    ></textarea>
+                </div>
+
+                <!-- Custom Sections -->
+                <div v-for="(section, index) in customSections" :key="index" class="mb-5 slide-in">
+                    <h2 class="text-lg font-semibold text-[#4E3B2B] mb-2.5 flex items-center">
+                        <span class="mr-2" aria-hidden="true">📋</span>{{ section.title }}
+                    </h2>
+                    <div class="glass-effect text-[#4E3B2B] p-3 rounded-xl warm-shadow text-sm">{{ section.content }}</div>
+                </div>
+
+                <!-- Add Custom Section -->
+                <div class="mb-6 bounce-in">
+                    <button
+                        v-if="!showAddSection"
+                        @click="showAddSection = true"
+                        class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-5 py-2.5 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm"
+                        aria-label="Add a custom section to your journal"
+                    >
+                        <span class="mr-2" aria-hidden="true">➕</span>Add Custom Section
+                    </button>
+                    <div v-if="showAddSection" class="glass-effect p-4 rounded-xl warm-shadow space-y-3" role="form" aria-label="Add custom section form">
+                        <label for="section-title-input" class="sr-only">Section title</label>
+                        <input
+                            id="section-title-input"
+                            v-model="newSectionTitle"
+                            type="text"
+                            placeholder="Section Title"
+                            class="w-full px-3 py-2.5 glass-effect rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all text-sm"
+                            aria-label="Enter section title"
+                        >
+                        <label for="section-content-textarea" class="sr-only">Section content</label>
+                        <textarea
+                            id="section-content-textarea"
+                            v-model="newSectionContent"
+                            placeholder="Section Content"
+                            class="w-full h-28 glass-effect px-3 py-2.5 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all text-sm"
+                            aria-label="Enter section content"
+                        ></textarea>
+                        <div class="flex justify-end space-x-2" role="group" aria-label="Section form actions">
+                            <button
+                                @click="saveCustomSection"
+                                class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-5 py-2 rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow text-sm"
+                                aria-label="Save custom section"
+                            >
+                                Save Section
+                            </button>
+                            <button
+                                @click="showAddSection = false"
+                                class="bg-gray-300 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-400 transition-all duration-200 font-semibold text-sm"
+                                aria-label="Cancel adding custom section"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button (Bottom Right Corner) -->
+            <button
+                @click="saveAll"
+                :disabled="isSaving"
+                class="sticky bottom-4 float-right mr-4 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-full text-base font-bold hover-lift transition-all duration-200 warm-shadow-lg z-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                :class="{ 'bg-green-500': saveSuccess }"
+                :aria-label="isSaving ? 'Saving your journal entry' : (saveSuccess ? 'Journal entry saved successfully' : 'Save all journal entry data')"
+                :aria-busy="isSaving"
+            >
+                <span class="mr-2" aria-hidden="true">{{ isSaving ? '⏳' : (saveSuccess ? '✅' : '💾') }}</span>
+                {{ isSaving ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save All') }}
+            </button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, watchEffect, nextTick, onUnmounted, Ref } from 'vue'
 import { useStore } from 'vuex'
-import { X, Calendar, Cloud, Image, Video, Music } from 'lucide-vue-next'
+import { X, Cloud, Image, Video, Music } from 'lucide-vue-next'
 import type Quill from 'quill'
 import { jsPDF } from 'jspdf'
 import DOMPurify from 'dompurify'
@@ -175,7 +543,9 @@ import { useToast } from '@/composables/useToast'
 import { useMediaManager } from '@/composables/useMediaManager'
 import { useModalFocus } from '@/composables/useFocusTrap'
 import { useHistoricalComparison } from '@/composables/useHistoricalComparison'
+import { useDailyQuote } from '@/composables/useDailyQuote'
 import MoodPicker from '@/components/MoodPicker.vue'
+import CustomDatePicker from '@/components/CustomDatePicker.vue'
 
 const emit = defineEmits(['close'])
 
@@ -198,7 +568,13 @@ const {
 
 const currentDate = ref(props.selectedDate || new Date().toISOString().split('T')[0])
 const weather = ref({ description: 'Loading...' })
-const mood = ref('happy')
+const mood = ref<'happy' | 'neutral' | 'sad' | 'excited' | 'angry'>('happy')
+
+// Initialize mood-based daily quote (only keep updateMood for mood change handling)
+const {
+    updateMood: updateQuoteMood
+} = useDailyQuote({ mood: mood.value })
+
 const quillEditor = ref(null)
 const content = ref('')
 const habits: Ref<DaySummaryHabit[]> = ref([])
@@ -215,21 +591,73 @@ const newSectionContent = ref('')
 const showAddSection = ref(false)
 const tags: Ref<string[]> = ref([])
 const newTag = ref('')
+const sparks: Ref<string[]> = ref([])
+const newSpark = ref('')
 const isSaving = ref(false)
 const saveSuccess = ref(false)
 const isQuillLoading = ref(false)
 
 const moodOptions = [
-    { value: 'happy', label: 'Happy', emoji: '😄', caption: 'Bright and optimistic vibes' },
-    { value: 'neutral', label: 'Neutral', emoji: '😐', caption: 'Steady and grounded today' },
-    { value: 'sad', label: 'Sad', emoji: '😢', caption: 'A softer, reflective mood' },
-    { value: 'excited', label: 'Excited', emoji: '🎉', caption: 'Energized and full of spark' },
-    { value: 'angry', label: 'Angry', emoji: '😠', caption: 'Tension worth unpacking' }
+    { 
+        value: 'happy', 
+        label: 'Happy', 
+        emoji: '😄', 
+        caption: 'Bright and optimistic vibes',
+        defaultDailyCheck: { energyLevel: 8, stressLevel: 3, productivity: 7 }
+    },
+    { 
+        value: 'neutral', 
+        label: 'Neutral', 
+        emoji: '😐', 
+        caption: 'Steady and grounded today',
+        defaultDailyCheck: { energyLevel: 5, stressLevel: 5, productivity: 5 }
+    },
+    { 
+        value: 'sad', 
+        label: 'Sad', 
+        emoji: '😢', 
+        caption: 'A softer, reflective mood',
+        defaultDailyCheck: { energyLevel: 3, stressLevel: 6, productivity: 4 }
+    },
+    { 
+        value: 'excited', 
+        label: 'Excited', 
+        emoji: '🎉', 
+        caption: 'Energized and full of spark',
+        defaultDailyCheck: { energyLevel: 9, stressLevel: 4, productivity: 8 }
+    },
+    { 
+        value: 'angry', 
+        label: 'Angry', 
+        emoji: '😠', 
+        caption: 'Tension worth unpacking',
+        defaultDailyCheck: { energyLevel: 6, stressLevel: 8, productivity: 4 }
+    }
 ]
 
 watchEffect(() => {
     if (!moodOptions.some(option => option.value === mood.value)) {
-        mood.value = moodOptions[0].value
+        mood.value = moodOptions[0].value as typeof mood.value
+    }
+})
+
+// Watch mood changes and update daily check with defaults if values are still at default (5)
+// Also update the mood-based quote when mood changes
+watch(mood, (newMood) => {
+    // Update quote mood
+    updateQuoteMood(newMood)
+    
+    const selectedMood = moodOptions.find(opt => opt.value === newMood)
+    if (selectedMood && selectedMood.defaultDailyCheck) {
+        // Only update if the user hasn't customized the values yet (still at 5)
+        const isDefaultValues = 
+            dailyCheck.value.energyLevel === 5 && 
+            dailyCheck.value.stressLevel === 5 && 
+            dailyCheck.value.productivity === 5
+        
+        if (isDefaultValues) {
+            dailyCheck.value = { ...selectedMood.defaultDailyCheck }
+        }
     }
 })
 
@@ -238,9 +666,13 @@ const daySummary = computed(() => store.getters.getDaySummary(currentDate.value)
 // Define helper functions first
 const updateQuillContent = (newContent: string) => {
     if (quillInstance.value) {
+        // Sanitize HTML before updating to prevent XSS attacks
+        const sanitized = DOMPurify.sanitize(newContent)
         const currentContent = quillInstance.value.root.innerHTML
-        if (currentContent !== newContent) {
-            quillInstance.value.root.innerHTML = newContent
+        if (currentContent !== sanitized) {
+            // Use Quill's clipboard API for safer content insertion
+            const delta = quillInstance.value.clipboard.convert({ html: sanitized })
+            quillInstance.value.setContents(delta)
         }
     }
 }
@@ -257,6 +689,7 @@ const loadExistingData = () => {
         comfortZoneEntry.value = existingSummary.comfortZoneEntry || ''
         customSections.value = existingSummary.customSections || []
         tags.value = existingSummary.tags || []
+        sparks.value = existingSummary.sparks || []
         media.value = existingSummary.media || []
         
         // Update Quill content
@@ -456,41 +889,98 @@ const removeTag = (tag: string) => {
     tags.value = tags.value.filter(t => t !== tag)
 }
 
+const addSpark = () => {
+    if (newSpark.value.trim()) {
+        sparks.value.push(newSpark.value.trim())
+        newSpark.value = ''
+    }
+}
+
+const removeSpark = (index: number) => {
+    sparks.value = sparks.value.filter((_, i) => i !== index)
+}
+
+const handleSparkKeydown = (event: KeyboardEvent) => {
+    // Enter without Shift: add spark
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        addSpark()
+    }
+    // Shift+Enter: allow new line (default textarea behavior)
+}
+
 const saveAll = () => {
     isSaving.value = true
     saveSuccess.value = false
 
-    const summaryData: DaySummaryType = {
-        date: currentDate.value,
-        summary: content.value || '',
-        mood: mood.value,
-        weather: weather.value.description,
-        habits: habits.value,
-        dailyCheck: dailyCheck.value,
-        comfortZoneEntry: comfortZoneEntry.value || '',
-        customSections: customSections.value,
-        tags: tags.value,
-        media: media.value
+    try {
+        // Clean and serialize habits data to ensure it's cloneable
+        const cleanHabits = habits.value.map(habit => ({
+            id: habit.id,
+            name: habit.name,
+            completed: habit.completed || false,
+            status: habit.status || null
+        }))
+
+        // Clean media data
+        const cleanMedia = media.value.map(item => ({
+            type: item.type,
+            url: item.url,
+            filename: item.filename,
+            id: item.id
+        }))
+
+        // Clean custom sections
+        const cleanCustomSections = customSections.value.map(section => ({
+            title: section.title,
+            content: section.content
+        }))
+
+        const summaryData: DaySummaryType = {
+            date: currentDate.value,
+            summary: content.value || '',
+            mood: mood.value,
+            weather: weather.value.description,
+            habits: cleanHabits,
+            dailyCheck: {
+                energyLevel: Math.min(Math.max(Number(dailyCheck.value.energyLevel) || 5, 1), 10),
+                stressLevel: Math.min(Math.max(Number(dailyCheck.value.stressLevel) || 5, 1), 10),
+                productivity: Math.min(Math.max(Number(dailyCheck.value.productivity) || 5, 1), 10)
+            },
+            comfortZoneEntry: comfortZoneEntry.value || '',
+            customSections: cleanCustomSections,
+            tags: [...tags.value],
+            sparks: [...sparks.value],
+            media: cleanMedia
+        }
+
+        console.log('💾 Saving day summary:', summaryData)
+
+        // Save to store
+        store.dispatch('updateDaySummary', summaryData)
+            .then(() => {
+                console.log('✅ Day summary saved successfully')
+                isSaving.value = false
+                saveSuccess.value = true
+                toast.success('Your day summary has been saved successfully!', 'Saved')
+
+                // Close after brief success display
+                setTimeout(() => {
+                    saveSuccess.value = false
+                    emit('close')
+                }, 1500)
+            })
+            .catch((error) => {
+                console.error('⚠️ Failed to save day summary:', error)
+                console.error('Error details:', error.message, error.stack)
+                isSaving.value = false
+                toast.error(`Could not save your summary: ${error.message || 'Unknown error'}`, 'Save Failed')
+            })
+    } catch (error) {
+        console.error('⚠️ Error preparing day summary:', error)
+        isSaving.value = false
+        toast.error('Failed to prepare summary data. Please check your input.', 'Save Failed')
     }
-
-    // Save to store
-    store.dispatch('updateDaySummary', summaryData)
-        .then(() => {
-            isSaving.value = false
-            saveSuccess.value = true
-            toast.success('Your day summary has been saved successfully!', 'Saved')
-
-            // Close after brief success display
-            setTimeout(() => {
-                saveSuccess.value = false
-                emit('close')
-            }, 1500)
-        })
-        .catch((error) => {
-            console.error('⚠️ Failed to save day summary:', error)
-            isSaving.value = false
-            toast.error('Could not save your summary. Please try again.', 'Save Failed')
-        })
 }
 
 const deleteDaySummary = () => {
@@ -591,6 +1081,10 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
 // Cleanup on unmount to prevent memory leaks
 onUnmounted(() => {
     if (quillInstance.value) {
+        // Properly remove event listeners before destroying
+        quillInstance.value.off('text-change')
+
+        // Clear the instance reference
         quillInstance.value = null
     }
 })
@@ -600,181 +1094,219 @@ onUnmounted(() => {
 .daily-review {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
     background: #FAF8F4;
     border-radius: 28px;
-    padding: 24px;
+    padding: 20px;
     box-shadow: 0 20px 40px rgba(78, 59, 43, 0.08);
 }
 
 .surface-card {
     background: #FFF9F0;
-    border-radius: 20px;
-    padding: 24px;
+    border-radius: 16px;
+    padding: 18px 20px;
     border: 1px solid rgba(125, 90, 54, 0.14);
     box-shadow: 0 12px 28px rgba(78, 59, 43, 0.08);
-}
-
-
-.daily-review__split {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.35fr);
-    gap: 24px;
-}
-
-@media (max-width: 1024px) {
-    .daily-review__split {
-        grid-template-columns: 1fr;
-    }
 }
 
 .daily-review__info-card {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
 }
 
 .daily-review__row {
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.daily-review__combined-row {
+    display: flex;
+    align-items: center;
     gap: 16px;
+    flex-wrap: wrap;
+}
+
+.daily-review__inline-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.daily-review__mood-section {
+    margin-left: auto;
+}
+
+.daily-review__tags-flow-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.tag-chip-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #7D5A36, #6B4A2E);
+    color: #FFFFFF;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 8px 14px rgba(125, 90, 54, 0.15);
+}
+
+.tag-chip__remove-small {
+    background: #FFFFFF;
+    color: #7D5A36;
+    border: none;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.tag-chip__remove-small:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.tag-input-small {
+    min-width: 100px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px dashed rgba(125, 90, 54, 0.35);
+    background: #FFFFFF;
+    color: #4E3B2B;
+    font-size: 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tag-input-small:focus {
+    outline: none;
+    border-color: rgba(125, 90, 54, 0.6);
+    box-shadow: 0 0 0 2px rgba(125, 90, 54, 0.2);
+}
+
+.mood-picker-inline {
+    width: 260px;
+}
+
+.meta-icon__glyph {
+    font-size: 18px;
 }
 
 .meta-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, rgba(255, 244, 219, 0.85), rgba(255, 236, 200, 0.9));
     box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
 }
 
 .meta-icon__glyph {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     color: #7D5A36;
 }
 
 .date-input {
     width: 100%;
-    padding: 12px 16px;
-    border-radius: 14px;
+    padding: 10px 14px;
+    border-radius: 12px;
     border: 1px solid rgba(125, 90, 54, 0.25);
     background: #FFFFFF;
     color: #4E3B2B;
-    font-weight: 500;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.date-input:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(125, 90, 54, 0.12);
+    border-color: rgba(125, 90, 54, 0.4);
 }
 
 .date-input:focus {
     outline: none;
     border-color: #7D5A36;
     box-shadow: 0 0 0 3px rgba(125, 90, 54, 0.22);
+    transform: translateY(-1px);
+}
+
+/* Custom date picker styling for DaySummary */
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.date-input::-webkit-datetime-edit-month-field,
+.date-input::-webkit-datetime-edit-day-field,
+.date-input::-webkit-datetime-edit-year-field {
+    padding: 0.2em 0.3em;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.date-input::-webkit-datetime-edit-month-field:focus,
+.date-input::-webkit-datetime-edit-day-field:focus,
+.date-input::-webkit-datetime-edit-year-field:focus {
+    background: rgba(125, 90, 54, 0.15);
+    outline: none;
 }
 
 .meta-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: rgba(125, 90, 54, 0.6);
+    margin-bottom: 2px;
 }
 
 .meta-value {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #4E3B2B;
-}
-
-.daily-review__tags-card {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #4E3B2B;
-    margin-bottom: 4px;
-}
-
-.daily-review__tags-flow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-}
-
-.tag-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #7D5A36, #6B4A2E);
-    color: #FFFFFF;
-    font-size: 0.85rem;
-    font-weight: 600;
-    box-shadow: 0 10px 18px rgba(125, 90, 54, 0.18);
-}
-
-.tag-chip__remove {
-    background: #FFFFFF;
-    color: #7D5A36;
-    border: none;
-    width: 20px;
-    height: 20px;
-    line-height: 1;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.tag-chip__remove:hover {
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.tag-input {
-    min-width: 150px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px dashed rgba(125, 90, 54, 0.35);
-    background: #FFFFFF;
-    color: #4E3B2B;
-    font-size: 0.9rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.tag-input:focus {
-    outline: none;
-    border-color: rgba(125, 90, 54, 0.6);
-    box-shadow: 0 0 0 2px rgba(125, 90, 54, 0.2);
 }
 
 .daily-review__editor-card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .editor-shell {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .editor-surface {
     background: #FFFFFF;
-    border-radius: 18px;
+    border-radius: 16px;
     border: 1px solid rgba(210, 196, 160, 0.45);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    padding: 16px;
+    padding: 14px;
 }
 
 .editor-surface--quill {
@@ -785,11 +1317,11 @@ onUnmounted(() => {
 .editor-surface--loading .skeleton-chip {
     border-radius: 10px;
     background: rgba(242, 226, 201, 0.9);
-    height: 32px;
+    height: 28px;
 }
 
 .editor-surface--loading .skeleton-bar {
-    height: 16px;
+    height: 14px;
     border-radius: 8px;
     background: rgba(242, 226, 201, 0.9);
 }
@@ -801,30 +1333,20 @@ onUnmounted(() => {
 :deep(.editor-surface--quill .ql-toolbar.ql-snow) {
     border: none;
     background: #FFF5E8;
-    padding: 12px 16px;
+    padding: 10px 14px;
 }
 
 :deep(.editor-surface--quill .ql-container.ql-snow) {
     border: none;
-    padding: 16px;
+    padding: 14px;
 }
 
 :deep(.editor-surface--quill .ql-editor) {
-    min-height: 240px;
-    font-size: 1rem;
+    min-height: 200px;
+    font-size: 0.95rem;
     color: #4E3B2B;
     font-family: inherit;
     background: #FFFFFF;
-}
-
-.mood-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.mood-card__picker {
-    width: 100%;
 }
 
 .slider {

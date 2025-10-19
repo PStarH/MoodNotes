@@ -60,6 +60,7 @@ export interface DaySummary {
   customSections: Array<{ title: string; content: string }>
   tags: string[]
   media: Array<{ type: string; url: string }>
+  sparks: string[] // Daily inspiration/highlights
 }
 
 export interface MoodDetails {

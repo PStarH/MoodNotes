@@ -6,7 +6,7 @@
     >
         <button
             type="button"
-            class="flex w-full items-center gap-3 rounded-2xl border border-[#D3C9A6] bg-gradient-to-br from-[#FCF7EA]/90 to-[#F3E8CE]/90 px-4 py-3 text-left text-[#4E3B2B] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36]"
+            class="flex w-full items-center gap-2 rounded-2xl border border-[#D3C9A6] bg-gradient-to-br from-[#FCF7EA]/90 to-[#F3E8CE]/90 px-3 py-2 text-left text-[#4E3B2B] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36]"
             :aria-expanded="isOpen"
             :aria-controls="listboxId"
             :aria-haspopup="'listbox'"
@@ -18,16 +18,16 @@
             @keydown.space.prevent="commitCurrentHighlight"
             @keydown.esc.stop.prevent="closeDropdown"
         >
-            <span class="text-2xl" aria-hidden="true">{{ selectedOption?.emoji ?? '🙂' }}</span>
+            <span class="text-xl" aria-hidden="true">{{ selectedOption?.emoji ?? '🙂' }}</span>
             <div class="flex-1">
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-[#7D5A36]/70">Choose a mood</p>
-                <p class="text-base font-semibold leading-tight">{{ selectedOption?.label ?? '\n' }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#7D5A36]/70">Choose a mood</p>
+                <p class="text-sm font-semibold leading-tight">{{ selectedOption?.label ?? '\n' }}</p>
                 <p class="text-xs text-[#7D5A36]/70">{{ selectedOption?.caption ?? defaultCaption }}</p>
             </div>
             <ChevronDown
                 class="shrink-0 text-[#7D5A36]/70 transition-transform"
                 :class="{ 'rotate-180': isOpen }"
-                :size="20"
+                :size="18"
                 aria-hidden="true"
             />
         </button>

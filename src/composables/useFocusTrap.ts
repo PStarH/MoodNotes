@@ -136,8 +136,9 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
     focusableElements[nextIndex].focus({ preventScroll: true })
   }
 
+  let isFocusing = false
   const handleFocusIn = (event: FocusEvent) => {
-    if (allowTabOutside) return
+    if (allowTabOutside || isFocusing) return
 
     if (!isEventInsideContainer(event.target)) {
       const container = containerRef.value
@@ -146,7 +147,12 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
       const focusableElements = getFocusableElements(container)
       const fallbackTarget = focusableElements[0] ?? container
 
+      isFocusing = true
       fallbackTarget.focus({ preventScroll: true })
+      // Reset the flag after a brief delay to allow the focus event to complete
+      setTimeout(() => {
+        isFocusing = false
+      }, 0)
     }
   }
 

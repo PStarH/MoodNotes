@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import quotesJson from '@/assets/quotes.json'
+import type { MoodType } from '@/store/types'
 
 export interface DailyQuote {
   text: string
@@ -21,6 +22,10 @@ export interface UseDailyQuoteOptions {
    * Optional async fetcher for remote quotes. Return null to fall back to the local pool.
    */
   fetcher?: () => Promise<DailyQuote | null>
+  /**
+   * Optional mood to filter quotes by. If provided, quotes will be selected from the mood-specific pool.
+   */
+  mood?: MoodType
 }
 
 interface StoredQuotePayload {
@@ -33,22 +38,40 @@ interface StoredQuotePayload {
 const DEFAULT_STORAGE_KEY = 'moodnotes.dailyQuote'
 const DEFAULT_CACHE_WINDOW = 1000 * 60 * 60 * 24 // 24 hours
 
-const localQuotes = quotesJson as DailyQuote[]
+const moodBasedQuotes = quotesJson as Record<string, DailyQuote[]>
 
-const pickLocalQuote = (excludeText?: string): DailyQuote => {
-  if (localQuotes.length === 0) {
+/**
+ * Pick a quote from the local pool, optionally filtered by mood.
+ * If a mood is provided, quotes from that mood category are preferred.
+ * Falls back to general quotes if mood-specific quotes aren't available.
+ */
+const pickLocalQuote = (excludeText?: string, mood?: MoodType): DailyQuote => {
+  let quotesPool: DailyQuote[] = []
+
+  // Try to get mood-specific quotes first
+  if (mood && moodBasedQuotes[mood] && moodBasedQuotes[mood].length > 0) {
+    quotesPool = moodBasedQuotes[mood]
+  } else if (moodBasedQuotes.general && moodBasedQuotes.general.length > 0) {
+    // Fall back to general quotes
+    quotesPool = moodBasedQuotes.general
+  } else {
+    // Ultimate fallback: combine all available quotes
+    quotesPool = Object.values(moodBasedQuotes).flat()
+  }
+
+  if (quotesPool.length === 0) {
     return { text: 'Keep writing your story one day at a time.', author: 'MoodNotes' }
   }
 
-  if (localQuotes.length === 1) {
-    return localQuotes[0]
+  if (quotesPool.length === 1) {
+    return quotesPool[0]
   }
 
   let attempts = 0
-  let candidate = localQuotes[Math.floor(Math.random() * localQuotes.length)]
+  let candidate = quotesPool[Math.floor(Math.random() * quotesPool.length)]
 
   while (candidate.text === excludeText && attempts < 5) {
-    candidate = localQuotes[Math.floor(Math.random() * localQuotes.length)]
+    candidate = quotesPool[Math.floor(Math.random() * quotesPool.length)]
     attempts += 1
   }
 
@@ -71,6 +94,7 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
   const storageKey = options.storageKey ?? DEFAULT_STORAGE_KEY
   const cacheWindow = options.cacheWindowMs ?? DEFAULT_CACHE_WINDOW
   const remoteFetcher = options.fetcher ?? defaultRemoteFetcher
+  const mood = ref<MoodType | undefined>(options.mood)
 
   const quote = ref<DailyQuote | null>(null)
   const isLoading = ref(false)
@@ -126,7 +150,12 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
     persistQuote(value, origin)
   }
 
-  const loadQuote = async (options: { forceRefresh?: boolean } = {}) => {
+  const loadQuote = async (options: { forceRefresh?: boolean; mood?: MoodType } = {}) => {
+    // Update mood if provided
+    if (options.mood !== undefined) {
+      mood.value = options.mood
+    }
+
     if (quote.value && !options.forceRefresh) {
       return
     }
@@ -146,19 +175,23 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
         return
       }
 
-      const localQuote = pickLocalQuote(quote.value?.text)
+      const localQuote = pickLocalQuote(quote.value?.text, mood.value)
       applyQuote(localQuote, 'local')
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load quote'
-      const fallbackQuote = pickLocalQuote(quote.value?.text)
+      const fallbackQuote = pickLocalQuote(quote.value?.text, mood.value)
       applyQuote(fallbackQuote, 'fallback')
     } finally {
       isLoading.value = false
     }
   }
 
-  const refreshQuote = async () => {
-    await loadQuote({ forceRefresh: true })
+  const refreshQuote = async (newMood?: MoodType) => {
+    await loadQuote({ forceRefresh: true, mood: newMood })
+  }
+
+  const updateMood = (newMood: MoodType) => {
+    mood.value = newMood
   }
 
   const quoteText = computed(() => quote.value?.text ?? '')
@@ -174,7 +207,9 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
     lastUpdated,
     isLoading,
     error,
+    mood,
     initializeQuote: loadQuote,
-    refreshQuote
+    refreshQuote,
+    updateMood
   }
 }

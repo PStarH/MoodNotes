@@ -2,20 +2,21 @@
   <div
     ref="panelRef"
     class="backup-panel glass-effect rounded-2xl p-6 warm-shadow-lg fade-in"
+    style="max-height: 85vh; overflow-y: auto;"
     role="dialog"
     aria-labelledby="backup-title"
     aria-modal="true"
   >
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      <h2 id="backup-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center">
+      <h2 id="backup-title" class="text-2xl font-bold text-themed flex items-center">
         <span class="mr-3" aria-hidden="true">💾</span>Backup & Export
       </h2>
       <button
         type="button"
         id="backup-panel-close"
         @click="$emit('close')"
-        class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
+        class="p-2 rounded-lg transition-all themed-button-hover text-themed-primary"
         aria-label="Close backup panel"
       >
         <X :size="24" aria-hidden="true" />
@@ -24,10 +25,10 @@
 
     <!-- Export Section -->
     <div class="mb-8">
-      <h3 id="export-section" class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center">
+      <h3 id="export-section" class="text-xl font-semibold text-themed mb-4 flex items-center">
         <span class="mr-2" aria-hidden="true">📤</span>Export Data
       </h3>
-      <p class="text-[#7D5A36] mb-4">Download your diary data in various formats for backup or migration.</p>
+      <p class="text-themed-secondary mb-4">Download your diary data in various formats for backup or migration.</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4" role="group" aria-labelledby="export-section">
         <button
@@ -40,8 +41,8 @@
           class="export-button flex flex-col items-center p-4 glass-effect rounded-xl hover-lift transition-all duration-200 warm-shadow disabled:opacity-50"
         >
           <div class="text-3xl mb-2" aria-hidden="true">📄</div>
-          <span class="font-semibold text-[#4E3B2B]">JSON</span>
-          <span class="text-sm text-[#7D5A36] text-center">Complete backup with all data</span>
+          <span class="font-semibold text-themed">JSON</span>
+          <span class="text-sm text-themed-secondary text-center">Complete backup with all data</span>
         </button>
 
         <button
@@ -320,6 +321,30 @@ const clearMessage = () => {
 </script>
 
 <style scoped>
+.backup-panel {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #D3C9A6 #FAF3E0;
+}
+
+.backup-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.backup-panel::-webkit-scrollbar-track {
+  background: #FAF3E0;
+  border-radius: 10px;
+}
+
+.backup-panel::-webkit-scrollbar-thumb {
+  background: #D3C9A6;
+  border-radius: 10px;
+}
+
+.backup-panel::-webkit-scrollbar-thumb:hover {
+  background: #C5B896;
+}
+
 .export-button:hover {
   transform: translateY(-2px);
 }

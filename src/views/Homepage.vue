@@ -10,14 +10,28 @@
             <nav class="flex-1">
                 <ul class="list-none p-0 space-y-2">
                     <li class="mb-3">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]">
+                        <router-link
+                            to="/"
+                            class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                            :class="{ 'bg-[#FAF3E0]': $route.path === '/' }"
+                        >
                             <List class="mr-3" :size="20" />
                             <span class="font-medium">Home</span>
-                        </a>
+                        </router-link>
+                    </li>
+                    <li class="mb-3">
+                        <router-link
+                            to="/analytics"
+                            class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                            :class="{ 'bg-[#FAF3E0]': $route.path === '/analytics' }"
+                        >
+                            <BarChart3 class="mr-3" :size="20" />
+                            <span class="font-medium">Analytics</span>
+                        </router-link>
                     </li>
                     <li class="mb-3">
                         <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
-                            @click="isDetailedCalendarOpen = true">
+                            @click="openCalendar">
                             <Calendar class="mr-3" :size="20" />
                             <span class="font-medium">Calendar</span>
                         </a>
@@ -71,13 +85,6 @@
 
             <!-- Dashboard Tab -->
             <div v-show="activeTab === 'dashboard'" class="space-y-6">
-                <!-- Today's Summary -->
-                <TodaySummary
-                    @open-entry="openJournalForToday"
-                    @open-habits="isHabitPopupOpen = true"
-                    @view-insights="activeTab = 'journal'"
-                />
-
                 <div class="grid gap-6 lg:grid-cols-3">
                     <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col justify-between lg:col-span-2">
                         <div class="flex flex-col gap-6">
@@ -105,6 +112,11 @@
                                     <FileText :size="18" />
                                     New Entry
                                 </button>
+                                <router-link to="/analytics"
+                                    class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#A67C52] to-[#8B6848] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
+                                    <BarChart3 :size="18" />
+                                    View Analytics
+                                </router-link>
                                 <button @click="openTaskModal"
                                     class="flex items-center gap-2 px-5 py-3 rounded-xl glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] font-semibold hover-lift transition-all duration-200">
                                     <Plus :size="18" />
@@ -118,26 +130,27 @@
                             </div>
                             <div
                                 class="daily-quote-card glass-effect px-4 py-4 rounded-2xl text-[#4E3B2B] border border-[#D3C9A6]/40"
+                                style="height: 180px; display: flex; flex-direction: column;"
                                 role="note"
                                 aria-live="polite"
                             >
-                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                    <div class="flex items-start gap-3 flex-1">
-                                        <span class="text-3xl sm:text-4xl" aria-hidden="true">✨</span>
-                                        <div class="space-y-2">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4" style="flex: 1; min-height: 0;">
+                                    <div class="flex items-start gap-3 flex-1" style="min-height: 0;">
+                                        <span class="text-3xl sm:text-4xl flex-shrink-0" aria-hidden="true">✨</span>
+                                        <div class="space-y-2 flex-1 flex flex-col justify-center" style="min-height: 0; overflow: hidden;">
                                             <p v-if="isQuoteLoading" class="text-sm sm:text-base text-[#7D5A36]">Loading today's inspiration...</p>
                                             <template v-else-if="quoteText">
-                                                <p class="text-base sm:text-lg font-medium leading-relaxed">“{{ quoteText }}”</p>
-                                                <p v-if="quoteAuthor" class="text-sm text-[#7D5A36]/80">— {{ quoteAuthor }}</p>
+                                                <p class="text-base sm:text-lg font-medium leading-relaxed line-clamp-3 overflow-hidden">"{{ quoteText }}"</p>
+                                                <p v-if="quoteAuthor" class="text-sm text-[#7D5A36]/80 truncate">— {{ quoteAuthor }}</p>
                                             </template>
-                                            <p v-else-if="quoteError" class="text-sm text-red-600">{{ quoteError }}</p>
+                                            <p v-else-if="quoteError" class="text-sm text-red-600 truncate">{{ quoteError }}</p>
                                             <p v-else class="text-sm sm:text-base text-[#7D5A36]">{{ quotePlaceholderCopy }}</p>
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         class="inline-flex items-center gap-2 self-start sm:self-center px-4 py-2 rounded-xl bg-[#7D5A36] text-white text-sm font-semibold hover:bg-[#6B4A2E] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36] disabled:opacity-60 disabled:cursor-not-allowed"
-                                        @click="refreshQuote"
+                                        @click="() => refreshQuote(getMostRecentMood())"
                                         :disabled="isQuoteLoading"
                                         :aria-busy="isQuoteLoading"
                                         aria-label="Refresh daily quote"
@@ -146,14 +159,14 @@
                                         <span>{{ isQuoteLoading ? 'Refreshing…' : 'New quote' }}</span>
                                     </button>
                                 </div>
-                                <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/80">
+                                <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/80 flex-shrink-0" style="height: 24px; overflow: hidden;">
                                     <span class="inline-flex items-center gap-1">
                                         <span class="w-2 h-2 rounded-full bg-[#7D5A36]" aria-hidden="true"></span>
                                         <span>{{ quoteSourceLabel }}</span>
                                     </span>
                                     <span v-if="quoteUpdatedLabel" :title="quoteUpdatedTitle">Updated {{ quoteUpdatedLabel }}</span>
                                     <span v-else>Waiting for first quote</span>
-                                    <span v-if="quoteError" class="text-red-600">Offline mode — {{ quoteError }}</span>
+                                    <span v-if="quoteError" class="text-red-600 truncate">Offline mode</span>
                                 </div>
                             </div>
                         </div>
@@ -195,6 +208,13 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Today's Summary -->
+                <TodaySummary
+                    @open-entry="openJournalForToday"
+                    @open-habits="isHabitPopupOpen = true"
+                    @view-insights="activeTab = 'journal'"
+                />
 
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <div v-for="stat in dashboardStats" :key="stat.label"
@@ -295,7 +315,7 @@
                     </div>
                 </div>
 
-                <div class="grid gap-6 lg:grid-cols-3">
+                <div class="grid gap-6 lg:grid-cols-2">
                     <div class="glass-effect p-6 rounded-2xl warm-shadow flex flex-col gap-4">
                         <div class="flex items-start justify-between">
                             <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
@@ -342,159 +362,7 @@
                             <p>Use the spark field below to jot down inspiration and highlights.</p>
                         </div>
                     </div>
-
-                    <div class="glass-effect p-6 rounded-2xl warm-shadow flex flex-col gap-4">
-                        <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
-                            <span>🧠</span>
-                            Comparison Notes
-                        </h3>
-                        <div v-if="comparisonSummary.exists" class="space-y-3 text-sm text-[#7D5A36]/80">
-                            <p><strong class="text-[#4E3B2B]">Mood match:</strong> {{ comparisonSummary.mood ? comparisonSummary.mood : 'n/a' }}</p>
-                            <p v-if="comparisonSummary.tags && comparisonSummary.tags.length"><strong class="text-[#4E3B2B]">Tags:</strong> {{ comparisonSummary.tags.slice(0, 3).join(', ') }}<span v-if="comparisonSummary.tags.length > 3"> +{{ comparisonSummary.tags.length - 3 }} more</span></p>
-                            <p>{{ comparisonSummary.preview }}</p>
-                        </div>
-                        <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">Start your history.</p>
-                            <p>Log entries consistently to see meaningful comparisons a year from now.</p>
-                        </div>
-                    </div>
                 </div>
-
-                <!-- Calendar -->
-                <div class="mb-6 fade-in" @click="testClick">
-                <div class="flex justify-between items-center mb-2.5">
-                    <h3 class="text-lg font-bold text-[#4E3B2B]">Calendar</h3>
-                    <div>
-                        <button @click.stop="prevMonth" class="bg-transparent border-0 cursor-pointer mr-2.5">
-                            <ChevronLeft color="#4E3B2B" :size="24" />
-                        </button>
-                        <span class="text-[#4E3B2B] font-bold">
-                            {{ currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }) }}
-                        </span>
-                        <button @click.stop="nextMonth" class="bg-transparent border-0 cursor-pointer ml-2.5">
-                            <ChevronRight color="#4E3B2B" :size="24" />
-                        </button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-7 gap-3 glass-effect p-5 rounded-xl warm-shadow">
-                    <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
-                        class="text-center font-bold text-[#7D5A36]">
-                        {{ day }}
-                    </div>
-                    <template v-for="(day, index) in calendarDays" :key="index">
-                        <div v-if="day.type === 'day'" class="calendar-day"
-                            :class="{ 'last-year-anniversary': day.isLastYearAnniversary }"
-                            :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }"
-                            @click="handleDayClick(day.date)"
-                            @keyup.enter="handleDayClick(day.date)"
-                            @keyup.space="handleDayClick(day.date)"
-                            tabindex="0"
-                            role="button"
-                            :aria-label="`Day ${day.day}, ${hasSummary(day.date) ? 'has summary' : 'no summary'}${day.isLastYearAnniversary ? ', anniversary of last year' : ''}`">
-                            <div v-if="day.isLastYearAnniversary" class="anniversary-badge">🕰️</div>
-                            <div v-if="hasSummary(day.date)" class="emotion-icon">{{ day.emotion.emoji || '⬜️' }}</div>
-                            <span>{{ day.day }}</span>
-                            <div v-if="hasTasks(day.date)" class="task-indicator"></div>
-                            <div v-if="hasSummary(day.date)" class="summary-indicator"></div>
-                        </div>
-                        <div v-else class="calendar-day empty"></div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Analytics Charts -->
-            <div class="grid gap-6 lg:grid-cols-2 mb-6">
-                <MoodTrendChart />
-                <WordCountChart />
-            </div>
-
-            <div class="mb-6">
-                <EnergyStressChart />
-            </div>
-
-            <!-- Habit Trend Insights -->
-            <div class="mb-6">
-                <HabitTrendInsights @manage-habits="isHabitPopupOpen = true" />
-            </div>
-
-            <!-- Monthly Summary -->
-            <div class="glass-effect rounded-xl warm-shadow-lg overflow-hidden mb-8 fade-in">
-                <div @click="toggleMonthlySummary"
-                    class="bg-gradient-to-r from-[#4E3B2B] to-[#5D4433] p-5 flex justify-between items-center cursor-pointer hover-lift">
-                    <h3 class="text-xl font-bold text-white flex items-center"><span class="mr-2">📊</span>Monthly Summary</h3>
-                    <ChevronDownIcon :class="{ 'transform rotate-180': isMonthlySummaryOpen }"
-                        class="text-white transition-transform duration-300" />
-                </div>
-                <transition enter-active-class="transition-all duration-300 ease-out"
-                    leave-active-class="transition-all duration-300 ease-in" enter-from-class="opacity-0 max-h-0"
-                    enter-to-class="opacity-100 max-h-[1000px]" leave-from-class="opacity-100 max-h-[1000px]"
-                    leave-to-class="opacity-0 max-h-0">
-                    <div v-if="isMonthlySummaryOpen" class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            
-                            <!-- Total Words This Month -->
-                            <SummaryCard title="Words Written This Month">
-                                <p>{{ totalWordsThisMonth }} words</p>
-                            </SummaryCard>
-
-                            <!-- Number of Tags This Year -->
-                            <SummaryCard title="Unique Tags This Year">
-                                <p>{{ numberOfTagsThisYear }} tags</p>
-                            </SummaryCard>
-
-                            <!-- Most Used Tag -->
-                            <SummaryCard title="Most Used Tag">
-                                <p>{{ mostUsedTag || 'No tags used' }}</p>
-                            </SummaryCard>
-
-                            <!-- Average Energy Level -->
-                            <SummaryCard title="Average Energy Level This Month">
-                                <p>{{ averageEnergyLevel }}/10</p>
-                            </SummaryCard>
-
-                            <!-- Existing Summary Cards... -->
-                            <SummaryCard title="Cumulative Diary Tags">
-                                <p>{{ cumulativeDiaryTags }} tags</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Max Words per Entry">
-                                <p>{{ maxWordsPerEntry }} words</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Max Entries per Day">
-                                <p>{{ maxEntriesPerDay }} entries</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Number of Words in Diary">
-                                <p>{{ numberOfWordsInDiary }} words</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Cumulative Diary">
-                                <p>{{ cumulativeDiary }} entries</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Cumulative Diary Words">
-                                <p>{{ cumulativeDiaryWords }} words</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Record Days">
-                                <p>{{ recordDays }} days</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Accumulated Record">
-                                <p>{{ accumulatedRecord }}</p>
-                            </SummaryCard>
-
-                            <SummaryCard title="Accumulated Word Count">
-                                <p>{{ accumulatedWordCount }} words</p>
-                            </SummaryCard>
-
-                            <!-- Existing Emotion Stats and Recent Sparks... -->
-
-                        </div>
-                    </div>
-                </transition>
-            </div>
 
             </div>
 
@@ -754,14 +622,21 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B]" for="task-due-date">Due Date</label>
-                        <input id="task-due-date" v-model="newTask.dueDate" type="date"
-                            class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all" />
+                        <label class="block text-sm font-semibold text-themed" for="task-due-date">
+                            <span class="flex items-center gap-2">
+                                <span>📅</span>
+                                Due Date
+                            </span>
+                        </label>
+                        <CustomDatePicker
+                            v-model="newTask.dueDate"
+                            placeholder="选择截止日期"
+                        />
                     </div>
 
                     <div class="flex justify-end">
                         <button type="submit"
-                            class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow">
+                            class="px-6 py-3 bg-themed-primary text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow">
                             Save Task
                         </button>
                     </div>
@@ -790,18 +665,18 @@
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2.5">
                         <button @click="prevMonth" class="bg-transparent border-0 cursor-pointer">
-                            <ChevronLeft color="#4E3B2B" :size="24" />
+                            <ChevronLeft :color="iconColor" :size="24" />
                         </button>
-                        <span class="text-[#4E3B2B] font-bold">
+                        <span class="font-bold text-themed">
                             {{ currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }) }}
                         </span>
                         <button @click="nextMonth" class="bg-transparent border-0 cursor-pointer">
-                            <ChevronRight color="#4E3B2B" :size="24" />
+                            <ChevronRight :color="iconColor" :size="24" />
                         </button>
                     </div>
-                    <div class="grid grid-cols-7 gap-2.5 bg-[#F0E9D2] p-4 rounded-lg">
+                    <div class="grid grid-cols-7 gap-2.5 glass-effect p-4 rounded-lg">
                         <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
-                            class="text-center font-bold text-[#7D5A36]">
+                            class="text-center font-bold text-themed-secondary">
                             {{ day }}
                         </div>
                         <template v-for="(day, index) in calendarDays" :key="index">
@@ -821,12 +696,12 @@
                 <div>
                     <div class="flex gap-5">
                         <div class="flex items-center">
-                            <div class="w-3 h-3 rounded-full bg-[#4E3B2B] mr-1.5"></div>
-                            <span class="text-[#4E3B2B]">Tasks</span>
+                            <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-primary);"></div>
+                            <span class="text-themed">Tasks</span>
                         </div>
                         <div class="flex items-center">
-                            <div class="w-3 h-3 rounded-full bg-[#7D5A36] mr-1.5"></div>
-                            <span class="text-[#4E3B2B]">Day Summary</span>
+                            <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-secondary);"></div>
+                            <span class="text-themed">Day Summary</span>
                         </div>
                     </div>
                 </div>
@@ -904,15 +779,15 @@
         </div>
 
         <!-- Search Panel -->
-    <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
-            <div class="max-w-6xl w-full mx-4">
+    <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-start justify-center z-50 overflow-y-auto py-8" role="presentation">
+            <div class="w-full mx-4" style="max-width: min(1200px, 95vw);">
                 <SearchPanel @close="isSearchPanelOpen = false" @select-entry="handleSelectEntry" />
             </div>
         </div>
 
         <!-- Backup Panel -->
-    <div v-if="isBackupPanelOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50" role="presentation">
-            <div class="max-w-4xl w-full mx-4">
+    <div v-if="isBackupPanelOpen" class="fixed inset-0 modal-backdrop flex items-start justify-center z-50 overflow-y-auto py-8" role="presentation">
+            <div class="w-full mx-4" style="max-width: min(900px, 95vw);">
                 <BackupPanel @close="isBackupPanelOpen = false" />
             </div>
         </div>
@@ -961,7 +836,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3 } from 'lucide-vue-next'
+import DOMPurify from 'dompurify'
+import { formatDate, formatRelativeTime, formatDateLong } from '@/utils/dateFormatters'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
 import SearchPanel from '../components/SearchPanel.vue'
@@ -971,12 +849,9 @@ import DevPanel from '../components/DevPanel.vue'
 import EmptyState from '../components/EmptyState.vue'
 import HabitStreak from '../components/HabitStreak.vue'
 import TabNavigation from '../components/TabNavigation.vue'
-import MoodTrendChart from '../components/MoodTrendChart.vue'
-import WordCountChart from '../components/WordCountChart.vue'
-import EnergyStressChart from '../components/EnergyStressChart.vue'
 import TodayHabitCompletion from '../components/TodayHabitCompletion.vue'
 import TodaySummary from '../components/TodaySummary.vue'
-import HabitTrendInsights from '../components/HabitTrendInsights.vue'
+import CustomDatePicker from '../components/CustomDatePicker.vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
@@ -987,9 +862,26 @@ import { useModalFocus } from '@/composables/useFocusTrap'
 import type { Task, DaySummary as DaySummaryEntry, Habit, HabitStatus, DaySummaryHabit } from '@/store/types'
 
 const store = useStore()
+const route = useRoute()
 const { addShortcut } = useKeyboardShortcuts()
 const { filteredSummaries } = useSearch()
 const toast = useToast()
+
+// Get the user's most recent mood from their latest entry
+const getMostRecentMood = (): 'happy' | 'neutral' | 'sad' | 'excited' | 'angry' | undefined => {
+    const summaries = store.state.daySummaries as DaySummaryEntry[]
+    if (summaries.length === 0) return undefined
+    
+    // Sort by date descending and get the most recent entry
+    const sortedSummaries = [...summaries].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+    
+    const recentMood = sortedSummaries[0]?.mood
+    const validMoods = ['happy', 'neutral', 'sad', 'excited', 'angry']
+    return validMoods.includes(recentMood) ? recentMood as any : undefined
+}
+
 const {
     quoteText,
     quoteAuthor,
@@ -999,7 +891,7 @@ const {
     error: quoteError,
     initializeQuote,
     refreshQuote
-} = useDailyQuote()
+} = useDailyQuote({ mood: getMostRecentMood() })
 
 // Historical comparison for "Last Year Today" feature
 const today = ref(new Date())
@@ -1008,8 +900,7 @@ const {
   lastYearDateString,
   lastYearMood,
   lastYearTags,
-  lastYearSummaryPreview,
-  comparisonSummary,
+    lastYearSummaryPreview,
   lastYearDate
 } = useHistoricalComparison(today)
 
@@ -1056,6 +947,11 @@ const quoteUpdatedLabel = computed(() => {
 const quoteUpdatedTitle = computed(() => {
     if (!lastUpdated.value) return ''
     return lastUpdated.value.toLocaleString()
+})
+
+// Dynamic icon color based on theme
+const iconColor = computed(() => {
+    return getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim() || '#4E3B2B'
 })
 
 interface EmotionDetails {
@@ -1172,13 +1068,6 @@ const getFirstDayOfMonth = (year: number, month: number) => {
     return new Date(year, month, 1).getDay()
 }
 
-const formatDate = (date: Date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-}
-
 // Updated calendarDays Computed Property
 type CalendarDayItem =
     | { type: 'empty'; day: null; date: null; emotion: EmotionDetails; isLastYearAnniversary: false }
@@ -1245,34 +1134,11 @@ const mapMoodToEmotion = (mood: string): EmotionDetails => {
 
 // Utility function to strip HTML tags for safe display
 const stripHtml = (html: string): string => {
+    // Sanitize HTML first to prevent XSS attacks
+    const sanitized = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] })
     const tmp = document.createElement('DIV')
-    tmp.innerHTML = html
+    tmp.textContent = sanitized
     return tmp.textContent || tmp.innerText || ''
-}
-
-// Format relative time (Today, Yesterday, 2 days ago, etc.)
-const formatRelativeTime = (dateString: string): string => {
-    const entryDate = new Date(dateString)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    entryDate.setHours(0, 0, 0, 0)
-
-    const diffTime = today.getTime() - entryDate.getTime()
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) {
-        const weeks = Math.floor(diffDays / 7)
-        return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`
-    }
-    if (diffDays < 365) {
-        const months = Math.floor(diffDays / 30)
-        return months === 1 ? '1 month ago' : `${months} months ago`
-    }
-    const years = Math.floor(diffDays / 365)
-    return years === 1 ? '1 year ago' : `${years} years ago`
 }
 
 // Get word count from HTML content
@@ -1493,6 +1359,12 @@ const openTaskModal = () => {
 
 const openSearchModal = () => {
     isSearchPanelOpen.value = true
+}
+
+const openCalendar = () => {
+    // Reset to current month
+    currentDate.value = new Date()
+    isDetailedCalendarOpen.value = true
 }
 
 const formatTaskDueDate = (dateString?: string) => {
@@ -1809,7 +1681,24 @@ const emotionStats = computed(() => {
 })
 
 const recentSparks = computed(() => {
-    return store.state.sparks.slice(-5).reverse() // Last 5 sparks
+    // Collect all sparks from all day summaries, with their dates
+    const allSparksWithDates: { spark: string; date: string }[] = []
+
+    daySummaries.value.forEach((summary: DaySummaryEntry) => {
+        if (summary.sparks && summary.sparks.length > 0) {
+            summary.sparks.forEach(spark => {
+                allSparksWithDates.push({ spark, date: summary.date })
+            })
+        }
+    })
+
+    // Sort by date (most recent first) and take last 10 sparks
+    const sortedSparks = allSparksWithDates
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10)
+        .map(item => item.spark)
+
+    return sortedSparks
 })
 
 onMounted(() => {
@@ -1817,9 +1706,16 @@ onMounted(() => {
     store.dispatch('loadDaySummaries')
     store.dispatch('loadTasks')
     store.dispatch('loadHabits')
-    store.dispatch('loadSparks')
     store.dispatch('loadCalendarEntries')
     setupKeyboardShortcuts()
+
+    // Check URL parameters to open modals
+    if (route.query.openCalendar === 'true') {
+        openCalendar()
+    }
+    if (route.query.openHabits === 'true') {
+        isHabitPopupOpen.value = true
+    }
 })
 </script>
 

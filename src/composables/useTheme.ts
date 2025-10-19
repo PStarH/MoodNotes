@@ -33,14 +33,14 @@ const themes: Record<Theme, ThemeConfig> = {
   dark: {
     name: 'Dark',
     colors: {
-      primary: '#D4B896',
-      secondary: '#C5A882',
+      primary: '#D4A574',
+      secondary: '#B8956A',
       accent: '#8B7355',
-      background: '#2D2418',
-      surface: '#3A2F1F',
-      text: '#F0E9D2',
-      textSecondary: '#D4B896',
-      border: '#4A3D2A'
+      background: '#1A1410',
+      surface: '#2B2318',
+      text: '#F5EFE7',
+      textSecondary: '#C9B99A',
+      border: 'rgba(212, 165, 116, 0.15)'
     }
   },
   auto: {

@@ -2,6 +2,7 @@
   <div
     ref="panelRef"
     class="search-panel glass-effect rounded-2xl p-6 warm-shadow-lg fade-in"
+    style="max-height: 85vh; overflow-y: auto;"
     role="dialog"
     aria-labelledby="search-panel-title"
     aria-modal="true"
@@ -9,14 +10,15 @@
   >
     <!-- Search Header -->
     <div class="flex justify-between items-center mb-6">
-      <h2 id="search-panel-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center">
+      <h2 id="search-panel-title" class="text-2xl font-bold" style="color: var(--color-text);">
         <span class="mr-3" aria-hidden="true">🔍</span>Search & Filter
       </h2>
       <button
         type="button"
         id="search-panel-close"
         @click="$emit('close')"
-        class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
+        class="p-2 rounded-lg transition-all hover:opacity-80"
+        style="color: var(--color-primary);"
         aria-label="Close search panel"
       >
         <X :size="24" aria-hidden="true" />
@@ -33,10 +35,11 @@
           @input="handleSearch"
           type="text"
           placeholder="Search your diary entries..."
-          class="w-full px-4 py-3 pl-12 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+          class="w-full px-4 py-3 pl-12 glass-effect rounded-xl focus:outline-none focus:ring-2 transition-all"
+          style="color: var(--color-text); border-color: var(--color-border);"
           aria-label="Search diary entries"
         />
-        <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#7D5A36]" :size="20" aria-hidden="true" />
+        <Search class="absolute left-4 top-1/2 transform -translate-y-1/2" style="color: var(--color-primary);" :size="20" aria-hidden="true" />
       </div>
     </div>
 
@@ -44,32 +47,27 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" role="group" aria-label="Search filters">
       <!-- Date Range -->
       <div class="space-y-2">
-        <label for="date-start" class="block text-sm font-semibold text-[#4E3B2B]">Date Range</label>
+        <label for="date-start" class="block text-sm font-semibold" style="color: var(--color-text);">Date Range</label>
         <div class="space-y-2">
-          <input
-            id="date-start"
+          <CustomDatePicker
             v-model="searchFilters.dateRange.start"
-            type="date"
-            class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
-            aria-label="Start date"
+            placeholder="开始日期"
           />
-          <input
-            id="date-end"
+          <CustomDatePicker
             v-model="searchFilters.dateRange.end"
-            type="date"
-            class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
-            aria-label="End date"
+            placeholder="结束日期"
           />
         </div>
       </div>
 
       <!-- Mood Filter -->
       <div class="space-y-2">
-        <label for="mood-filter" class="block text-sm font-semibold text-[#4E3B2B]">Mood</label>
+        <label for="mood-filter" class="block text-sm font-semibold" style="color: var(--color-text);">Mood</label>
         <select
           id="mood-filter"
           v-model="searchFilters.mood"
-          class="themed-select w-full text-[#4E3B2B]"
+          class="themed-select w-full"
+          style="color: var(--color-text);"
           aria-label="Filter by mood"
         >
           <option value="">All Moods</option>
@@ -83,7 +81,7 @@
 
       <!-- Tags Filter -->
       <div class="space-y-2">
-        <label id="tags-filter-label" class="block text-sm font-semibold text-[#4E3B2B]">Tags</label>
+        <label id="tags-filter-label" class="block text-sm font-semibold" style="color: var(--color-text);">Tags</label>
         <div class="space-y-3" role="group" aria-labelledby="tags-filter-label">
           <div class="relative">
             <input
@@ -92,7 +90,8 @@
                 @keydown="handleTagInputKeydown"
               type="text"
               placeholder="Type to find tags..."
-              class="w-full px-4 py-2 glass-effect text-[#4E3B2B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
+              class="w-full px-4 py-2 glass-effect rounded-lg focus:outline-none focus:ring-2 transition-all"
+              style="color: var(--color-text); border-color: var(--color-border);"
               role="combobox"
               aria-autocomplete="list"
               :aria-expanded="matchingTags.length > 0"
@@ -202,7 +201,7 @@
           <p class="text-sm font-bold text-[#7D5A36]" aria-label="Date range span">{{ searchStats.dateRange ? searchStats.dateSpanLabel : '—' }}</p>
           <p class="text-sm text-[#4E3B2B]">Time Span</p>
           <p v-if="searchStats.dateRange" class="text-xs text-[#7D5A36]/80 mt-1" aria-label="Date range details">
-            {{ formatDate(searchStats.dateRange.earliest) }} → {{ formatDate(searchStats.dateRange.latest) }}
+            {{ formatDateDisplay(searchStats.dateRange.earliest) }} → {{ formatDateDisplay(searchStats.dateRange.latest) }}
           </p>
         </div>
       </div>
@@ -260,10 +259,10 @@
               @click="$emit('select-entry', summary)"
               @keydown.enter="$emit('select-entry', summary)"
               @keydown.space.prevent="$emit('select-entry', summary)"
-              :aria-label="`Entry from ${formatDate(summary.date)} with ${summary.mood} mood`"
+              :aria-label="`Entry from ${formatDateDisplay(summary.date)} with ${summary.mood} mood`"
             >
               <div class="flex justify-between items-start mb-2">
-                <span class="font-semibold text-[#4E3B2B]">{{ formatDate(summary.date) }}</span>
+                <span class="font-semibold text-[#4E3B2B]">{{ formatDateDisplay(summary.date) }}</span>
                 <span class="text-2xl" aria-hidden="true">{{ getMoodEmoji(summary.mood) }}</span>
               </div>
               <p class="text-sm text-[#7D5A36] line-clamp-2">{{ getPreviewText(summary.summary) }}</p>
@@ -293,6 +292,10 @@ import { computed, ref, watch } from 'vue'
 import { X, Search } from 'lucide-vue-next'
 import { useSearch } from '@/composables/useSearch'
 import { useModalFocus } from '@/composables/useFocusTrap'
+import CustomDatePicker from './CustomDatePicker.vue'
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import { formatDateDisplay } from '@/utils/dateFormatters'
 
 const emit = defineEmits(['close', 'apply-search', 'select-entry'])
 
@@ -428,15 +431,6 @@ const setActiveTag = (index: number) => {
   activeTagIndex.value = index
 }
 
-const formatDate = (dateString?: string) => {
-  if (!dateString) return '—'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
 const getMoodEmoji = (mood: string) => {
   const moodEmojis: Record<string, string> = {
     happy: '😄',
@@ -479,6 +473,30 @@ const searchHint = computed(() => {
 </script>
 
 <style scoped>
+.search-panel {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #D3C9A6 #FAF3E0;
+}
+
+.search-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-panel::-webkit-scrollbar-track {
+  background: #FAF3E0;
+  border-radius: 10px;
+}
+
+.search-panel::-webkit-scrollbar-thumb {
+  background: #D3C9A6;
+  border-radius: 10px;
+}
+
+.search-panel::-webkit-scrollbar-thumb:hover {
+  background: #C5B896;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   line-clamp: 2;
