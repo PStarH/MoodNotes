@@ -383,21 +383,31 @@
                 aria-labelledby="journal-tab"
             >
                 <div class="mb-6 fade-in">
-                    <!-- Header with Actions -->
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <div>
-                            <h3 class="text-2xl font-bold text-[#4E3B2B] flex items-center">
-                                <span class="mr-3 text-3xl">📖</span>{{ $t('home.journal') }}
-                            </h3>
-                            <p class="text-[#7D5A36] text-sm mt-1">{{ daySummaries.length }} {{ $t('home.entriesCaptured') }}</p>
+                    <!-- Enhanced Header with Gradient Background -->
+                    <div class="glass-effect rounded-2xl p-6 warm-shadow-lg mb-6 border border-[#D3C9A6]/30">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#7D5A36] to-[#6B4A2E] flex items-center justify-center text-3xl shadow-lg">
+                                        📖
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-[#4E3B2B]">{{ $t('home.journal') }}</h3>
+                                        <p class="text-[#7D5A36] text-sm flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-[#7D5A36] animate-pulse"></span>
+                                            {{ daySummaries.length }} {{ $t('home.entriesCaptured') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                @click="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
+                                class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3.5 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow font-semibold gap-2 group"
+                            >
+                                <FileText class="group-hover:scale-110 transition-transform" :size="20" />
+                                {{ $t('home.newEntry') }}
+                            </button>
                         </div>
-                        <button
-                            @click="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
-                            class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow font-semibold"
-                        >
-                            <FileText class="mr-2" :size="20" />
-                            {{ $t('home.newEntry') }}
-                        </button>
                     </div>
 
                     <!-- Today's Habit Completion Module -->
@@ -443,33 +453,39 @@
                                     tabindex="0"
                                     role="button"
                                     :aria-label="`Journal entry from ${new Date(summary.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, mood: ${summary.mood || 'neutral'}`"
-                                    class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group"
+                                    class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group border border-[#D3C9A6]/20 hover:border-[#7D5A36]/40"
                                 >
-                                    <!-- Entry Header -->
-                                    <div class="bg-gradient-to-r from-[#7D5A36]/5 to-[#6B4A2E]/5 p-5 border-b border-[#D3C9A6]/30">
+                                    <!-- Entry Header with Enhanced Design -->
+                                    <div class="bg-gradient-to-r from-[#7D5A36]/5 via-[#D3C9A6]/5 to-[#6B4A2E]/5 p-5 border-b border-[#D3C9A6]/30">
                                         <div class="flex justify-between items-start">
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-3 mb-2">
-                                                    <span class="text-4xl" aria-hidden="true">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                                                    <div class="relative">
+                                                        <div class="absolute inset-0 bg-gradient-to-br from-[#7D5A36]/20 to-transparent rounded-full blur-xl"></div>
+                                                        <span class="text-5xl relative group-hover:scale-110 transition-transform duration-300" aria-hidden="true">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
+                                                    </div>
                                                     <div>
-                                                        <h4 class="text-lg font-bold text-[#4E3B2B]">
+                                                        <h4 class="text-lg font-bold text-[#4E3B2B] group-hover:text-[#7D5A36] transition-colors">
                                                             {{ new Date(summary.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
                                                         </h4>
-                                                        <p class="text-xs text-[#7D5A36]/70">{{ formatRelativeTime(summary.date) }}</p>
+                                                        <p class="text-xs text-[#7D5A36]/70 flex items-center gap-1.5">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-[#7D5A36] opacity-60"></span>
+                                                            {{ formatRelativeTime(summary.date) }}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Entry Indicators -->
+                                            <!-- Entry Indicators with Better Styling -->
                                             <div class="flex gap-2">
                                                 <span v-if="summary.media && summary.media.length > 0"
-                                                    class="px-2 py-1 bg-[#7D5A36]/10 rounded-lg text-xs text-[#7D5A36] flex items-center gap-1"
+                                                    class="px-3 py-1.5 bg-gradient-to-r from-[#7D5A36]/10 to-[#6B4A2E]/10 rounded-xl text-xs text-[#7D5A36] font-semibold flex items-center gap-1.5 shadow-sm"
                                                     :title="`${summary.media.length} media file(s)`">
                                                     <Camera :size="14" aria-hidden="true" />
                                                     {{ summary.media.length }}
                                                 </span>
                                                 <span v-if="summary.habits && summary.habits.length > 0"
-                                                    class="px-2 py-1 bg-green-500/10 rounded-lg text-xs text-green-700 flex items-center gap-1"
+                                                    class="px-3 py-1.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl text-xs text-green-700 font-semibold flex items-center gap-1.5 shadow-sm"
                                                     :title="`${completedHabitCount(summary.habits)}/${summary.habits.length} habits completed`">
                                                     ✓ {{ completedHabitCount(summary.habits) }}/{{ summary.habits.length }}
                                                 </span>
@@ -477,56 +493,65 @@
                                         </div>
                                     </div>
 
-                                    <!-- Entry Content -->
-                                    <div class="p-5">
-                                        <p class="text-[#4E3B2B] text-base leading-relaxed line-clamp-4 mb-4">
-                                            {{ stripHtml(summary.summary || '') || 'No content written yet...' }}
-                                        </p>
+                                    <!-- Entry Content with Better Typography -->
+                                    <div class="p-6">
+                                        <div class="relative mb-4">
+                                            <div class="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-[#7D5A36] to-transparent rounded-full"></div>
+                                            <p class="text-[#4E3B2B] text-base leading-relaxed line-clamp-4 pl-4">
+                                                {{ stripHtml(summary.summary || '') || 'No content written yet...' }}
+                                            </p>
+                                        </div>
 
-                                        <!-- Tags and Metadata -->
+                                        <!-- Tags and Metadata with Enhanced Design -->
                                         <div class="flex flex-wrap items-center gap-3">
                                             <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-2 flex-1">
                                                 <span
                                                     v-for="tag in summary.tags.slice(0, 5)"
                                                     :key="tag"
-                                                    class="text-xs px-3 py-1.5 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full font-medium hover:bg-[#7D5A36]/20 transition-colors"
+                                                    class="text-xs px-3 py-1.5 bg-gradient-to-r from-[#7D5A36]/10 to-[#6B4A2E]/10 text-[#7D5A36] rounded-full font-semibold hover:from-[#7D5A36]/20 hover:to-[#6B4A2E]/20 transition-all shadow-sm hover:shadow"
                                                 >
                                                     #{{ tag }}
                                                 </span>
-                                                <span v-if="summary.tags.length > 5" class="text-xs px-3 py-1.5 text-[#7D5A36]/60">
-                                                    +{{ summary.tags.length - 5 }} more
+                                                <span v-if="summary.tags.length > 5" class="text-xs px-3 py-1.5 text-[#7D5A36]/60 font-medium">
+                                                    +{{ summary.tags.length - 5 }}
                                                 </span>
                                             </div>
 
-                                            <!-- Word Count -->
-                                            <div class="text-xs text-[#7D5A36]/60 font-medium">
-                                                {{ getWordCount(summary.summary) }} words
+                                            <!-- Word Count with Icon -->
+                                            <div class="flex items-center gap-1.5 text-xs text-[#7D5A36]/60 font-semibold">
+                                                <span>✍️</span>
+                                                {{ getWordCount(summary.summary) }} {{ $t('home.words') }}
                                             </div>
                                         </div>
 
-                                        <!-- Daily Check Preview -->
-                                        <div v-if="summary.dailyCheck" class="mt-4 pt-4 border-t border-[#D3C9A6]/30 flex gap-4 text-xs">
-                                            <div class="flex items-center gap-1.5">
-                                                <span aria-hidden="true">⚡</span>
-                                                <span class="text-[#7D5A36]/70">Energy:</span>
-                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.energyLevel }}/10</span>
-                                            </div>
-                                            <div class="flex items-center gap-1.5">
-                                                <span aria-hidden="true">😅</span>
-                                                <span class="text-[#7D5A36]/70">Stress:</span>
-                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.stressLevel }}/10</span>
-                                            </div>
-                                            <div class="flex items-center gap-1.5">
-                                                <span aria-hidden="true">🎨</span>
-                                                <span class="text-[#7D5A36]/70">Productivity:</span>
-                                                <span class="font-semibold text-[#4E3B2B]">{{ summary.dailyCheck.productivity }}/10</span>
+                                        <!-- Daily Check Preview with Better Design -->
+                                        <div v-if="summary.dailyCheck" class="mt-4 pt-4 border-t border-[#D3C9A6]/30">
+                                            <div class="grid grid-cols-3 gap-3">
+                                                <div class="glass-effect rounded-lg p-2.5 flex flex-col items-center gap-1 hover-lift transition-all">
+                                                    <span class="text-lg" aria-hidden="true">⚡</span>
+                                                    <span class="text-xs text-[#7D5A36]/70 font-medium">{{ $t('home.energy') }}</span>
+                                                    <span class="text-sm font-bold text-[#4E3B2B]">{{ summary.dailyCheck.energyLevel }}/10</span>
+                                                </div>
+                                                <div class="glass-effect rounded-lg p-2.5 flex flex-col items-center gap-1 hover-lift transition-all">
+                                                    <span class="text-lg" aria-hidden="true">😅</span>
+                                                    <span class="text-xs text-[#7D5A36]/70 font-medium">{{ $t('home.stress') }}</span>
+                                                    <span class="text-sm font-bold text-[#4E3B2B]">{{ summary.dailyCheck.stressLevel }}/10</span>
+                                                </div>
+                                                <div class="glass-effect rounded-lg p-2.5 flex flex-col items-center gap-1 hover-lift transition-all">
+                                                    <span class="text-lg" aria-hidden="true">🎨</span>
+                                                    <span class="text-xs text-[#7D5A36]/70 font-medium">{{ $t('home.productivity') }}</span>
+                                                    <span class="text-sm font-bold text-[#4E3B2B]">{{ summary.dailyCheck.productivity }}/10</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Hover Action Hint -->
-                                    <div class="bg-[#7D5A36]/5 px-5 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <p class="text-xs text-[#7D5A36] text-center font-medium">Click to view and edit this entry</p>
+                                    <!-- Enhanced Hover Action Hint -->
+                                    <div class="bg-gradient-to-r from-[#7D5A36]/5 via-[#D3C9A6]/5 to-[#6B4A2E]/5 px-5 py-3 opacity-0 group-hover:opacity-100 transition-all duration-200 border-t border-[#D3C9A6]/20">
+                                        <p class="text-xs text-[#7D5A36] text-center font-semibold flex items-center justify-center gap-2">
+                                            <span>👆</span>
+                                            {{ $t('home.clickToEdit') }}
+                                        </p>
                                     </div>
                                 </div>
                             </DynamicScrollerItem>
@@ -1850,14 +1875,35 @@ watch(locale, (newLocale) => {
     z-index: 10;
 }
 
-/* Journal Entry Styling */
+/* Enhanced Journal Entry Styling */
 .journal-entry {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.journal-entry::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(125, 90, 54, 0.08), transparent);
+    transition: left 0.6s ease;
+}
+
+.journal-entry:hover::before {
+    left: 100%;
 }
 
 .journal-entry:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(78, 59, 43, 0.15);
+    transform: translateY(-6px) scale(1.005);
+    box-shadow: 0 16px 40px rgba(78, 59, 43, 0.18);
+}
+
+.journal-entry:active {
+    transform: translateY(-2px) scale(0.995);
 }
 
 .journal-entry .line-clamp-4 {
@@ -1874,5 +1920,37 @@ watch(locale, (newLocale) => {
     -webkit-box-orient: vertical;
     line-clamp: 3;
     overflow: hidden;
+}
+
+/* Smooth scaling animation for emojis */
+@keyframes emoji-bounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.journal-entry:hover .text-5xl {
+    animation: emoji-bounce 0.6s ease-in-out;
+}
+
+/* Enhanced gradient effects */
+.warm-shadow-enhanced {
+    box-shadow: 0 8px 32px rgba(125, 90, 54, 0.15), 
+                0 2px 8px rgba(125, 90, 54, 0.1);
+}
+
+/* Improved spacing and typography */
+.journal-entry h4 {
+    letter-spacing: -0.02em;
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+    .journal-entry:hover {
+        transform: translateY(-4px) scale(1.002);
+    }
 }
 </style>

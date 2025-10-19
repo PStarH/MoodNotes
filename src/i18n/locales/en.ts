@@ -248,6 +248,8 @@ export default {
     startYourDay: 'Start Your Day Right',
     startYourDayDesc: 'Capture your thoughts, track your habits, and make today count.',
     createFirstEntry: 'Create First Entry',
+    clickToEdit: 'Click to view and edit',
+    stress: 'Stress',
     noWordsYet: 'No words yet',
     justGettingStarted: 'Just getting started',
     goodProgress: 'Good progress!',

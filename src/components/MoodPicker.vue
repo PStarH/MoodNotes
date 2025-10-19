@@ -6,7 +6,7 @@
     >
         <button
             type="button"
-            class="flex w-full items-center gap-2 rounded-2xl border border-[#D3C9A6] bg-gradient-to-br from-[#FCF7EA]/90 to-[#F3E8CE]/90 px-3 py-2 text-left text-[#4E3B2B] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36]"
+            class="flex w-full items-center gap-3 rounded-2xl border-2 border-[#D3C9A6] bg-gradient-to-br from-[#FCF7EA]/90 to-[#F3E8CE]/90 px-4 py-3 text-left text-[#4E3B2B] shadow-[inset_0_2px_0_rgba(255,255,255,0.6),0_4px_12px_rgba(125,90,54,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(125,90,54,0.15)] hover:border-[#7D5A36] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7D5A36] group"
             :aria-expanded="isOpen"
             :aria-controls="listboxId"
             :aria-haspopup="'listbox'"
@@ -18,16 +18,19 @@
             @keydown.space.prevent="commitCurrentHighlight"
             @keydown.esc.stop.prevent="closeDropdown"
         >
-            <span class="text-xl" aria-hidden="true">{{ selectedOption?.emoji ?? '🙂' }}</span>
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#7D5A36]/10 to-transparent rounded-full blur-md group-hover:blur-lg transition-all"></div>
+                <span class="text-3xl relative group-hover:scale-110 transition-transform" aria-hidden="true">{{ selectedOption?.emoji ?? '🙂' }}</span>
+            </div>
             <div class="flex-1">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#7D5A36]/70">{{ $t('daySummary.chooseMood') }}</p>
-                <p class="text-sm font-semibold leading-tight">{{ selectedOption?.label ?? '\n' }}</p>
-                <p class="text-xs text-[#7D5A36]/70">{{ selectedOption?.caption ?? defaultCaption }}</p>
+                <p class="text-xs font-bold uppercase tracking-[0.12em] text-[#7D5A36]/70 mb-0.5">{{ $t('daySummary.chooseMood') }}</p>
+                <p class="text-base font-bold leading-tight text-[#4E3B2B] group-hover:text-[#7D5A36] transition-colors">{{ selectedOption?.label ?? '\n' }}</p>
+                <p class="text-xs text-[#7D5A36]/70 mt-0.5">{{ selectedOption?.caption ?? defaultCaption }}</p>
             </div>
             <ChevronDown
-                class="shrink-0 text-[#7D5A36]/70 transition-transform"
+                class="shrink-0 text-[#7D5A36]/70 transition-transform group-hover:text-[#7D5A36]"
                 :class="{ 'rotate-180': isOpen }"
-                :size="18"
+                :size="20"
                 aria-hidden="true"
             />
         </button>
@@ -43,7 +46,7 @@
             <ul
                 v-if="isOpen"
                 :id="listboxId"
-                class="absolute left-0 right-0 z-30 mt-2 max-h-64 overflow-y-auto rounded-2xl border border-[#E2D6B8] bg-[#FCF7EA] p-2 text-[#4E3B2B] shadow-xl ring-1 ring-black/5"
+                class="absolute left-0 right-0 z-30 mt-2 max-h-64 overflow-y-auto rounded-2xl border-2 border-[#E2D6B8] bg-[#FCF7EA] p-2 text-[#4E3B2B] shadow-[0_12px_32px_rgba(125,90,54,0.2)] ring-1 ring-black/5 backdrop-blur-sm"
                 role="listbox"
                 :aria-activedescendant="activeOptionId"
                 tabindex="-1"
@@ -62,17 +65,18 @@
                     @mouseenter="highlightIndex = index"
                     @mouseleave="highlightIndex = selectedIndex"
                     @click="selectOption(option)"
-                    class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all"
+                    class="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all hover:-translate-y-0.5"
                     :class="[
-                        option.value === modelValue ? 'bg-[#7D5A36]/10 font-semibold shadow-inner' : 'hover:bg-[#7D5A36]/10',
-                        highlightIndex === index ? 'ring-2 ring-[#7D5A36]/40' : ''
+                        option.value === modelValue ? 'bg-gradient-to-r from-[#7D5A36]/15 to-[#6B4A2E]/15 font-bold shadow-inner border-l-4 border-[#7D5A36]' : 'hover:bg-[#7D5A36]/10 hover:shadow-md',
+                        highlightIndex === index ? 'ring-2 ring-[#7D5A36]/50 shadow-lg' : ''
                     ]"
                 >
-                    <span class="text-xl" aria-hidden="true">{{ option.emoji }}</span>
-                    <div class="flex flex-col">
-                        <span>{{ option.label }}</span>
+                    <span class="text-2xl transition-transform hover:scale-110" aria-hidden="true">{{ option.emoji }}</span>
+                    <div class="flex flex-col flex-1">
+                        <span class="text-sm font-semibold">{{ option.label }}</span>
                         <span class="text-xs text-[#7D5A36]/70">{{ option.caption }}</span>
                     </div>
+                    <span v-if="option.value === modelValue" class="text-[#7D5A36] font-bold">✓</span>
                 </li>
             </ul>
         </transition>

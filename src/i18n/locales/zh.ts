@@ -214,12 +214,12 @@ export default {
     exportPdf: '导出 PDF',
     exportMarkdown: '导出 Markdown',
     exportHtml: '导出 HTML',
-  lastYearToday: '去年今日',
+    lastYearToday: '去年今日',
     lastYearMood: '当时心情',
-    reflecting: '回望过去，见证成长 🌱'
-  },
-
-  // 任务
+    reflecting: '回望过去，见证成长 🌱',
+    clickToEdit: '点击查看和编辑',
+    stress: '压力'
+  },  // 任务
   task: {
     priority: {
       lowest: '最低优先',
