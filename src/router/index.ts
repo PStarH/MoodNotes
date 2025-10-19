@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Homepage from '../views/Homepage.vue'
-import DaySummary from '../views/DaySummary.vue'
-import Analytics from '../views/Analytics.vue'
+
+// Lazy load route components for better performance
+const Homepage = () => import('../views/Homepage.vue')
+const DaySummary = () => import('../views/DaySummary.vue')
+const Analytics = () => import('../views/Analytics.vue')
+const Settings = () => import('../views/Settings.vue')
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -13,6 +16,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/analytics',
     name: 'Analytics',
     component: Analytics
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
   },
   {
     path: '/day-summary',

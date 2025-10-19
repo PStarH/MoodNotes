@@ -5,7 +5,7 @@
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-themed flex items-center gap-2">
           <span class="text-2xl sm:text-3xl">📊</span>
-          Today's Overview
+          {{ $t('home.todaysOverview') }}
         </h2>
         <p class="text-xs sm:text-sm text-themed-secondary mt-1" style="opacity: 0.7;">{{ formattedToday }}</p>
       </div>
@@ -14,7 +14,7 @@
         @click="$emit('open-entry')"
         class="px-4 py-2.5 bg-themed-primary text-white rounded-xl hover-lift transition-all duration-200 text-sm font-semibold warm-shadow-strong touch-target"
       >
-        Edit Entry
+        {{ $t('home.editEntry') }}
       </button>
     </div>
 
@@ -23,7 +23,7 @@
       <!-- Mood Card -->
       <div class="stat-card glass-effect p-4 sm:p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" :style="{ borderLeft: `4px solid ${moodColor}` }">
         <div class="flex items-center justify-between mb-2 sm:mb-3">
-          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">Mood</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">{{ $t('home.moodCard') }}</span>
           <span class="text-3xl sm:text-4xl">{{ moodEmoji }}</span>
         </div>
         <p class="text-xl sm:text-2xl font-bold text-themed mb-1">{{ moodLabel }}</p>
@@ -33,7 +33,7 @@
       <!-- Habits Card -->
       <div class="stat-card glass-effect p-4 sm:p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" :style="{ borderLeft: '4px solid #10b981' }">
         <div class="flex items-center justify-between mb-2 sm:mb-3">
-          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">Habits</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">{{ $t('home.habitsCard') }}</span>
           <span class="text-3xl sm:text-4xl">✅</span>
         </div>
         <div class="flex items-baseline gap-2 mb-1">
@@ -54,7 +54,7 @@
       <!-- Words Card -->
       <div class="stat-card glass-effect p-4 sm:p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" :style="{ borderLeft: '4px solid #3b82f6' }">
         <div class="flex items-center justify-between mb-2 sm:mb-3">
-          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">Words</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">{{ $t('home.wordsCard') }}</span>
           <span class="text-3xl sm:text-4xl">✍️</span>
         </div>
         <p class="text-xl sm:text-2xl font-bold text-themed mb-1">{{ wordCount }}</p>
@@ -64,7 +64,7 @@
       <!-- Tags Card -->
       <div class="stat-card glass-effect p-4 sm:p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" :style="{ borderLeft: '4px solid #f59e0b' }">
         <div class="flex items-center justify-between mb-2 sm:mb-3">
-          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">Tags</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-themed-secondary">{{ $t('home.tagsCard') }}</span>
           <span class="text-3xl sm:text-4xl">🏷️</span>
         </div>
         <p class="text-xl sm:text-2xl font-bold text-themed mb-1">{{ tagCount }}</p>
@@ -78,7 +78,7 @@
             #{{ tag }}
           </span>
         </div>
-        <p v-else class="text-xs text-themed-secondary">No tags yet</p>
+        <p v-else class="text-xs text-themed-secondary">{{ $t('home.noTagsYet') }}</p>
       </div>
     </div>
 
@@ -90,7 +90,7 @@
         class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-themed-primary text-white font-semibold hover-lift transition-all duration-200 warm-shadow-strong touch-target"
       >
         <span>📝</span>
-        Start Today's Entry
+        {{ $t('home.startTodaysEntry') }}
       </button>
       <button
         v-if="hasIncompleteHabits"
@@ -99,7 +99,7 @@
         style="border-color: var(--color-border);"
       >
         <span>✅</span>
-        Complete Habits
+        {{ $t('home.completeHabits') }}
       </button>
       <button
         @click="$emit('view-insights')"
@@ -107,7 +107,7 @@
         style="border-color: var(--color-border);"
       >
         <span>📈</span>
-        View Insights
+        {{ $t('home.viewInsightsBtn') }}
       </button>
     </div>
 
@@ -115,13 +115,13 @@
     <div v-if="!hasTodayEntry && !hasAnyActivity" class="mt-6 p-6 rounded-xl border-2 border-dashed" style="background: linear-gradient(135deg, var(--color-surface), var(--color-background)); border-color: var(--color-border);">
       <div class="text-center">
         <p class="text-3xl mb-3">🌅</p>
-        <p class="text-lg font-semibold text-themed mb-2">Start Your Day Right</p>
-        <p class="text-sm text-themed-secondary mb-4" style="opacity: 0.8;">Capture your thoughts, track your habits, and make today count.</p>
+        <p class="text-lg font-semibold text-themed mb-2">{{ $t('home.startYourDay') }}</p>
+        <p class="text-sm text-themed-secondary mb-4" style="opacity: 0.8;">{{ $t('home.startYourDayDesc') }}</p>
         <button
           @click="$emit('open-entry')"
           class="px-6 py-3 bg-themed-primary text-white rounded-xl font-semibold hover-lift transition-all duration-200 warm-shadow"
         >
-          Create First Entry
+          {{ $t('home.createFirstEntry') }}
         </button>
       </div>
     </div>
@@ -131,10 +131,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
 import type { DaySummary, Habit } from '@/store/types'
 
 const emit = defineEmits(['open-entry', 'open-habits', 'view-insights'])
 const store = useStore()
+const { t } = useI18n()
 
 // Get today's date - reactive to handle date changes
 const today = computed(() => new Date().toISOString().split('T')[0])
@@ -160,11 +162,11 @@ const hasAnyActivity = computed(() => hasTodayEntry.value || habitsCompleted.val
 const moodData = computed(() => {
   const mood = todaySummary.value?.mood || 'neutral'
   const moodMap = {
-    'happy': { emoji: '😄', label: 'Happy', color: '#FFD700', description: 'Feeling great today!' },
-    'excited': { emoji: '🎉', label: 'Excited', color: '#98FB98', description: 'Full of energy!' },
-    'neutral': { emoji: '😐', label: 'Neutral', color: '#ADD8E6', description: 'A steady day' },
-    'sad': { emoji: '😢', label: 'Sad', color: '#DDA0DD', description: 'Taking it easy' },
-    'angry': { emoji: '😠', label: 'Frustrated', color: '#FF6347', description: 'Feeling challenged' }
+    'happy': { emoji: '😄', label: t('mood.happy.label'), color: '#FFD700', description: t('mood.happy.description') },
+    'excited': { emoji: '🎉', label: t('mood.excited.label'), color: '#98FB98', description: t('mood.excited.description') },
+    'neutral': { emoji: '😐', label: t('mood.neutral.label'), color: '#ADD8E6', description: t('mood.neutral.description') },
+    'sad': { emoji: '😢', label: t('mood.sad.label'), color: '#DDA0DD', description: t('mood.sad.description') },
+    'angry': { emoji: '😠', label: t('mood.angry.label'), color: '#FF6347', description: t('mood.angry.description') }
   }
   return moodMap[mood as keyof typeof moodMap] || moodMap.neutral
 })
@@ -209,11 +211,11 @@ const wordCount = computed(() => {
 })
 
 const wordCountDescription = computed(() => {
-  if (wordCount.value === 0) return 'No words yet'
-  if (wordCount.value < 50) return 'Just getting started'
-  if (wordCount.value < 150) return 'Good progress!'
-  if (wordCount.value < 300) return 'Great reflection!'
-  return 'Excellent detail!'
+  if (wordCount.value === 0) return t('home.noWordsYet')
+  if (wordCount.value < 50) return t('home.justGettingStarted')
+  if (wordCount.value < 150) return t('home.goodProgress')
+  if (wordCount.value < 300) return t('home.greatReflection')
+  return t('home.excellentDetail')
 })
 
 // Tags data

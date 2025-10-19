@@ -4,9 +4,9 @@
             <div>
                 <h3 id="word-count-title" class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                     <span aria-hidden="true">✍️</span>
-                    Writing Activity
+                    {{ $t('charts.wordCount.title') }}
                 </h3>
-                <p class="text-sm text-[#7D5A36]/80">Track your journaling consistency</p>
+                <p class="text-sm text-[#7D5A36]/80">{{ $t('charts.wordCount.subtitle') }}</p>
             </div>
             <div class="flex gap-2">
                 <button
@@ -14,20 +14,20 @@
                     @click="resetZoom"
                     class="glass-effect px-3 py-2 rounded-lg text-xs text-[#4E3B2B] hover:bg-[#7D5A36]/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Reset zoom to default view"
-                    title="Reset zoom"
+                    :title="$t('charts.wordCount.resetZoom')"
                 >
-                    <span aria-hidden="true">🔍</span> Reset
+                    {{ $t('charts.wordCount.resetZoom') }}
                 </button>
                 <select
                     v-model="timeRange"
                     class="glass-effect px-3 py-2 rounded-lg text-sm text-[#4E3B2B] focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Select time range for writing activity chart"
                 >
-                    <option value="7">Last 7 days</option>
-                    <option value="14">Last 14 days</option>
-                    <option value="30">Last 30 days</option>
-                    <option value="60">Last 60 days</option>
-                    <option value="90">Last 90 days</option>
+                    <option value="7">{{ $t('charts.wordCount.last7Days') }}</option>
+                    <option value="14">{{ $t('charts.wordCount.last14Days') }}</option>
+                    <option value="30">{{ $t('charts.wordCount.last30Days') }}</option>
+                    <option value="60">{{ $t('charts.wordCount.last60Days') }}</option>
+                    <option value="90">{{ $t('charts.wordCount.last90Days') }}</option>
                 </select>
             </div>
         </div>
@@ -39,20 +39,20 @@
             />
         </div>
         <p class="text-xs text-[#7D5A36]/60 mt-2 text-center" aria-label="Chart interaction instructions">
-            <span aria-hidden="true">💡</span> Scroll to zoom horizontally, drag to pan left/right
+            {{ $t('charts.wordCount.hint') }}
         </p>
         <div class="mt-4 grid grid-cols-3 gap-3 text-center">
             <div class="glass-effect p-3 rounded-lg transition-all hover:scale-105">
                 <p class="text-2xl font-bold text-[#4E3B2B]">{{ totalWords.toLocaleString() }}</p>
-                <p class="text-xs text-[#7D5A36]/70">Total Words</p>
+                <p class="text-xs text-[#7D5A36]/70">{{ $t('charts.wordCount.totalWords') }}</p>
             </div>
             <div class="glass-effect p-3 rounded-lg transition-all hover:scale-105">
                 <p class="text-2xl font-bold text-[#4E3B2B]">{{ averageWords }}</p>
-                <p class="text-xs text-[#7D5A36]/70">Avg/Day</p>
+                <p class="text-xs text-[#7D5A36]/70">{{ $t('charts.wordCount.avgWords') }}</p>
             </div>
             <div class="glass-effect p-3 rounded-lg transition-all hover:scale-105">
                 <p class="text-2xl font-bold text-[#4E3B2B]">{{ entriesCount }}</p>
-                <p class="text-xs text-[#7D5A36]/70">Entries</p>
+                <p class="text-xs text-[#7D5A36]/70">{{ $t('analytics.totalEntries') }}</p>
             </div>
         </div>
     </div>
@@ -61,16 +61,19 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, TooltipItem } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { useStore } from 'vuex'
 import { DaySummary } from '@/store/types'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, zoomPlugin)
 
 const store = useStore()
 const timeRange = ref(7)
-const chartRef = ref<InstanceType<typeof Bar> | null>(null)
+const chartRef = ref<any>(null)
 const isZoomed = ref(false)
 const resizeTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
@@ -143,7 +146,7 @@ const chartDataPoints = computed(() => {
         // O(1) lookup with cached word count
         const data = summariesByDateWithWordCount.value.get(dateString)
 
-        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+        days.push(date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }))
         rawDates.push(dateString)
         wordCounts.push(data ? data.wordCount : 0)
     }
@@ -168,7 +171,7 @@ const chartData = computed(() => ({
     labels: chartDataPoints.value.days,
     datasets: [
         {
-            label: 'Words Written',
+            label: t('charts.wordCount.words'),
             data: chartDataPoints.value.wordCounts,
             backgroundColor: 'rgba(125, 90, 54, 0.8)',
             borderColor: '#7D5A36',
@@ -215,32 +218,32 @@ const chartOptions = computed(() => ({
             cornerRadius: 12,
             displayColors: false,
             callbacks: {
-                title: (context: Array<{ dataIndex: number; [key: string]: unknown }>) => {
-                    const index = context[0].dataIndex
+                title: (tooltipItems: TooltipItem<'bar'>[]) => {
+                    const index = tooltipItems[0].dataIndex
                     const rawDate = chartDataPoints.value.rawDates[index]
                     const date = new Date(rawDate)
                     // More precise date display
-                    return date.toLocaleDateString('en-US', {
+                    return date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
                         year: 'numeric'
                     })
                 },
-                label: (context: { dataIndex: number; parsed: { y: number }; [key: string]: unknown }) => {
+                label: (context: TooltipItem<'bar'>) => {
                     const index = context.dataIndex
                     const rawDate = chartDataPoints.value.rawDates[index]
                     const data = summariesByDateWithWordCount.value.get(rawDate)
-                    const wordCount = context.parsed.y
+                    const wordCount = context.parsed.y ?? 0
 
                     const lines: string[] = []
 
                     if (wordCount === 0) {
-                        lines.push('No entry for this day')
+                        lines.push(t('charts.common.noData'))
                         return lines
                     }
 
-                    lines.push(`Words: ${wordCount.toLocaleString()}`)
+                    lines.push(`${t('charts.wordCount.words')}: ${wordCount.toLocaleString()}`)
 
                     if (data?.summary.mood) {
                         const moodEmojis: { [key: string]: string } = {
@@ -251,7 +254,7 @@ const chartOptions = computed(() => ({
                             'excited': '🎉'
                         }
                         const emoji = moodEmojis[data.summary.mood] || '😐'
-                        lines.push(`Mood: ${emoji}`)
+                        lines.push(`${t('charts.moodTrend.mood')}: ${emoji}`)
                     }
 
                     if (data?.summary.summary) {
@@ -271,8 +274,7 @@ const chartOptions = computed(() => ({
             zoom: {
                 wheel: {
                     enabled: true,
-                    speed: 0.08, // Smoother zoom speed
-                    modifierKey: null
+                    speed: 0.08 // Smoother zoom speed
                 },
                 pinch: {
                     enabled: true
@@ -286,7 +288,6 @@ const chartOptions = computed(() => ({
             pan: {
                 enabled: true,
                 mode: 'x' as const,
-                modifierKey: null,
                 // Add smooth panning with inertia
                 speed: 20,
                 threshold: 10
@@ -301,9 +302,10 @@ const chartOptions = computed(() => ({
             beginAtZero: true,
             ticks: {
                 color: '#7D5A36',
-                callback: (value: number) => {
-                    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
-                    return value
+                callback: (value: string | number) => {
+                    const numValue = Number(value)
+                    if (numValue >= 1000) return `${(numValue / 1000).toFixed(1)}k`
+                    return numValue
                 }
             },
             grid: {

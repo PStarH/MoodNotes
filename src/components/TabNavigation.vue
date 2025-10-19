@@ -1,9 +1,14 @@
 <template>
   <div class="mb-8">
-    <div class="flex items-center gap-2 p-2 glass-effect rounded-xl warm-shadow overflow-x-auto">
+    <div
+      class="flex items-center gap-2 p-2 glass-effect rounded-xl warm-shadow overflow-x-auto"
+      role="tablist"
+      aria-label="Content sections"
+    >
       <button
         v-for="tab in tabs"
         :key="tab.id"
+        :id="`${tab.id}-tab`"
         @click="$emit('change', tab.id)"
         :class="[
           'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap',
@@ -12,11 +17,13 @@
             : 'text-[#4E3B2B] hover:bg-[#F0E9D2]'
         ]"
         :aria-selected="activeTab === tab.id"
+        :aria-controls="`${tab.id}-panel`"
+        :tabindex="activeTab === tab.id ? 0 : -1"
         role="tab"
       >
-        <component v-if="tab.icon" :is="tab.icon" :size="20" />
+        <component v-if="tab.icon" :is="tab.icon" :size="20" aria-hidden="true" />
         <span>{{ tab.label }}</span>
-        <span v-if="tab.badge" class="px-2 py-0.5 text-xs rounded-full bg-white/20">
+        <span v-if="tab.badge" class="px-2 py-0.5 text-xs rounded-full bg-white/20" aria-label="`${tab.badge} items`">
           {{ tab.badge }}
         </span>
       </button>

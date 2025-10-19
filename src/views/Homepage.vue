@@ -16,7 +16,7 @@
                             :class="{ 'bg-[#FAF3E0]': $route.path === '/' }"
                         >
                             <List class="mr-3" :size="20" />
-                            <span class="font-medium">Home</span>
+                            <span class="font-medium">{{ $t('nav.home') }}</span>
                         </router-link>
                     </li>
                     <li class="mb-3">
@@ -26,43 +26,50 @@
                             :class="{ 'bg-[#FAF3E0]': $route.path === '/analytics' }"
                         >
                             <BarChart3 class="mr-3" :size="20" />
-                            <span class="font-medium">Analytics</span>
+                            <span class="font-medium">{{ $t('nav.analytics') }}</span>
                         </router-link>
                     </li>
                     <li class="mb-3">
                         <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
                             @click="openCalendar">
                             <Calendar class="mr-3" :size="20" />
-                            <span class="font-medium">Calendar</span>
+                            <span class="font-medium">{{ $t('nav.calendar') }}</span>
                         </a>
                     </li>
                     <li class="mb-3">
                         <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
                             @click="isHabitPopupOpen = true">
                             <BookOpen class="mr-3" :size="20" />
-                            <span class="font-medium">Habits</span>
+                            <span class="font-medium">{{ $t('nav.habits') }}</span>
                         </a>
                     </li>
                     <li class="mb-3">
                         <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
                             @click="isSearchPanelOpen = true">
                             <Search class="mr-3" :size="20" />
-                            <span class="font-medium">Search</span>
+                            <span class="font-medium">{{ $t('nav.search') }}</span>
                         </a>
                     </li>
                     <li>
                         <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
                             @click="isBackupPanelOpen = true">
                             <Download class="mr-3" :size="20" />
-                            <span class="font-medium">Backup</span>
+                            <span class="font-medium">{{ $t('nav.backup') }}</span>
                         </a>
                     </li>
                 </ul>
             </nav>
-            
-            <!-- Theme Switcher -->
+
+            <!-- Settings Link -->
             <div class="mt-4 pt-4 border-t border-[#C5B891]">
-                <ThemeSwitcher />
+                <router-link
+                    to="/settings"
+                    class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+                    :class="{ 'bg-[#FAF3E0]': $route.path === '/settings' }"
+                >
+                    <Settings class="mr-3" :size="20" />
+                    <span class="font-medium">{{ $t('nav.settings') }}</span>
+                </router-link>
             </div>
         </div>
 
@@ -74,34 +81,36 @@
         >
             <!-- Tab Navigation -->
             <TabNavigation
-                :tabs="[
-                    { id: 'dashboard', label: 'Dashboard', icon: List },
-                    { id: 'journal', label: 'Journal', icon: BookOpen, badge: daySummaries.length },
-                    { id: 'tasks', label: 'Tasks', icon: CheckCircle2, badge: tasks.length },
-                ]"
+                :tabs="tabLabels"
                 :activeTab="activeTab"
                 @change="(tab) => activeTab = tab"
             />
 
             <!-- Dashboard Tab -->
-            <div v-show="activeTab === 'dashboard'" class="space-y-6">
+            <div
+                v-show="activeTab === 'dashboard'"
+                id="dashboard-panel"
+                role="tabpanel"
+                aria-labelledby="dashboard-tab"
+                class="space-y-6"
+            >
                 <div class="grid gap-6 lg:grid-cols-3">
                     <div class="glass-effect p-6 rounded-2xl warm-shadow-lg flex flex-col justify-between lg:col-span-2">
                         <div class="flex flex-col gap-6">
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
                                 <div>
                                     <p class="text-xs font-semibold uppercase tracking-widest text-[#7D5A36]/70">{{ formattedToday }}</p>
-                                    <h2 class="text-3xl sm:text-4xl font-bold text-[#4E3B2B] mt-2">{{ greetingMessage }}, friend 👋</h2>
-                                    <p class="text-[#7D5A36] mt-3 max-w-xl">Here’s a quick snapshot of your mood and memories. Keep the streak going!</p>
+                                    <h2 class="text-3xl sm:text-4xl font-bold text-[#4E3B2B] mt-2">{{ greetingMessage }}, {{ $t('home.friend') }} 👋</h2>
+                                    <p class="text-[#7D5A36] mt-3 max-w-xl">{{ $t('home.snapshot') }}</p>
                                 </div>
                                 <div class="glass-effect px-4 py-3 rounded-xl min-w-[180px] text-[#4E3B2B] border border-[#D3C9A6]/50">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Current Mood</span>
+                                        <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('home.currentMood') }}</span>
                                         <span class="text-3xl">{{ currentMoodEmoji }}</span>
                                     </div>
-                                    <p class="text-sm mt-2">{{ currentDaySummary?.mood ? currentDaySummary.mood.charAt(0).toUpperCase() + currentDaySummary.mood.slice(1) : 'No entry yet' }}</p>
+                                    <p class="text-sm mt-2">{{ currentDaySummary?.mood ? $t(`mood.${currentDaySummary.mood}.label`) : $t('home.noEntryYet') }}</p>
                                     <div class="mt-3 flex items-center justify-between text-sm">
-                                        <span class="text-[#7D5A36]/80 uppercase tracking-wide font-semibold">Energy</span>
+                                        <span class="text-[#7D5A36]/80 uppercase tracking-wide font-semibold">{{ $t('home.energy') }}</span>
                                         <span class="font-semibold text-[#4E3B2B]">{{ currentEnergyLevel !== null ? `${currentEnergyLevel}/10` : '—' }}</span>
                                     </div>
                                 </div>
@@ -110,22 +119,22 @@
                                 <button @click="openJournalForToday"
                                     class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
                                     <FileText :size="18" />
-                                    New Entry
+                                    {{ $t('home.newEntry') }}
                                 </button>
                                 <router-link to="/analytics"
                                     class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#A67C52] to-[#8B6848] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
                                     <BarChart3 :size="18" />
-                                    View Analytics
+                                    {{ $t('home.viewAnalytics') }}
                                 </router-link>
                                 <button @click="openTaskModal"
                                     class="flex items-center gap-2 px-5 py-3 rounded-xl glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] font-semibold hover-lift transition-all duration-200">
                                     <Plus :size="18" />
-                                    Add Task
+                                    {{ $t('home.addTask') }}
                                 </button>
                                 <button @click="openSearchModal"
                                     class="flex items-center gap-2 px-5 py-3 rounded-xl glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] font-semibold hover-lift transition-all duration-200">
                                     <Search :size="18" />
-                                    Search Entries
+                                    {{ $t('home.searchEntries') }}
                                 </button>
                             </div>
                             <div
@@ -138,13 +147,13 @@
                                     <div class="flex items-start gap-3 flex-1" style="min-height: 0;">
                                         <span class="text-3xl sm:text-4xl flex-shrink-0" aria-hidden="true">✨</span>
                                         <div class="space-y-2 flex-1 flex flex-col justify-center" style="min-height: 0; overflow: hidden;">
-                                            <p v-if="isQuoteLoading" class="text-sm sm:text-base text-[#7D5A36]">Loading today's inspiration...</p>
+                                            <p v-if="isQuoteLoading" class="text-sm sm:text-base text-[#7D5A36]">{{ $t('quote.loadingInspiration') }}</p>
                                             <template v-else-if="quoteText">
                                                 <p class="text-base sm:text-lg font-medium leading-relaxed line-clamp-3 overflow-hidden">"{{ quoteText }}"</p>
                                                 <p v-if="quoteAuthor" class="text-sm text-[#7D5A36]/80 truncate">— {{ quoteAuthor }}</p>
                                             </template>
                                             <p v-else-if="quoteError" class="text-sm text-red-600 truncate">{{ quoteError }}</p>
-                                            <p v-else class="text-sm sm:text-base text-[#7D5A36]">{{ quotePlaceholderCopy }}</p>
+                                            <p v-else class="text-sm sm:text-base text-[#7D5A36]">{{ $t('quote.capturePlaceholder') }}</p>
                                         </div>
                                     </div>
                                     <button
@@ -156,7 +165,7 @@
                                         aria-label="Refresh daily quote"
                                     >
                                         <RefreshCcw :size="16" aria-hidden="true" />
-                                        <span>{{ isQuoteLoading ? 'Refreshing…' : 'New quote' }}</span>
+                                        <span>{{ isQuoteLoading ? $t('quote.refreshing') : $t('quote.newQuote') }}</span>
                                     </button>
                                 </div>
                                 <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/80 flex-shrink-0" style="height: 24px; overflow: hidden;">
@@ -164,9 +173,9 @@
                                         <span class="w-2 h-2 rounded-full bg-[#7D5A36]" aria-hidden="true"></span>
                                         <span>{{ quoteSourceLabel }}</span>
                                     </span>
-                                    <span v-if="quoteUpdatedLabel" :title="quoteUpdatedTitle">Updated {{ quoteUpdatedLabel }}</span>
-                                    <span v-else>Waiting for first quote</span>
-                                    <span v-if="quoteError" class="text-red-600 truncate">Offline mode</span>
+                                    <span v-if="quoteUpdatedLabel" :title="quoteUpdatedTitle">{{ $t('quote.updated') }} {{ quoteUpdatedLabel }}</span>
+                                    <span v-else>{{ $t('quote.waitingForFirst') }}</span>
+                                    <span v-if="quoteError" class="text-red-600 truncate">{{ $t('quote.offlineMode') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -174,13 +183,13 @@
                     <div class="glass-effect p-6 rounded-2xl warm-shadow fade-in border border-[#7D5A36]/20 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-lg font-bold text-[#4E3B2B] flex items-center">
-                                <span class="mr-2">🕰️</span>Last Year Today
+                                <span class="mr-2">🕰️</span>{{ $t('home.lastYearToday') }}
                             </h3>
                             <button
                                 @click="selectedDate = lastYearDateString; isDaySummaryFormOpen = true"
                                 class="text-[#7D5A36] hover:text-opacity-80 text-sm font-medium hover:underline"
                             >
-                                View Entry →
+                                {{ $t('home.viewEntry') }}
                             </button>
                         </div>
                         <div v-if="hasHistoricalData" class="space-y-3">
@@ -188,7 +197,7 @@
                                 <span class="text-[#4E3B2B] text-sm font-medium">{{ lastYearDateString }}</span>
                                 <span class="text-3xl">{{ mapMoodToEmotion(lastYearMood || 'neutral').emoji }}</span>
                             </div>
-                            <p class="text-[#7D5A36] text-sm italic line-clamp-3">{{ lastYearSummaryPreview || 'No summary available' }}</p>
+                            <p class="text-[#7D5A36] text-sm italic line-clamp-3">{{ lastYearSummaryPreview || $t('home.noContent') }}</p>
                             <div v-if="lastYearTags.length > 0" class="flex flex-wrap gap-2">
                                 <span
                                     v-for="tag in lastYearTags.slice(0, 4)"
@@ -203,8 +212,8 @@
                             </div>
                         </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">No entry from this day last year.</p>
-                            <p>Capture today’s thoughts to unlock throwbacks in the future.</p>
+                            <p class="font-medium mb-2">{{ $t('home.noHistoricalData') }}</p>
+                            <p>{{ $t('home.captureThoughts') }}</p>
                         </div>
                     </div>
                 </div>
@@ -234,34 +243,34 @@
                             <div>
                                 <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                                     <span>📖</span>
-                                    Latest Entry
+                                    {{ $t('home.latestEntry') }}
                                 </h3>
-                                <p class="text-sm text-[#7D5A36]/80">A quick peek at what you captured most recently.</p>
+                                <p class="text-sm text-[#7D5A36]/80">{{ $t('home.latestEntryDesc') }}</p>
                             </div>
                             <button v-if="latestSummary"
                                 @click="handleSelectEntry(latestSummary)"
                                 class="text-sm font-semibold text-[#7D5A36] hover:underline">
-                                Open Entry
+                                {{ $t('home.openEntryBtn') }}
                             </button>
                         </div>
                         <div v-if="latestSummary" class="space-y-4">
                             <div class="flex items-center justify-between text-sm text-[#7D5A36]/80">
-                                <span>{{ new Date(latestSummary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}</span>
+                                <span>{{ new Date(latestSummary.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}</span>
                                 <span class="flex items-center gap-2">
                                     <span class="text-xl">{{ mapMoodToEmotion(latestSummary.mood || 'neutral').emoji }}</span>
-                                    {{ latestSummary.mood ? latestSummary.mood.charAt(0).toUpperCase() + latestSummary.mood.slice(1) : 'Mood not set' }}
+                                    {{ latestSummary.mood ? $t(`mood.${latestSummary.mood}.label`) : $t('home.noEntryYet') }}
                                 </span>
                             </div>
-                            <p class="text-[#4E3B2B] leading-relaxed">{{ latestEntryPreview || 'No content written yet...' }}</p>
+                            <p class="text-[#4E3B2B] leading-relaxed">{{ latestEntryPreview || $t('home.noContent') }}</p>
                             <div class="flex flex-wrap items-center gap-3 text-xs text-[#7D5A36]/70">
                                 <span class="px-3 py-1.5 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">
-                                    {{ getWordCount(latestSummary.summary) }} words
+                                    {{ getWordCount(latestSummary.summary) }} {{ $t('home.words') }}
                                 </span>
                                 <span v-if="latestSummary.dailyCheck" class="px-3 py-1.5 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">
-                                    Energy {{ latestSummary.dailyCheck.energyLevel }}/10
+                                    {{ $t('home.energy') }} {{ latestSummary.dailyCheck.energyLevel }}/10
                                 </span>
                                 <span v-if="latestSummary.tags && latestSummary.tags.length" class="flex items-center gap-2">
-                                    <span class="text-[#7D5A36]">Tags:</span>
+                                    <span class="text-[#7D5A36]">{{ $t('home.tags') }}:</span>
                                     <span v-for="tag in latestSummary.tags.slice(0, 3)" :key="tag" class="px-2 py-1 bg-[#7D5A36]/10 text-[#7D5A36] rounded-full">
                                         #{{ tag }}
                                     </span>
@@ -269,8 +278,8 @@
                             </div>
                         </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">You haven’t logged anything yet.</p>
-                            <p>Start with a quick diary entry to build your personal timeline.</p>
+                            <p class="font-medium mb-2">{{ $t('home.noEntriesYet') }}</p>
+                            <p>{{ $t('home.startTimelineHint') }}</p>
                         </div>
                     </div>
 
@@ -279,13 +288,13 @@
                             <div>
                                 <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                                     <span>🧾</span>
-                                    Upcoming Tasks
+                                    {{ $t('home.upcomingTasks') }}
                                 </h3>
-                                <p class="text-sm text-[#7D5A36]/80">Stay ahead with the next few due items.</p>
+                                <p class="text-sm text-[#7D5A36]/80">{{ $t('home.upcomingTasksDesc') }}</p>
                             </div>
                             <span class="text-xs font-semibold px-3 py-1 rounded-full"
                                 :class="overdueTasksCount > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
-                                {{ overdueTasksCount > 0 ? `${overdueTasksCount} overdue` : 'All clear' }}
+                                {{ overdueTasksCount > 0 ? `${overdueTasksCount} ${$t('home.overdue')}` : $t('home.allClear') }}
                             </span>
                         </div>
 
@@ -300,17 +309,17 @@
                             </li>
                         </ul>
                         <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">No tasks due this week.</p>
-                            <p>Add a task to keep your plans organized.</p>
+                            <p class="font-medium mb-2">{{ $t('home.noTasksDue') }}</p>
+                            <p>{{ $t('home.addTaskHint') }}</p>
                         </div>
 
                         <div v-if="tasksWithoutDueDateCount > 0" class="text-xs text-[#7D5A36]/70">
-                            + {{ tasksWithoutDueDateCount }} task{{ tasksWithoutDueDateCount === 1 ? '' : 's' }} without a due date
+                            + {{ tasksWithoutDueDateCount }} {{ $t('home.tasksWithoutDue') }}
                         </div>
 
                         <button @click="openTaskModal"
                             class="self-start mt-auto px-5 py-3 rounded-xl bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold hover-lift transition-all duration-200 warm-shadow">
-                            Add Task
+                            {{ $t('home.addTask') }}
                         </button>
                     </div>
                 </div>
@@ -320,10 +329,10 @@
                         <div class="flex items-start justify-between">
                             <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                                 <span>🔥</span>
-                                Habit Highlight
+                                {{ $t('home.habitHighlight') }}
                             </h3>
                             <button @click="isHabitPopupOpen = true" class="text-xs font-semibold text-[#7D5A36] hover:underline">
-                                Manage
+                                {{ $t('home.manage') }}
                             </button>
                         </div>
                         <div v-if="highlightedHabit" class="space-y-4">
@@ -334,11 +343,11 @@
                                 </div>
                                 <HabitStreak :habit-id="highlightedHabit.id" :statuses="highlightedHabit.statuses" />
                             </div>
-                            <p class="text-sm text-[#7D5A36]/80">Current streak: <strong class="text-[#4E3B2B]">{{ highlightedHabitStreak }}</strong> day{{ highlightedHabitStreak === 1 ? '' : 's' }}</p>
+                            <p class="text-sm text-[#7D5A36]/80">{{ $t('home.habitStreak') }}: <strong class="text-[#4E3B2B]">{{ highlightedHabitStreak }}</strong> {{ highlightedHabitStreak === 1 ? $t('home.day') : $t('home.days') }}</p>
                         </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">No habits tracked yet.</p>
-                            <p>Add a habit to build healthy routines and see it highlighted here.</p>
+                            <p class="font-medium mb-2">{{ $t('home.noHabits') }}</p>
+                            <p>{{ $t('home.addHabitHint') }}</p>
                         </div>
                     </div>
 
@@ -346,20 +355,20 @@
                         <div class="flex items-start justify-between">
                             <h3 class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                                 <span>⚡</span>
-                                Recent Sparks
+                                {{ $t('home.recentSparks') }}
                             </h3>
-                            <span class="text-xs text-[#7D5A36]/70">{{ recentSparks.length }} logged</span>
+                            <span class="text-xs text-[#7D5A36]/70">{{ recentSparks.length }} {{ $t('home.logged') }}</span>
                         </div>
                         <div v-if="recentSparks.length" class="space-y-3">
                             <div class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3"
                                 v-for="(spark, index) in recentSparks.slice(0, 3)" :key="index">
                                 <p class="text-sm text-[#4E3B2B]">{{ spark }}</p>
                             </div>
-                            <p v-if="recentSparks.length > 3" class="text-xs text-[#7D5A36]/70">+ {{ recentSparks.length - 3 }} more sparks</p>
+                            <p v-if="recentSparks.length > 3" class="text-xs text-[#7D5A36]/70">+ {{ recentSparks.length - 3 }} {{ $t('home.moreSparks') }}</p>
                         </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
-                            <p class="font-medium mb-2">Capture a bright idea.</p>
-                            <p>Use the spark field below to jot down inspiration and highlights.</p>
+                            <p class="font-medium mb-2">{{ $t('home.captureSpark') }}</p>
+                            <p>{{ $t('home.sparkHint') }}</p>
                         </div>
                     </div>
                 </div>
@@ -367,22 +376,27 @@
             </div>
 
             <!-- Journal Tab -->
-            <div v-show="activeTab === 'journal'">
+            <div
+                v-show="activeTab === 'journal'"
+                id="journal-panel"
+                role="tabpanel"
+                aria-labelledby="journal-tab"
+            >
                 <div class="mb-6 fade-in">
                     <!-- Header with Actions -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
                             <h3 class="text-2xl font-bold text-[#4E3B2B] flex items-center">
-                                <span class="mr-3 text-3xl">📖</span>Your Journal
+                                <span class="mr-3 text-3xl">📖</span>{{ $t('home.journal') }}
                             </h3>
-                            <p class="text-[#7D5A36] text-sm mt-1">{{ daySummaries.length }} entries captured</p>
+                            <p class="text-[#7D5A36] text-sm mt-1">{{ daySummaries.length }} {{ $t('home.entriesCaptured') }}</p>
                         </div>
                         <button
                             @click="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
                             class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow font-semibold"
                         >
                             <FileText class="mr-2" :size="20" />
-                            New Entry
+                            {{ $t('home.newEntry') }}
                         </button>
                     </div>
 
@@ -394,9 +408,9 @@
                     <EmptyState
                         v-if="daySummaries.length === 0"
                         icon="📔"
-                        title="Start your journaling journey"
-                        description="Capture your thoughts, feelings, and experiences. Your first entry is just a click away."
-                        actionText="Write First Entry"
+                        :title="$t('home.startJourney')"
+                        :description="$t('home.startJourneyDesc')"
+                        :actionText="$t('home.writeFirstEntry')"
                         :actionIcon="FileText"
                         @action="isDaySummaryFormOpen = true; selectedDate = new Date().toISOString().split('T')[0]"
                     />
@@ -428,7 +442,7 @@
                                     @keydown.space.prevent="selectedDate = summary.date; isDaySummaryFormOpen = true"
                                     tabindex="0"
                                     role="button"
-                                    :aria-label="`Journal entry from ${new Date(summary.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, mood: ${summary.mood || 'neutral'}`"
+                                    :aria-label="`Journal entry from ${new Date(summary.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, mood: ${summary.mood || 'neutral'}`"
                                     class="journal-entry glass-effect rounded-2xl cursor-pointer hover-lift transition-all duration-300 warm-shadow overflow-hidden group"
                                 >
                                     <!-- Entry Header -->
@@ -439,7 +453,7 @@
                                                     <span class="text-4xl" aria-hidden="true">{{ summary.mood ? mapMoodToEmotion(summary.mood).emoji : '😐' }}</span>
                                                     <div>
                                                         <h4 class="text-lg font-bold text-[#4E3B2B]">
-                                                            {{ new Date(summary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
+                                                            {{ new Date(summary.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
                                                         </h4>
                                                         <p class="text-xs text-[#7D5A36]/70">{{ formatRelativeTime(summary.date) }}</p>
                                                     </div>
@@ -522,21 +536,26 @@
             </div>
 
             <!-- Tasks Tab -->
-            <div v-show="activeTab === 'tasks'">
+            <div
+                v-show="activeTab === 'tasks'"
+                id="tasks-panel"
+                role="tabpanel"
+                aria-labelledby="tasks-tab"
+            >
                 <div class="bounce-in">
-                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>All Tasks</h3>
+                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>{{ $t('home.tasks') }}</h3>
                     <button @click="isTaskFormOpen = true"
                         class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
                         <Plus color="#7D5A36" :size="24" class="mr-3" />
-                        <span class="text-[#4E3B2B] font-medium">Add new task</span>
+                        <span class="text-[#4E3B2B] font-medium">{{ $t('home.addNewTask') }}</span>
                     </button>
 
                     <EmptyState
                         v-if="tasks.length === 0"
                         icon="📋"
-                        title="No tasks yet"
-                        description="Start organizing your day by adding your first task. Set priorities and due dates to stay on track."
-                        actionText="Add Task"
+                        :title="$t('home.noTasksYet')"
+                        :description="$t('home.noTasksDesc')"
+                        :actionText="$t('home.addTask')"
                         :actionIcon="Plus"
                         @action="isTaskFormOpen = true"
                     />
@@ -567,7 +586,7 @@
                 aria-labelledby="task-form-title"
             >
                 <div class="flex justify-between items-center mb-6">
-                    <h2 id="task-form-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>Create Task</h2>
+                    <h2 id="task-form-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>{{ $t('home.createTask') }}</h2>
                     <button type="button" @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all" aria-label="Close task form">
                         <X :size="24" />
                     </button>
@@ -575,14 +594,14 @@
 
                 <form @submit.prevent="handleSaveTask" class="space-y-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B]" for="task-description">Description</label>
+                        <label class="block text-sm font-semibold text-[#4E3B2B]" for="task-description">{{ $t('home.description') }}</label>
                         <textarea id="task-description" v-model="newTask.description"
                             class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                             rows="3" placeholder="Take out the trash"></textarea>
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-[#4E3B2B] mb-3">Priority</label>
+                        <label class="block text-sm font-semibold text-[#4E3B2B] mb-3">{{ $t('home.priority') }}</label>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <label v-for="priority in ['Lowest', 'Low', 'Normal', 'Medium', 'High', 'Highest']"
                                 :key="priority"
@@ -625,19 +644,19 @@
                         <label class="block text-sm font-semibold text-themed" for="task-due-date">
                             <span class="flex items-center gap-2">
                                 <span>📅</span>
-                                Due Date
+                                {{ $t('home.dueDate') }}
                             </span>
                         </label>
                         <CustomDatePicker
                             v-model="newTask.dueDate"
-                            placeholder="选择截止日期"
+                            :placeholder="$t('home.dueDate')"
                         />
                     </div>
 
                     <div class="flex justify-end">
                         <button type="submit"
                             class="px-6 py-3 bg-themed-primary text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow">
-                            Save Task
+                            {{ $t('home.saveTask') }}
                         </button>
                     </div>
                 </form>
@@ -656,8 +675,8 @@
                 aria-labelledby="detailed-calendar-title"
             >
                 <div class="flex justify-between items-center mb-4">
-                    <h2 id="detailed-calendar-title" class="text-xl font-bold text-[#4E3B2B]">Detailed Calendar</h2>
-                    <button id="detailed-calendar-close" type="button" @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close detailed calendar">
+                    <h2 id="detailed-calendar-title" class="text-xl font-bold text-[#4E3B2B]">{{ $t('calendar.title') }}</h2>
+                    <button id="detailed-calendar-close" type="button" @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80" :aria-label="$t('calendar.close')">
                         <X :size="24" />
                     </button>
                 </div>
@@ -675,7 +694,7 @@
                         </button>
                     </div>
                     <div class="grid grid-cols-7 gap-2.5 glass-effect p-4 rounded-lg">
-                        <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
+                        <div v-for="day in weekDays" :key="day"
                             class="text-center font-bold text-themed-secondary">
                             {{ day }}
                         </div>
@@ -697,11 +716,11 @@
                     <div class="flex gap-5">
                         <div class="flex items-center">
                             <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-primary);"></div>
-                            <span class="text-themed">Tasks</span>
+                            <span class="text-themed">{{ $t('calendar.tasks') }}</span>
                         </div>
                         <div class="flex items-center">
                             <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-secondary);"></div>
-                            <span class="text-themed">Day Summary</span>
+                            <span class="text-themed">{{ $t('calendar.daySummary') }}</span>
                         </div>
                     </div>
                 </div>
@@ -718,14 +737,14 @@
                 aria-labelledby="habit-popup-title"
             >
                 <div class="flex justify-between items-center mb-4">
-                    <h2 id="habit-popup-title" class="text-xl font-bold text-[#4E3B2B]">Habits</h2>
+                    <h2 id="habit-popup-title" class="text-xl font-bold text-[#4E3B2B]">{{ $t('nav.habits') }}</h2>
                     <button id="habit-popup-close" type="button" @click="isHabitPopupOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close habits popup">
                         <X :size="24" />
                     </button>
                 </div>
 
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">My Habits</h3>
+                    <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">{{ $t('habit.myHabits') }}</h3>
                     <div class="space-y-4">
                         <div v-for="(habit, index) in habits" :key="index"
                             class="bg-[#F0E9D2] p-4 rounded-lg shadow-md">
@@ -741,12 +760,12 @@
                     <button @click="openAddHabitModal"
                         class="mt-4 bg-[#7D5A36] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center">
                         <Plus :size="20" class="mr-2" />
-                        Add New Habit
+                        {{ $t('habit.addHabit') }}
                     </button>
                 </div>
 
                 <div>
-                    <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">Habit Tracking</h3>
+                    <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">{{ $t('habit.habitTracking') }}</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full bg-[#F0E9D2] rounded-lg shadow-md">
                             <thead>
@@ -801,15 +820,15 @@
                 aria-modal="true"
                 aria-labelledby="habit-modal-title"
             >
-                <h2 id="habit-modal-title" class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? 'Edit' : 'Add' }} Habit</h2>
+                <h2 id="habit-modal-title" class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? $t('habit.editHabit') : $t('habit.addHabit') }}</h2>
                 <form @submit.prevent="saveHabit">
                     <div class="mb-4">
-                        <label for="habitName" class="block text-[#4E3B2B] mb-2">Habit Name</label>
+                        <label for="habitName" class="block text-[#4E3B2B] mb-2">{{ $t('habit.habitName') }}</label>
                         <input id="habitName" v-model="currentHabit.name" type="text"
                             class="w-full p-2 border border-[#D3C9A6] rounded-md bg-[#F0E9D2] text-[#4E3B2B]" required>
                     </div>
                     <div class="mb-4">
-                        <label for="habitDescription" class="block text-[#4E3B2B] mb-2">Description</label>
+                        <label for="habitDescription" class="block text-[#4E3B2B] mb-2">{{ $t('habit.habitDescription') }}</label>
                         <textarea id="habitDescription" v-model="currentHabit.description"
                             class="w-full p-2 border border-[#D3C9A6] rounded-md bg-[#F0E9D2] text-[#4E3B2B]"
                             rows="3"></textarea>
@@ -817,11 +836,11 @@
                     <div class="flex justify-end space-x-2">
                         <button type="button" @click="closeHabitModal"
                             class="px-4 py-2 bg-[#D3C9A6] text-[#4E3B2B] rounded-md hover:bg-opacity-90 transition-colors">
-                            Cancel
+                            {{ $t('common.cancel') }}
                         </button>
                         <button type="submit"
                             class="px-4 py-2 bg-[#7D5A36] text-white rounded-md hover:bg-opacity-90 transition-colors">
-                            Save
+                            {{ $t('common.save') }}
                         </button>
                     </div>
                 </form>
@@ -837,14 +856,14 @@
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3, Settings } from 'lucide-vue-next'
 import DOMPurify from 'dompurify'
 import { formatDate, formatRelativeTime, formatDateLong } from '@/utils/dateFormatters'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
 import SearchPanel from '../components/SearchPanel.vue'
 import BackupPanel from '../components/BackupPanel.vue'
-import ThemeSwitcher from '../components/ThemeSwitcher.vue'
 import DevPanel from '../components/DevPanel.vue'
 import EmptyState from '../components/EmptyState.vue'
 import HabitStreak from '../components/HabitStreak.vue'
@@ -863,6 +882,7 @@ import type { Task, DaySummary as DaySummaryEntry, Habit, HabitStatus, DaySummar
 
 const store = useStore()
 const route = useRoute()
+const { t, locale } = useI18n()
 const { addShortcut } = useKeyboardShortcuts()
 const { filteredSummaries } = useSearch()
 const toast = useToast()
@@ -890,8 +910,9 @@ const {
     isLoading: isQuoteLoading,
     error: quoteError,
     initializeQuote,
-    refreshQuote
-} = useDailyQuote({ mood: getMostRecentMood() })
+    refreshQuote,
+    updateLanguage
+} = useDailyQuote({ mood: getMostRecentMood(), language: locale.value as 'en' | 'zh' })
 
 // Historical comparison for "Last Year Today" feature
 const today = ref(new Date())
@@ -903,8 +924,6 @@ const {
     lastYearSummaryPreview,
   lastYearDate
 } = useHistoricalComparison(today)
-
-const quotePlaceholderCopy = 'Capture your thoughts to unlock more daily inspiration.'
 
 const formatRelativeTimeFromNow = (date: Date) => {
     const diffMs = Date.now() - date.getTime()
@@ -927,15 +946,15 @@ const formatRelativeTimeFromNow = (date: Date) => {
 const quoteSourceLabel = computed(() => {
     switch (quoteSource.value) {
         case 'remote':
-            return 'Fetched online'
+            return t('quote.fetchedOnline')
         case 'local':
-            return 'Local library'
+            return t('quote.localLibrary')
         case 'cache':
-            return 'Cached for today'
+            return t('quote.cachedForToday')
         case 'fallback':
-            return 'Offline fallback'
+            return t('quote.offlineFallback')
         default:
-            return 'Source pending'
+            return t('quote.sourcePending')
     }
 })
 
@@ -1159,13 +1178,29 @@ const currentDaySummary = computed<DaySummaryEntry | undefined>(() => {
 
 const greetingMessage = computed(() => {
     const hour = today.value.getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 18) return 'Good afternoon'
-    return 'Good evening'
+    if (hour < 12) return t('home.greeting.morning')
+    if (hour < 18) return t('home.greeting.afternoon')
+    return t('home.greeting.evening')
 })
 
+const weekDays = computed(() => [
+    t('calendar.weekDays.sun'),
+    t('calendar.weekDays.mon'),
+    t('calendar.weekDays.tue'),
+    t('calendar.weekDays.wed'),
+    t('calendar.weekDays.thu'),
+    t('calendar.weekDays.fri'),
+    t('calendar.weekDays.sat')
+])
+
+const tabLabels = computed(() => [
+    { id: 'dashboard', label: t('home.dashboard'), icon: List },
+    { id: 'journal', label: t('home.journal'), icon: BookOpen, badge: daySummaries.value.length },
+    { id: 'tasks', label: t('home.tasks'), icon: CheckCircle2, badge: tasks.value.length },
+])
+
 const formattedToday = computed(() => {
-    return today.value.toLocaleDateString('en-US', {
+    return today.value.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
         weekday: 'long',
         month: 'long',
         day: 'numeric'
@@ -1295,28 +1330,28 @@ interface DashboardStat {
 const dashboardStats = computed<DashboardStat[]>(() => {
     return [
         {
-            label: 'Entries this month',
+            label: t('home.entriesThisMonth'),
             icon: '🗓️',
             value: entriesThisMonthCount.value.toString(),
-            description: entriesThisMonthCount.value > 0 ? 'Great consistency!' : 'Start with a reflection today'
+            description: entriesThisMonthCount.value > 0 ? t('home.greatConsistency') : t('home.startReflection')
         },
         {
-            label: 'Words written',
+            label: t('home.wordsWritten'),
             icon: '✍️',
             value: totalWordsThisMonth.value.toLocaleString(),
-            description: 'This month'
+            description: t('home.thisMonth')
         },
         {
-            label: 'Average energy',
+            label: t('home.averageEnergy'),
             icon: '⚡',
             value: averageEnergyLevel.value ? `${averageEnergyLevel.value}/10` : '—',
-            description: 'Based on daily check-ins'
+            description: t('home.basedOnCheckins')
         },
         {
-            label: 'Tasks queued',
+            label: t('home.tasksQueued'),
             icon: '🧾',
             value: tasks.value.length.toString(),
-            description: overdueTasksCount.value > 0 ? `${overdueTasksCount.value} overdue` : 'You are on track'
+            description: overdueTasksCount.value > 0 ? `${overdueTasksCount.value} ${t('home.overdue')}` : t('home.youAreOnTrack')
         }
     ]
 })
@@ -1371,7 +1406,7 @@ const formatTaskDueDate = (dateString?: string) => {
     if (!dateString) return 'No due date'
     const date = new Date(dateString)
     if (Number.isNaN(date.getTime())) return 'No due date'
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })
 }
 
 const describeTaskDueDate = (dateString?: string) => {
@@ -1716,6 +1751,12 @@ onMounted(() => {
     if (route.query.openHabits === 'true') {
         isHabitPopupOpen.value = true
     }
+})
+
+// Watch for locale changes and refresh quote
+watch(locale, (newLocale) => {
+    updateLanguage(newLocale as 'en' | 'zh')
+    refreshQuote()
 })
 </script>
 

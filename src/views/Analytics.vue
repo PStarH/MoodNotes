@@ -12,7 +12,7 @@
               :class="{ 'bg-[#FAF3E0]': $route.path === '/' }"
             >
               <List class="mr-3" :size="20" />
-              <span class="font-medium">Home</span>
+              <span class="font-medium">{{ $t('nav.home') }}</span>
             </router-link>
           </li>
           <li class="mb-3">
@@ -22,7 +22,7 @@
               :class="{ 'bg-[#FAF3E0]': $route.path === '/analytics' }"
             >
               <BarChart3 class="mr-3" :size="20" />
-              <span class="font-medium">Analytics</span>
+              <span class="font-medium">{{ $t('nav.analytics') }}</span>
             </router-link>
           </li>
           <li class="mb-3">
@@ -32,7 +32,7 @@
               @click="openCalendar"
             >
               <Calendar class="mr-3" :size="20" />
-              <span class="font-medium">Calendar</span>
+              <span class="font-medium">{{ $t('nav.calendar') }}</span>
             </a>
           </li>
           <li class="mb-3">
@@ -42,7 +42,7 @@
               @click="openHabits"
             >
               <BookOpen class="mr-3" :size="20" />
-              <span class="font-medium">Habits</span>
+              <span class="font-medium">{{ $t('nav.habits') }}</span>
             </a>
           </li>
           <li class="mb-3">
@@ -52,7 +52,7 @@
               @click="isSearchPanelOpen = true"
             >
               <Search class="mr-3" :size="20" />
-              <span class="font-medium">Search</span>
+              <span class="font-medium">{{ $t('nav.search') }}</span>
             </a>
           </li>
           <li>
@@ -62,15 +62,22 @@
               @click="isBackupPanelOpen = true"
             >
               <Download class="mr-3" :size="20" />
-              <span class="font-medium">Backup</span>
+              <span class="font-medium">{{ $t('nav.backup') }}</span>
             </a>
           </li>
         </ul>
       </nav>
 
-      <!-- Theme Switcher -->
+      <!-- Settings Link -->
       <div class="mt-4 pt-4 border-t border-[#C5B891]">
-        <ThemeSwitcher />
+        <router-link
+          to="/settings"
+          class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+          :class="{ 'bg-[#FAF3E0]': $route.path === '/settings' }"
+        >
+          <Settings class="mr-3" :size="20" />
+          <span class="font-medium">{{ $t('nav.settings') }}</span>
+        </router-link>
       </div>
     </div>
 
@@ -80,10 +87,10 @@
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-[#4E3B2B] flex items-center">
           <span class="mr-3 text-4xl">📊</span>
-          Analytics & Insights
+          {{ $t('analytics.title') }}
         </h1>
         <p class="text-[#7D5A36] mt-2">
-          Visualize your journey through data and discover patterns in your mood, energy, and habits.
+          {{ $t('analytics.subtitle') }}
         </p>
       </div>
 
@@ -91,38 +98,38 @@
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Total Entries</span>
+            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('analytics.totalEntries') }}</span>
             <BookOpen class="text-[#7D5A36]" :size="20" />
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B]">{{ totalEntries }}</p>
-          <p class="text-xs text-[#7D5A36]/70 mt-1">{{ entriesThisMonth }} this month</p>
+          <p class="text-xs text-[#7D5A36]/70 mt-1">{{ entriesThisMonth }} {{ $t('analytics.entriesThisMonth') }}</p>
         </div>
 
         <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Current Streak</span>
+            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('analytics.currentStreak') }}</span>
             <TrendingUp class="text-[#7D5A36]" :size="20" />
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B]">{{ currentStreak }}</p>
-          <p class="text-xs text-[#7D5A36]/70 mt-1">days in a row</p>
+          <p class="text-xs text-[#7D5A36]/70 mt-1">{{ $t('analytics.daysInARow') }}</p>
         </div>
 
         <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Avg Energy</span>
+            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('analytics.avgEnergy') }}</span>
             <Zap class="text-[#7D5A36]" :size="20" />
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B]">{{ averageEnergy }}/10</p>
-          <p class="text-xs text-[#7D5A36]/70 mt-1">last 30 days</p>
+          <p class="text-xs text-[#7D5A36]/70 mt-1">{{ $t('analytics.last30Days') }}</p>
         </div>
 
         <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Active Habits</span>
+            <span class="text-sm font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('analytics.activeHabits') }}</span>
             <Target class="text-[#7D5A36]" :size="20" />
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B]">{{ activeHabits }}</p>
-          <p class="text-xs text-[#7D5A36]/70 mt-1">tracking now</p>
+          <p class="text-xs text-[#7D5A36]/70 mt-1">{{ $t('analytics.trackingNow') }}</p>
         </div>
       </div>
 
@@ -180,8 +187,8 @@
             aria-modal="true"
             aria-labelledby="detailed-calendar-title">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="detailed-calendar-title" class="text-xl font-bold text-[#4E3B2B]">Calendar</h2>
-                <button id="detailed-calendar-close" type="button" @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close calendar">
+                <h2 id="detailed-calendar-title" class="text-xl font-bold text-[#4E3B2B]">{{ $t('calendar.title') }}</h2>
+                <button id="detailed-calendar-close" type="button" @click="isDetailedCalendarOpen = false" class="text-[#7D5A36] hover:text-opacity-80" :aria-label="$t('calendar.close')">
                     <X :size="24" aria-hidden="true" />
                 </button>
             </div>
@@ -197,7 +204,7 @@
                 </button>
             </div>
             <div class="grid grid-cols-7 gap-3">
-                <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
+                <div v-for="day in weekDays" :key="day"
                     class="text-center font-bold text-[#7D5A36]/80 text-sm">
                     {{ day }}
                 </div>
@@ -230,14 +237,14 @@
             aria-modal="true"
             aria-labelledby="habit-popup-title">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="habit-popup-title" class="text-xl font-bold text-[#4E3B2B]">Habits</h2>
+                <h2 id="habit-popup-title" class="text-xl font-bold text-[#4E3B2B]">{{ $t('nav.habits') }}</h2>
                 <button id="habit-popup-close" type="button" @click="isHabitPopupOpen = false" class="text-[#7D5A36] hover:text-opacity-80" aria-label="Close habits popup">
                     <X :size="24" />
                 </button>
             </div>
 
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">My Habits</h3>
+                <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">{{ $t('habit.myHabits') }}</h3>
                 <div class="space-y-4">
                     <div v-for="(habit, index) in habits" :key="index"
                         class="bg-[#F0E9D2] p-4 rounded-lg shadow-md">
@@ -253,12 +260,12 @@
                 <button @click="openHabitModal"
                     class="mt-4 bg-[#7D5A36] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center">
                     <Plus :size="20" class="mr-2" />
-                    Add New Habit
+                    {{ $t('habit.addHabit') }}
                 </button>
             </div>
 
             <div>
-                <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">Habit Tracking</h3>
+                <h3 class="text-lg font-semibold text-[#4E3B2B] mb-4">{{ $t('habit.habitTracking') }}</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full bg-[#F0E9D2] rounded-lg shadow-md">
                         <thead>
@@ -295,16 +302,16 @@
         <div class="glass-effect p-6 rounded-2xl w-full max-w-md warm-shadow-lg bounce-in"
             role="dialog"
             aria-modal="true">
-            <h2 class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? 'Edit' : 'Add' }} Habit</h2>
+            <h2 class="text-2xl font-bold text-[#4E3B2B] mb-4">{{ editingHabit ? $t('habit.editHabit') : $t('habit.addHabit') }}</h2>
             <form @submit.prevent="saveHabit">
                 <div class="mb-4">
-                    <label for="habitName" class="block text-[#4E3B2B] mb-2 font-semibold">Habit Name</label>
+                    <label for="habitName" class="block text-[#4E3B2B] mb-2 font-semibold">{{ $t('habit.habitName') }}</label>
                     <input id="habitName" v-model="currentHabit.name" type="text"
                         class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                         required>
                 </div>
                 <div class="mb-6">
-                    <label for="habitDescription" class="block text-[#4E3B2B] mb-2 font-semibold">Description</label>
+                    <label for="habitDescription" class="block text-[#4E3B2B] mb-2 font-semibold">{{ $t('habit.habitDescription') }}</label>
                     <textarea id="habitDescription" v-model="currentHabit.description"
                         class="w-full px-4 py-3 glass-effect text-[#4E3B2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                         rows="3"></textarea>
@@ -312,11 +319,11 @@
                 <div class="flex justify-end space-x-3">
                     <button type="button" @click="isHabitModalOpen = false"
                         class="px-6 py-3 bg-[#D3C9A6]/30 text-[#4E3B2B] rounded-xl hover:bg-[#D3C9A6]/50 transition-all font-semibold">
-                        Cancel
+                        {{ $t('common.cancel') }}
                     </button>
                     <button type="submit"
                         class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all warm-shadow font-semibold">
-                        Save
+                        {{ $t('common.save') }}
                     </button>
                 </div>
             </form>
@@ -329,6 +336,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
 import {
   List,
   BarChart3,
@@ -343,27 +351,42 @@ import {
   ChevronRight,
   X,
   Edit2,
-  Plus
+  Plus,
+  Settings
 } from 'lucide-vue-next'
 
+// Lazy load heavy chart components for better performance
+import { defineAsyncComponent } from 'vue'
+const MoodTrendChart = defineAsyncComponent(() => import('@/components/MoodTrendChart.vue'))
+const WordCountChart = defineAsyncComponent(() => import('@/components/WordCountChart.vue'))
+const EnergyStressChart = defineAsyncComponent(() => import('@/components/EnergyStressChart.vue'))
+const HabitTrendInsights = defineAsyncComponent(() => import('@/components/HabitTrendInsights.vue'))
+
 // Components
-import MoodTrendChart from '@/components/MoodTrendChart.vue'
-import WordCountChart from '@/components/WordCountChart.vue'
-import EnergyStressChart from '@/components/EnergyStressChart.vue'
-import HabitTrendInsights from '@/components/HabitTrendInsights.vue'
 import SearchPanel from '@/components/SearchPanel.vue'
 import BackupPanel from '@/components/BackupPanel.vue'
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import HabitStreak from '@/components/HabitStreak.vue'
 
 const router = useRouter()
 const store = useStore()
+const { t } = useI18n()
 
 // Panel states
 const isSearchPanelOpen = ref(false)
 const isBackupPanelOpen = ref(false)
 const isDetailedCalendarOpen = ref(false)
 const isHabitPopupOpen = ref(false)
+
+// Week days for calendar
+const weekDays = computed(() => [
+    t('calendar.weekDays.sun'),
+    t('calendar.weekDays.mon'),
+    t('calendar.weekDays.tue'),
+    t('calendar.weekDays.wed'),
+    t('calendar.weekDays.thu'),
+    t('calendar.weekDays.fri'),
+    t('calendar.weekDays.sat')
+])
 
 // Calendar state and functions
 const currentDate = ref(new Date())

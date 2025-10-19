@@ -4,31 +4,31 @@
       <div>
         <h2 class="text-2xl font-bold text-[#4E3B2B] flex items-center gap-2">
           <span class="text-3xl">📈</span>
-          Habit Insights
+          {{ $t('charts.habitInsights.title') }}
         </h2>
-        <p class="text-sm text-[#7D5A36]/70 mt-1">Track your progress and build better routines</p>
+        <p class="text-sm text-[#7D5A36]/70 mt-1">{{ $t('charts.habitInsights.subtitle') }}</p>
       </div>
       <button
         @click="$emit('manage-habits')"
         class="px-4 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 text-sm font-semibold warm-shadow"
       >
-        Manage Habits
+        {{ $t('charts.habitInsights.manageHabits') }}
       </button>
     </div>
 
     <!-- No Habits State -->
     <div v-if="habits.length === 0" class="text-center py-12 px-6 rounded-xl bg-gradient-to-br from-[#FAF3E0] to-[#F0E9D2] border-2 border-dashed border-[#D3C9A6]">
       <p class="text-5xl mb-4">🎯</p>
-      <p class="text-xl font-bold text-[#4E3B2B] mb-2">Start Building Better Habits</p>
+      <p class="text-xl font-bold text-[#4E3B2B] mb-2">{{ $t('charts.habitInsights.startBuilding') }}</p>
       <p class="text-sm text-[#7D5A36] mb-4 max-w-md mx-auto">
-        Track your daily routines, build consistency, and watch your progress grow over time. Small steps lead to big changes!
+        {{ $t('charts.habitInsights.startBuildingDesc') }}
       </p>
       <button
         @click="$emit('manage-habits')"
         class="px-6 py-3 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl font-semibold hover-lift transition-all duration-200 warm-shadow-strong inline-flex items-center gap-2"
       >
         <span>➕</span>
-        Add Your First Habit
+        {{ $t('charts.habitInsights.addFirstHabit') }}
       </button>
     </div>
 
@@ -39,17 +39,17 @@
         <!-- Total Habits -->
         <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #10b981">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">Active Habits</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">{{ $t('charts.habitInsights.activeHabits') }}</span>
             <span class="text-3xl">🎯</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ habits.length }}</p>
-          <p class="text-xs text-[#7D5A36]">{{ completedTodayCount }} completed today</p>
+          <p class="text-xs text-[#7D5A36]">{{ completedTodayCount }} {{ $t('charts.habitInsights.completedToday') }}</p>
         </div>
 
         <!-- Average Completion Rate -->
         <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #3b82f6">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">This Week</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">{{ $t('charts.habitInsights.thisWeek') }}</span>
             <span class="text-3xl">📊</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ weeklyCompletionRate }}%</p>
@@ -66,11 +66,11 @@
         <!-- Best Streak -->
         <div class="stat-card glass-effect p-5 rounded-xl hover-lift transition-all duration-200 warm-shadow-card" style="border-left: 4px solid #f59e0b">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">Best Streak</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#7D5A36]">{{ $t('charts.habitInsights.bestStreak') }}</span>
             <span class="text-3xl">🔥</span>
           </div>
           <p class="text-3xl font-bold text-[#4E3B2B] mb-1">{{ longestStreak }}</p>
-          <p class="text-xs text-[#7D5A36]">{{ longestStreakHabit || 'Keep going!' }}</p>
+          <p class="text-xs text-[#7D5A36]">{{ longestStreakHabit || $t('charts.habitInsights.keepGoing') }}</p>
         </div>
       </div>
 
@@ -78,7 +78,7 @@
       <div class="space-y-4">
         <h3 class="text-lg font-semibold text-[#4E3B2B] flex items-center gap-2">
           <span>📋</span>
-          Habit Performance
+          {{ $t('charts.habitInsights.habitPerformance') }}
         </h3>
 
         <div
@@ -97,7 +97,7 @@
                 <span class="text-3xl">🔥</span>
                 <div>
                   <p class="text-2xl font-bold text-[#4E3B2B]">{{ habit.currentStreak }}</p>
-                  <p class="text-xs text-[#7D5A36]">current streak</p>
+                  <p class="text-xs text-[#7D5A36]">{{ $t('charts.habitInsights.currentStreak') }}</p>
                 </div>
               </div>
             </div>
@@ -106,26 +106,26 @@
           <!-- Stats Grid -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
-              <p class="text-sm text-[#7D5A36] mb-1 font-medium">This Week</p>
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">{{ $t('charts.habitInsights.thisWeek') }}</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.weeklyRate }}%</p>
             </div>
             <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
-              <p class="text-sm text-[#7D5A36] mb-1 font-medium">This Month</p>
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">{{ $t('charts.habitInsights.thisMonth') }}</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.monthlyRate }}%</p>
             </div>
             <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
-              <p class="text-sm text-[#7D5A36] mb-1 font-medium">Best Streak</p>
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">{{ $t('charts.habitInsights.bestStreak') }}</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.longestStreak }}</p>
             </div>
             <div class="text-center p-3 bg-[#F0E9D2] rounded-lg transition-all duration-200 hover:bg-[#E5DCC7]">
-              <p class="text-sm text-[#7D5A36] mb-1 font-medium">Total Days</p>
+              <p class="text-sm text-[#7D5A36] mb-1 font-medium">{{ $t('charts.habitInsights.totalDays') }}</p>
               <p class="text-xl font-bold text-[#4E3B2B]">{{ habit.totalCompletions }}</p>
             </div>
           </div>
 
           <!-- Weekly Trend Visualization -->
           <div class="mb-3">
-            <p class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide mb-2">Last 7 Days</p>
+            <p class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide mb-2">{{ $t('charts.habitInsights.thisWeek') }}</p>
             <div class="flex items-center gap-2">
               <div
                 v-for="(day, index) in habit.last7Days"
@@ -140,15 +140,15 @@
               </div>
             </div>
             <div class="flex justify-between mt-1">
-              <span class="text-xs text-[#7D5A36]/70">7 days ago</span>
-              <span class="text-xs text-[#7D5A36]/70">Today</span>
+              <span class="text-xs text-[#7D5A36]/70">{{ $t('charts.habitInsights.daysAgo', { count: 7 }) }}</span>
+              <span class="text-xs text-[#7D5A36]/70">{{ $t('charts.habitInsights.today') }}</span>
             </div>
           </div>
 
           <!-- Completion Rate Bar -->
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide">All-Time Rate</span>
+              <span class="text-xs font-semibold text-[#7D5A36] uppercase tracking-wide">{{ $t('charts.habitInsights.allTimeRate') }}</span>
               <span class="text-sm font-semibold text-[#4E3B2B]">{{ habit.allTimeRate }}%</span>
             </div>
             <div class="h-3 bg-[#F0E9D2] rounded-full overflow-hidden">

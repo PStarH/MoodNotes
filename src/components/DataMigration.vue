@@ -3,10 +3,10 @@
         <div class="mb-4">
             <h3 id="migration-title" class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                 <span aria-hidden="true">🔄</span>
-                Data Migration
+                {{ $t('migration.title') }}
             </h3>
             <p class="text-sm text-[#7D5A36]/80 mt-2">
-                Migrate legacy data URLs to the new file system for better performance and reliability.
+                {{ $t('migration.description') }}
             </p>
         </div>
 
@@ -15,9 +15,9 @@
             <div class="flex items-start gap-3">
                 <span class="text-2xl" aria-hidden="true">✅</span>
                 <div>
-                    <p class="font-semibold text-[#4E3B2B]">All data is up to date</p>
+                    <p class="font-semibold text-[#4E3B2B]">{{ $t('migration.upToDate') }}</p>
                     <p class="text-sm text-[#7D5A36]/80 mt-1">
-                        Your media files are already using the new file system.
+                        {{ $t('migration.upToDateDesc') }}
                     </p>
                 </div>
             </div>
@@ -29,32 +29,32 @@
                 <div class="flex items-start gap-3">
                     <span class="text-2xl" aria-hidden="true">⚠️</span>
                     <div class="flex-1">
-                        <p class="font-semibold text-[#4E3B2B]">Migration recommended</p>
+                        <p class="font-semibold text-[#4E3B2B]">{{ $t('migration.recommended') }}</p>
                         <p class="text-sm text-[#7D5A36]/80 mt-1">
-                            Found {{ scanForDataUrls() }} media file{{ scanForDataUrls() === 1 ? '' : 's' }} using legacy data URLs.
+                            {{ $t('migration.foundFiles', { count: scanForDataUrls() }) }}
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="glass-effect p-4 rounded-xl">
-                <h4 class="font-semibold text-[#4E3B2B] mb-2">What will happen:</h4>
+                <h4 class="font-semibold text-[#4E3B2B] mb-2">{{ $t('migration.whatHappens') }}</h4>
                 <ul class="space-y-2 text-sm text-[#7D5A36]/80">
                     <li class="flex items-start gap-2">
                         <span>•</span>
-                        <span>Media files will be converted from data URLs to proper file references</span>
+                        <span>{{ $t('migration.step1') }}</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <span>•</span>
-                        <span>Your data will be preserved - no information will be lost</span>
+                        <span>{{ $t('migration.step2') }}</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <span>•</span>
-                        <span>App performance will improve significantly</span>
+                        <span>{{ $t('migration.step3') }}</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <span>•</span>
-                        <span>Database size will be reduced</span>
+                        <span>{{ $t('migration.step4') }}</span>
                     </li>
                 </ul>
             </div>
@@ -65,7 +65,7 @@
                 aria-label="Start data migration process"
             >
                 <span aria-hidden="true">🚀</span>
-                Start Migration
+                {{ $t('migration.startMigration') }}
             </button>
         </div>
 
@@ -75,7 +75,7 @@
                 <div class="flex items-center gap-3 mb-3">
                     <div class="animate-spin text-2xl" aria-hidden="true">⚙️</div>
                     <div class="flex-1">
-                        <p class="font-semibold text-[#4E3B2B]">Migration in progress...</p>
+                        <p class="font-semibold text-[#4E3B2B]">{{ $t('migration.inProgress') }}</p>
                         <p class="text-sm text-[#7D5A36]/80 mt-1">{{ progress.currentFile }}</p>
                     </div>
                 </div>
@@ -89,35 +89,34 @@
                 </div>
 
                 <div class="flex justify-between text-sm text-[#7D5A36]/80 mt-2">
-                    <span>{{ progress.processed }} / {{ progress.total }} files</span>
+                    <span>{{ $t('migration.filesProcessed', { processed: progress.processed, total: progress.total }) }}</span>
                     <span>{{ Math.round((progress.processed / progress.total) * 100) }}%</span>
                 </div>
 
                 <!-- Estimated Time Remaining -->
                 <div v-if="estimatedTimeRemaining" class="mt-2 text-center">
                     <p class="text-xs text-[#7D5A36]/70">
-                        ⏱️ Estimated time remaining: <span class="font-semibold">{{ estimatedTimeRemaining }}</span>
+                        {{ $t('migration.estimatedTime') }} <span class="font-semibold">{{ estimatedTimeRemaining }}</span>
                     </p>
                 </div>
             </div>
 
             <div v-if="progress.failed > 0" class="glass-effect p-3 rounded-xl border border-orange-500/30 bg-orange-500/5" role="alert">
                 <p class="text-sm text-[#7D5A36]">
-                    <span aria-hidden="true">⚠️</span> {{ progress.failed }} file{{ progress.failed === 1 ? '' : 's' }} failed to migrate
+                    <span aria-hidden="true">⚠️</span> {{ $t('migration.filesFailed', { count: progress.failed }) }}
                 </p>
             </div>
 
             <!-- Detailed File List -->
             <div v-if="progress.files.length > 0" ref="fileListRef" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto scroll-smooth">
                 <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
-                    <span aria-hidden="true">📋</span>
-                    File Status
+                    {{ $t('migration.fileStatus') }}
                 </h4>
 
                 <!-- Pending/In-Progress Files -->
                 <div v-if="pendingFiles.length > 0" class="mb-4">
                     <h5 class="text-sm font-semibold text-[#7D5A36]/80 mb-2">
-                        ⏳ In Progress ({{ pendingFiles.length }})
+                        {{ $t('migration.inProgressFiles', { count: pendingFiles.length }) }}
                     </h5>
                     <div class="space-y-2">
                         <div
@@ -147,7 +146,7 @@
                 <!-- Completed Files -->
                 <div v-if="completedFiles.length > 0">
                     <h5 class="text-sm font-semibold text-[#7D5A36]/80 mb-2">
-                        ✓ Completed ({{ completedFiles.length }})
+                        {{ $t('migration.completedFiles', { count: completedFiles.length }) }}
                     </h5>
                     <div class="space-y-2">
                         <div
@@ -183,26 +182,25 @@
                 <div class="flex items-start gap-3">
                     <span class="text-2xl" aria-hidden="true">🎉</span>
                     <div class="flex-1">
-                        <p class="font-semibold text-[#4E3B2B]">Migration completed!</p>
+                        <p class="font-semibold text-[#4E3B2B]">{{ $t('migration.completed') }}</p>
                         <p class="text-sm text-[#7D5A36]/80 mt-1">
-                            Successfully migrated {{ progress.processed }} file{{ progress.processed === 1 ? '' : 's' }}.
+                            {{ $t('migration.successMessage', { count: progress.processed }) }}
                         </p>
                     </div>
                 </div>
             </div>
 
             <div v-if="progress.failed > 0" class="glass-effect p-4 rounded-xl border border-orange-500/30 bg-orange-500/5" role="alert">
-                <p class="font-semibold text-[#4E3B2B] mb-1"><span aria-hidden="true">⚠️</span> Partial Migration</p>
+                <p class="font-semibold text-[#4E3B2B] mb-1"><span aria-hidden="true">⚠️</span> {{ $t('migration.partialMigration') }}</p>
                 <p class="text-sm text-[#7D5A36]/80">
-                    {{ progress.failed }} file{{ progress.failed === 1 ? '' : 's' }} could not be migrated. Original data has been preserved.
+                    {{ $t('migration.partialMessage', { count: progress.failed }) }}
                 </p>
             </div>
 
             <!-- Detailed File List with Retry -->
             <div v-if="progress.files.length > 0" class="glass-effect p-4 rounded-xl max-h-96 overflow-y-auto scroll-smooth">
                 <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center gap-2">
-                    <span aria-hidden="true">📋</span>
-                    Migration Results
+                    {{ $t('migration.migrationResults') }}
                 </h4>
                 <div class="space-y-2">
                     <div
@@ -233,8 +231,7 @@
                             aria-label="Retry migration for this file"
                             title="Retry this file"
                         >
-                            <span aria-hidden="true">🔄</span>
-                            Retry
+                            {{ $t('migration.retry') }}
                         </button>
                     </div>
                 </div>
@@ -245,7 +242,7 @@
                 class="w-full px-6 py-3 glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] rounded-xl hover-lift transition-all duration-200 font-semibold"
                 aria-label="Close migration results"
             >
-                Close
+                {{ $t('migration.close') }}
             </button>
         </div>
 
@@ -255,9 +252,9 @@
                 <div class="flex items-start gap-3">
                     <span class="text-2xl" aria-hidden="true">❌</span>
                     <div class="flex-1">
-                        <p class="font-semibold text-[#4E3B2B]">Migration failed</p>
+                        <p class="font-semibold text-[#4E3B2B]">{{ $t('migration.failed') }}</p>
                         <p class="text-sm text-[#7D5A36]/80 mt-1">
-                            An error occurred during migration. Your data has not been modified.
+                            {{ $t('migration.failedMessage') }}
                         </p>
                     </div>
                 </div>
@@ -268,7 +265,7 @@
                 class="w-full px-6 py-3 glass-effect border border-[#D3C9A6]/60 text-[#4E3B2B] rounded-xl hover-lift transition-all duration-200 font-semibold"
                 aria-label="Retry migration"
             >
-                Try Again
+                {{ $t('migration.tryAgain') }}
             </button>
         </div>
     </div>
@@ -276,9 +273,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDataMigration } from '@/composables/useDataMigration'
 import type { MigrationFileInfo } from '@/composables/useDataMigration'
 
+const { t } = useI18n()
 const { progress, migrateAllData, needsMigration, scanForDataUrls, resetProgress, retryFile } = useDataMigration()
 
 // Track start time and calculate ETA

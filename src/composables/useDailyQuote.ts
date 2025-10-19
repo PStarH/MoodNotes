@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import quotesJson from '@/assets/quotes.json'
+import quotesZhJson from '@/assets/quotes-zh.json'
 import type { MoodType } from '@/store/types'
 
 export interface DailyQuote {
@@ -26,6 +27,10 @@ export interface UseDailyQuoteOptions {
    * Optional mood to filter quotes by. If provided, quotes will be selected from the mood-specific pool.
    */
   mood?: MoodType
+  /**
+   * Language for quotes. Defaults to 'en'.
+   */
+  language?: 'en' | 'zh'
 }
 
 interface StoredQuotePayload {
@@ -33,34 +38,48 @@ interface StoredQuotePayload {
   cachedAt: string
   expiresAt: string
   source?: QuoteSource
+  language?: string
 }
 
 const DEFAULT_STORAGE_KEY = 'moodnotes.dailyQuote'
 const DEFAULT_CACHE_WINDOW = 1000 * 60 * 60 * 24 // 24 hours
 
 const moodBasedQuotes = quotesJson as Record<string, DailyQuote[]>
+const moodBasedQuotesZh = quotesZhJson as Record<string, DailyQuote[]>
+
+/**
+ * Get the appropriate quotes pool based on language
+ */
+const getQuotesPool = (language: 'en' | 'zh' = 'en'): Record<string, DailyQuote[]> => {
+  return language === 'zh' ? moodBasedQuotesZh : moodBasedQuotes
+}
 
 /**
  * Pick a quote from the local pool, optionally filtered by mood.
  * If a mood is provided, quotes from that mood category are preferred.
  * Falls back to general quotes if mood-specific quotes aren't available.
  */
-const pickLocalQuote = (excludeText?: string, mood?: MoodType): DailyQuote => {
-  let quotesPool: DailyQuote[] = []
+const pickLocalQuote = (excludeText?: string, mood?: MoodType, language: 'en' | 'zh' = 'en'): DailyQuote => {
+  const quotesPool: DailyQuote[] = []
+  const moodQuotes = getQuotesPool(language)
 
   // Try to get mood-specific quotes first
-  if (mood && moodBasedQuotes[mood] && moodBasedQuotes[mood].length > 0) {
-    quotesPool = moodBasedQuotes[mood]
-  } else if (moodBasedQuotes.general && moodBasedQuotes.general.length > 0) {
+  if (mood && moodQuotes[mood] && moodQuotes[mood].length > 0) {
+    quotesPool.push(...moodQuotes[mood])
+  } else if (moodQuotes.general && moodQuotes.general.length > 0) {
     // Fall back to general quotes
-    quotesPool = moodBasedQuotes.general
+    quotesPool.push(...moodQuotes.general)
   } else {
     // Ultimate fallback: combine all available quotes
-    quotesPool = Object.values(moodBasedQuotes).flat()
+    quotesPool.push(...Object.values(moodQuotes).flat())
   }
 
+  const fallbackQuote = language === 'zh'
+    ? { text: '每天写一点，记录你的故事。', author: 'MoodNotes' }
+    : { text: 'Keep writing your story one day at a time.', author: 'MoodNotes' }
+
   if (quotesPool.length === 0) {
-    return { text: 'Keep writing your story one day at a time.', author: 'MoodNotes' }
+    return fallbackQuote
   }
 
   if (quotesPool.length === 1) {
@@ -95,6 +114,7 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
   const cacheWindow = options.cacheWindowMs ?? DEFAULT_CACHE_WINDOW
   const remoteFetcher = options.fetcher ?? defaultRemoteFetcher
   const mood = ref<MoodType | undefined>(options.mood)
+  const language = ref<'en' | 'zh'>(options.language ?? 'en')
 
   const quote = ref<DailyQuote | null>(null)
   const isLoading = ref(false)
@@ -175,11 +195,11 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
         return
       }
 
-      const localQuote = pickLocalQuote(quote.value?.text, mood.value)
+      const localQuote = pickLocalQuote(quote.value?.text, mood.value, language.value)
       applyQuote(localQuote, 'local')
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load quote'
-      const fallbackQuote = pickLocalQuote(quote.value?.text, mood.value)
+      const fallbackQuote = pickLocalQuote(quote.value?.text, mood.value, language.value)
       applyQuote(fallbackQuote, 'fallback')
     } finally {
       isLoading.value = false
@@ -192,6 +212,10 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
 
   const updateMood = (newMood: MoodType) => {
     mood.value = newMood
+  }
+
+  const updateLanguage = (newLanguage: 'en' | 'zh') => {
+    language.value = newLanguage
   }
 
   const quoteText = computed(() => quote.value?.text ?? '')
@@ -208,8 +232,10 @@ export function useDailyQuote(options: UseDailyQuoteOptions = {}) {
     isLoading,
     error,
     mood,
+    language,
     initializeQuote: loadQuote,
     refreshQuote,
-    updateMood
+    updateMood,
+    updateLanguage
   }
 }

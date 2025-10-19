@@ -12,27 +12,27 @@
 
                 <!-- Container for Close Button and Export Options -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 pb-3 border-b border-[#D3C9A6]">
-                    <h2 id="day-summary-title" class="text-xl sm:text-2xl font-bold text-[#4E3B2B]">Daily Review</h2>
+                    <h2 id="day-summary-title" class="text-xl sm:text-2xl font-bold text-[#4E3B2B]">{{ $t('daySummary.title') }}</h2>
                     <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Document actions">
                         <!-- Export Options -->
                         <button
                             @click="exportContent('pdf')"
                             class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
-                            aria-label="Export as PDF"
+                            :aria-label="$t('daySummary.exportPdf')"
                         >
                             <span aria-hidden="true">📜</span>
                         </button>
                         <button
                             @click="exportContent('md')"
                             class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
-                            aria-label="Export as Markdown"
+                            :aria-label="$t('daySummary.exportMarkdown')"
                         >
                             <span aria-hidden="true">📝</span>
                         </button>
                         <button
                             @click="exportContent('html')"
                             class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
-                            aria-label="Export as HTML"
+                            :aria-label="$t('daySummary.exportHtml')"
                         >
                             <span aria-hidden="true">🌐</span>
                         </button>
@@ -40,7 +40,7 @@
                             v-if="daySummary"
                             @click="deleteDaySummary"
                             class="bg-gradient-to-r from-red-500 to-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs hover-lift transition-all duration-200 warm-shadow flex items-center"
-                            aria-label="Delete this entry"
+                            :aria-label="$t('daySummary.deleteEntry')"
                         >
                             <span aria-hidden="true">🗑️</span>
                         </button>
@@ -73,11 +73,11 @@
                                     <Cloud class="meta-icon__glyph" />
                                 </div>
                                 <div>
-                                    <p class="meta-label">Weather</p>
+                                    <p class="meta-label">{{ $t('daySummary.weather') }}</p>
                                     <p class="meta-value">{{ weather.description }}</p>
                                 </div>
                             </div>
-                            
+
                             <div class="daily-review__inline-section flex-1">
                                 <div class="meta-icon" aria-hidden="true">
                                     <span class="meta-icon__glyph">🏷️</span>
@@ -99,15 +99,15 @@
                                             &times;
                                         </button>
                                     </div>
-                                    <label for="new-tag-input" class="sr-only">Add a new tag</label>
+                                    <label for="new-tag-input" class="sr-only">{{ $t('daySummary.addTag') }}</label>
                                     <input
                                         id="new-tag-input"
                                         v-model="newTag"
                                         @keyup.enter="addTag"
                                         type="text"
-                                        placeholder="Add a tag"
+                                        :placeholder="$t('daySummary.addTag')"
                                         class="tag-input-small"
-                                        aria-label="Type a new tag and press Enter to add"
+                                        :aria-label="$t('daySummary.addTag')"
                                     >
                                 </div>
                             </div>
@@ -116,7 +116,7 @@
                                 <MoodPicker
                                     v-model="mood"
                                     :options="moodOptions"
-                                    :default-caption="'😊 Choose a mood'"
+                                    :default-caption="'😊 ' + $t('daySummary.chooseMood')"
                                     class="mood-picker-inline"
                                 />
                             </div>
@@ -130,8 +130,8 @@
                                 <span class="meta-icon__glyph">✨</span>
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">今日灵感 Sparks</label>
-                                <p class="text-xs text-[#7D5A36]/80 mb-3">记录今天的亮点、想法和美好瞬间</p>
+                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">{{ $t('daySummary.sparks') }}</label>
+                                <p class="text-xs text-[#7D5A36]/80 mb-3">{{ $t('daySummary.sparksDesc') }}</p>
 
                                 <!-- Sparks List -->
                                 <div v-if="sparks.length > 0" class="space-y-2 mb-3">
@@ -145,7 +145,7 @@
                                             @click="removeSpark(index)"
                                             class="flex-shrink-0 text-[#7D5A36]/60 hover:text-[#7D5A36] opacity-0 group-hover:opacity-100 transition-opacity"
                                             :aria-label="`Remove spark: ${spark.substring(0, 30)}`"
-                                            title="移除这条灵感"
+                                            :title="$t('common.delete')"
                                         >
                                             <X :size="16" />
                                         </button>
@@ -157,18 +157,18 @@
                                     <textarea
                                         v-model="newSpark"
                                         @keydown="handleSparkKeydown"
-                                        placeholder="输入一条灵感... (Enter 添加, Shift+Enter 换行)"
+                                        :placeholder="$t('daySummary.sparkPlaceholder')"
                                         class="flex-1 px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all"
                                         rows="2"
-                                        aria-label="输入新的灵感"
+                                        :aria-label="$t('daySummary.sparkPlaceholder')"
                                     ></textarea>
                                     <button
                                         @click="addSpark"
                                         :disabled="!newSpark.trim()"
                                         class="px-4 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-lg text-sm font-semibold hover-lift transition-all warm-shadow disabled:opacity-50 disabled:cursor-not-allowed h-fit"
-                                        aria-label="添加灵感"
+                                        :aria-label="$t('daySummary.addSpark')"
                                     >
-                                        添加
+                                        {{ $t('daySummary.addSpark') }}
                                     </button>
                                 </div>
                             </div>
@@ -182,8 +182,8 @@
                                 <span class="meta-icon__glyph">✅</span>
                             </div>
                             <div class="flex-1">
-                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">今日习惯 Daily Habits</label>
-                                <p class="text-xs text-[#7D5A36]/80 mb-3">跟踪你的日常习惯，保持积极的生活方式</p>
+                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">{{ $t('daySummary.habits') }}</label>
+                                <p class="text-xs text-[#7D5A36]/80 mb-3">{{ $t('daySummary.habitsDesc') }}</p>
 
                                 <!-- Habits List -->
                                 <div class="space-y-2">
@@ -211,7 +211,7 @@
                                                 class="w-7 h-7 rounded-full border-2 border-green-500 hover:bg-green-100 transition-all duration-200 hover-lift flex-shrink-0"
                                                 :aria-label="`Mark ${habit.name} as completed`"
                                                 :aria-pressed="habit.status === 'did'"
-                                                title="完成"
+                                                :title="$t('daySummary.completed')"
                                             ></button>
                                             <button
                                                 @click="cycleHabitStatus(habit, 'partial')"
@@ -219,7 +219,7 @@
                                                 class="w-7 h-7 rounded-full border-2 border-yellow-500 hover:bg-yellow-100 transition-all duration-200 hover-lift flex-shrink-0"
                                                 :aria-label="`Mark ${habit.name} as partially completed`"
                                                 :aria-pressed="habit.status === 'partial'"
-                                                title="部分完成"
+                                                :title="$t('daySummary.partiallyCompleted')"
                                             ></button>
                                             <button
                                                 @click="cycleHabitStatus(habit, 'not')"
@@ -227,7 +227,7 @@
                                                 class="w-7 h-7 rounded-full border-2 border-red-500 hover:bg-red-100 transition-all duration-200 hover-lift flex-shrink-0"
                                                 :aria-label="`Mark ${habit.name} as not completed`"
                                                 :aria-pressed="habit.status === 'not'"
-                                                title="未完成"
+                                                :title="$t('daySummary.notCompleted')"
                                             ></button>
                                         </div>
                                     </div>
@@ -255,7 +255,7 @@
                                     <div class="skeleton-bar short"></div>
                                     <div class="skeleton-bar short"></div>
                                 </div>
-                                <p class="text-sm text-[#7D5A36] mt-3 text-center">Loading editor...</p>
+                                <p class="text-sm text-[#7D5A36] mt-3 text-center">{{ $t('common.loading') }}</p>
                             </div>
                             <div
                                 v-show="!isQuillLoading"
@@ -274,7 +274,7 @@
                         <div class="flex items-start justify-between mb-3">
                             <h3 class="text-lg font-semibold text-[#4E3B2B] flex items-center gap-2">
                                 <span aria-hidden="true">🕰️</span>
-                                Last Year Today
+                                {{ $t('daySummary.lastYearToday') }}
                             </h3>
                             <span class="text-xs text-[#7D5A36]/70">{{ lastYearDateString }}</span>
                         </div>
@@ -282,9 +282,9 @@
                         <div class="space-y-3">
                             <!-- Mood Comparison -->
                             <div v-if="lastYearMood" class="flex items-center gap-2">
-                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Mood:</span>
+                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('daySummary.mood') }}:</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xl" aria-hidden="true">{{ moodOptions.find(opt => opt.value === lastYearMood)?.emoji || '😐' }}</span>
+                                    <span class="text-xl" aria-hidden="true">{{ moodOptions.find((opt: { value: string; emoji: string }) => opt.value === lastYearMood)?.emoji || '😐' }}</span>
                                     <span class="text-sm font-medium text-[#4E3B2B]">{{ lastYearMood.charAt(0).toUpperCase() + lastYearMood.slice(1) }}</span>
                                 </div>
                             </div>
@@ -296,7 +296,7 @@
 
                             <!-- Tags -->
                             <div v-if="lastYearTags.length > 0" class="flex flex-wrap gap-1.5">
-                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">Tags:</span>
+                                <span class="text-xs font-semibold text-[#7D5A36]/80 uppercase tracking-wide">{{ $t('daySummary.tags') }}:</span>
                                 <span
                                     v-for="tag in lastYearTags.slice(0, 6)"
                                     :key="tag"
@@ -312,21 +312,21 @@
                             <!-- Daily Check Comparison -->
                             <div v-if="lastYearDailyCheck" class="grid grid-cols-3 gap-2 text-xs">
                                 <div class="glass-effect p-2 rounded-lg text-center">
-                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Energy</div>
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">{{ $t('daySummary.energyLevel') }}</div>
                                     <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.energyLevel }}/10</div>
                                 </div>
                                 <div class="glass-effect p-2 rounded-lg text-center">
-                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Stress</div>
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">{{ $t('daySummary.stressLevel') }}</div>
                                     <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.stressLevel }}/10</div>
                                 </div>
                                 <div class="glass-effect p-2 rounded-lg text-center">
-                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">Productivity</div>
+                                    <div class="font-semibold text-[#7D5A36]/70 text-xs">{{ $t('daySummary.productivity') }}</div>
                                     <div class="text-base font-bold text-[#4E3B2B]">{{ lastYearDailyCheck.productivity }}/10</div>
                                 </div>
                             </div>
 
                             <p class="text-xs text-[#7D5A36]/60 text-center italic pt-1">
-                                Reflecting on your journey helps you grow 🌱
+                                {{ $t('daySummary.reflecting') }}
                             </p>
                         </div>
                     </div>
@@ -335,12 +335,12 @@
                 <!-- Daily Check -->
                 <div class="mb-6 mt-8 slide-in">
                     <h2 id="daily-check-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
-                        <span class="mr-2" aria-hidden="true">📊</span>Daily Check
+                        <span class="mr-2" aria-hidden="true">📊</span>{{ $t('daySummary.dailyCheck') }}
                     </h2>
                     <div class="glass-effect p-4 rounded-xl space-y-3 warm-shadow">
                         <div class="flex items-center justify-between">
                             <label for="energy-level" class="text-[#4E3B2B] font-medium flex items-center">
-                                <span class="mr-2" aria-hidden="true">⚡</span>Energy Level:
+                                <span class="mr-2" aria-hidden="true">⚡</span>{{ $t('daySummary.energyLevel') }}:
                             </label>
                             <div class="flex items-center space-x-3">
                                 <input
@@ -350,7 +350,7 @@
                                     min="1"
                                     max="10"
                                     class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
-                                    :aria-label="`Energy level: ${dailyCheck.energyLevel} out of 10`"
+                                    :aria-label="`${$t('daySummary.energyLevel')}: ${dailyCheck.energyLevel} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"
                                     :aria-valuenow="dailyCheck.energyLevel"
@@ -360,7 +360,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <label for="stress-level" class="text-[#4E3B2B] font-medium flex items-center">
-                                <span class="mr-2" aria-hidden="true">😅</span>Stress Level:
+                                <span class="mr-2" aria-hidden="true">😅</span>{{ $t('daySummary.stressLevel') }}:
                             </label>
                             <div class="flex items-center space-x-3">
                                 <input
@@ -370,7 +370,7 @@
                                     min="1"
                                     max="10"
                                     class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
-                                    :aria-label="`Stress level: ${dailyCheck.stressLevel} out of 10`"
+                                    :aria-label="`${$t('daySummary.stressLevel')}: ${dailyCheck.stressLevel} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"
                                     :aria-valuenow="dailyCheck.stressLevel"
@@ -380,7 +380,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <label for="productivity-level" class="text-[#4E3B2B] font-medium flex items-center">
-                                <span class="mr-2" aria-hidden="true">🎨</span>Productivity:
+                                <span class="mr-2" aria-hidden="true">🎨</span>{{ $t('daySummary.productivity') }}:
                             </label>
                             <div class="flex items-center space-x-3">
                                 <input
@@ -390,7 +390,7 @@
                                     min="1"
                                     max="10"
                                     class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
-                                    :aria-label="`Productivity level: ${dailyCheck.productivity} out of 10`"
+                                    :aria-label="`${$t('daySummary.productivity')}: ${dailyCheck.productivity} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"
                                     :aria-valuenow="dailyCheck.productivity"
@@ -404,23 +404,23 @@
                 <!-- Media Upload -->
                 <div class="mb-6 bounce-in">
                     <h2 id="media-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
-                        <span class="mr-2" aria-hidden="true">📷</span>Media
+                        <span class="mr-2" aria-hidden="true">📷</span>{{ $t('daySummary.media') }}
                     </h2>
                     <div class="flex space-x-3 mb-3" role="group" aria-labelledby="media-section">
                         <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
                             <Image class="mr-1.5" :size="18" aria-hidden="true" />
-                            Add Image
-                            <input type="file" accept="image/*" @change="handleFileUpload" class="hidden" aria-label="Upload image file">
+                            {{ $t('daySummary.addImage') }}
+                            <input type="file" accept="image/*" @change="handleFileUpload" class="hidden" :aria-label="$t('daySummary.addImage')">
                         </label>
                         <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
                             <Video class="mr-1.5" :size="18" aria-hidden="true" />
-                            Add Video
-                            <input type="file" accept="video/*" @change="handleFileUpload" class="hidden" aria-label="Upload video file">
+                            {{ $t('daySummary.addVideo') }}
+                            <input type="file" accept="video/*" @change="handleFileUpload" class="hidden" :aria-label="$t('daySummary.addVideo')">
                         </label>
                         <label class="cursor-pointer bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-4 py-2 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm">
                             <Music class="mr-1.5" :size="18" aria-hidden="true" />
-                            Add Audio
-                            <input type="file" accept="audio/*" @change="handleFileUpload" class="hidden" aria-label="Upload audio file">
+                            {{ $t('daySummary.addAudio') }}
+                            <input type="file" accept="audio/*" @change="handleFileUpload" class="hidden" :aria-label="$t('daySummary.addAudio')">
                         </label>
                     </div>
                     <div v-if="media.length > 0" class="grid grid-cols-3 gap-4" role="list" aria-label="Uploaded media files">
@@ -447,15 +447,15 @@
                 <!-- Comfort Zone Entry -->
                 <div class="mb-6 fade-in">
                     <h2 id="comfort-zone-section" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
-                        <span class="mr-2" aria-hidden="true">🌱</span>Comfort Zone Entry
+                        <span class="mr-2" aria-hidden="true">🌱</span>{{ $t('daySummary.comfortZone') }}
                     </h2>
-                    <label for="comfort-zone-textarea" class="sr-only">Comfort zone reflections</label>
+                    <label for="comfort-zone-textarea" class="sr-only">{{ $t('daySummary.comfortZone') }}</label>
                     <textarea
                         id="comfort-zone-textarea"
                         v-model="comfortZoneEntry"
-                        placeholder="Did you step out of your comfort zone today? How did it feel?"
+                        :placeholder="$t('daySummary.comfortZonePlaceholder')"
                         class="w-full h-28 glass-effect text-[#4E3B2B] p-3 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all warm-shadow text-sm"
-                        aria-label="Describe your comfort zone experiences today"
+                        :aria-label="$t('daySummary.comfortZone')"
                     ></textarea>
                 </div>
 
@@ -473,42 +473,42 @@
                         v-if="!showAddSection"
                         @click="showAddSection = true"
                         class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-5 py-2.5 rounded-xl hover-lift transition-all duration-200 flex items-center warm-shadow text-sm"
-                        aria-label="Add a custom section to your journal"
+                        :aria-label="$t('daySummary.addCustomSection')"
                     >
-                        <span class="mr-2" aria-hidden="true">➕</span>Add Custom Section
+                        <span class="mr-2" aria-hidden="true">➕</span>{{ $t('daySummary.addCustomSection') }}
                     </button>
                     <div v-if="showAddSection" class="glass-effect p-4 rounded-xl warm-shadow space-y-3" role="form" aria-label="Add custom section form">
-                        <label for="section-title-input" class="sr-only">Section title</label>
+                        <label for="section-title-input" class="sr-only">{{ $t('daySummary.sectionTitle') }}</label>
                         <input
                             id="section-title-input"
                             v-model="newSectionTitle"
                             type="text"
-                            placeholder="Section Title"
+                            :placeholder="$t('daySummary.sectionTitle')"
                             class="w-full px-3 py-2.5 glass-effect rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all text-sm"
-                            aria-label="Enter section title"
+                            :aria-label="$t('daySummary.sectionTitle')"
                         >
-                        <label for="section-content-textarea" class="sr-only">Section content</label>
+                        <label for="section-content-textarea" class="sr-only">{{ $t('daySummary.sectionContent') }}</label>
                         <textarea
                             id="section-content-textarea"
                             v-model="newSectionContent"
-                            placeholder="Section Content"
+                            :placeholder="$t('daySummary.sectionContent')"
                             class="w-full h-28 glass-effect px-3 py-2.5 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all text-sm"
-                            aria-label="Enter section content"
+                            :aria-label="$t('daySummary.sectionContent')"
                         ></textarea>
                         <div class="flex justify-end space-x-2" role="group" aria-label="Section form actions">
                             <button
                                 @click="saveCustomSection"
                                 class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-5 py-2 rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow text-sm"
-                                aria-label="Save custom section"
+                                :aria-label="$t('daySummary.saveSection')"
                             >
-                                Save Section
+                                {{ $t('daySummary.saveSection') }}
                             </button>
                             <button
                                 @click="showAddSection = false"
                                 class="bg-gray-300 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-400 transition-all duration-200 font-semibold text-sm"
-                                aria-label="Cancel adding custom section"
+                                :aria-label="$t('common.cancel')"
                             >
-                                Cancel
+                                {{ $t('common.cancel') }}
                             </button>
                         </div>
                     </div>
@@ -521,11 +521,11 @@
                 :disabled="isSaving"
                 class="sticky bottom-4 float-right mr-4 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-full text-base font-bold hover-lift transition-all duration-200 warm-shadow-lg z-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                 :class="{ 'bg-green-500': saveSuccess }"
-                :aria-label="isSaving ? 'Saving your journal entry' : (saveSuccess ? 'Journal entry saved successfully' : 'Save all journal entry data')"
+                :aria-label="isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll'))"
                 :aria-busy="isSaving"
             >
                 <span class="mr-2" aria-hidden="true">{{ isSaving ? '⏳' : (saveSuccess ? '✅' : '💾') }}</span>
-                {{ isSaving ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save All') }}
+                {{ isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll')) }}
             </button>
         </div>
     </div>
@@ -534,6 +534,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, watchEffect, nextTick, onUnmounted, Ref } from 'vue'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
 import { X, Cloud, Image, Video, Music } from 'lucide-vue-next'
 import type Quill from 'quill'
 import { jsPDF } from 'jspdf'
@@ -549,6 +550,7 @@ import CustomDatePicker from '@/components/CustomDatePicker.vue'
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
 const store = useStore()
 const props = defineProps(['selectedDate'])
 const toast = useToast()
@@ -597,47 +599,47 @@ const isSaving = ref(false)
 const saveSuccess = ref(false)
 const isQuillLoading = ref(false)
 
-const moodOptions = [
-    { 
-        value: 'happy', 
-        label: 'Happy', 
-        emoji: '😄', 
-        caption: 'Bright and optimistic vibes',
+const moodOptions = computed(() => [
+    {
+        value: 'happy',
+        label: t('mood.happy.label'),
+        emoji: '😄',
+        caption: t('mood.happy.caption'),
         defaultDailyCheck: { energyLevel: 8, stressLevel: 3, productivity: 7 }
     },
-    { 
-        value: 'neutral', 
-        label: 'Neutral', 
-        emoji: '😐', 
-        caption: 'Steady and grounded today',
+    {
+        value: 'neutral',
+        label: t('mood.neutral.label'),
+        emoji: '😐',
+        caption: t('mood.neutral.caption'),
         defaultDailyCheck: { energyLevel: 5, stressLevel: 5, productivity: 5 }
     },
-    { 
-        value: 'sad', 
-        label: 'Sad', 
-        emoji: '😢', 
-        caption: 'A softer, reflective mood',
+    {
+        value: 'sad',
+        label: t('mood.sad.label'),
+        emoji: '😢',
+        caption: t('mood.sad.caption'),
         defaultDailyCheck: { energyLevel: 3, stressLevel: 6, productivity: 4 }
     },
-    { 
-        value: 'excited', 
-        label: 'Excited', 
-        emoji: '🎉', 
-        caption: 'Energized and full of spark',
+    {
+        value: 'excited',
+        label: t('mood.excited.label'),
+        emoji: '🎉',
+        caption: t('mood.excited.caption'),
         defaultDailyCheck: { energyLevel: 9, stressLevel: 4, productivity: 8 }
     },
-    { 
-        value: 'angry', 
-        label: 'Angry', 
-        emoji: '😠', 
-        caption: 'Tension worth unpacking',
+    {
+        value: 'angry',
+        label: t('mood.angry.label'),
+        emoji: '😠',
+        caption: t('mood.angry.caption'),
         defaultDailyCheck: { energyLevel: 6, stressLevel: 8, productivity: 4 }
     }
-]
+])
 
 watchEffect(() => {
-    if (!moodOptions.some(option => option.value === mood.value)) {
-        mood.value = moodOptions[0].value as typeof mood.value
+    if (!moodOptions.value.some(option => option.value === mood.value)) {
+        mood.value = moodOptions.value[0].value as typeof mood.value
     }
 })
 
@@ -646,15 +648,15 @@ watchEffect(() => {
 watch(mood, (newMood) => {
     // Update quote mood
     updateQuoteMood(newMood)
-    
-    const selectedMood = moodOptions.find(opt => opt.value === newMood)
+
+    const selectedMood = moodOptions.value.find(opt => opt.value === newMood)
     if (selectedMood && selectedMood.defaultDailyCheck) {
         // Only update if the user hasn't customized the values yet (still at 5)
-        const isDefaultValues = 
-            dailyCheck.value.energyLevel === 5 && 
-            dailyCheck.value.stressLevel === 5 && 
+        const isDefaultValues =
+            dailyCheck.value.energyLevel === 5 &&
+            dailyCheck.value.stressLevel === 5 &&
             dailyCheck.value.productivity === 5
-        
+
         if (isDefaultValues) {
             dailyCheck.value = { ...selectedMood.defaultDailyCheck }
         }
@@ -984,10 +986,10 @@ const saveAll = () => {
 }
 
 const deleteDaySummary = () => {
-    if (confirm('Are you sure you want to delete this day summary? This action cannot be undone.')) {
+    if (confirm(t('daySummary.deleteEntry') + '? This action cannot be undone.')) {
         store.dispatch('deleteDaySummary', currentDate.value)
             .then(() => {
-                toast.success('Day summary deleted successfully.', 'Deleted')
+                toast.success(t('toast.deleted'), t('toast.success'))
                 emit('close')
             })
             .catch((error) => {

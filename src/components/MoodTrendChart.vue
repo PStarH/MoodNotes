@@ -4,9 +4,9 @@
             <div>
                 <h3 id="mood-trend-title" class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                     <span aria-hidden="true">📈</span>
-                    Mood Trend
+                    {{ $t('charts.moodTrend.title') }}
                 </h3>
-                <p class="text-sm text-[#7D5A36]/80">Your emotional journey over time</p>
+                <p class="text-sm text-[#7D5A36]/80">{{ $t('charts.moodTrend.subtitle') }}</p>
             </div>
             <div class="flex gap-2">
                 <button
@@ -14,20 +14,20 @@
                     @click="resetZoom"
                     class="glass-effect px-3 py-2 rounded-lg text-xs text-[#4E3B2B] hover:bg-[#7D5A36]/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Reset zoom to default view"
-                    title="Reset zoom"
+                    :title="$t('charts.moodTrend.resetZoom')"
                 >
-                    <span aria-hidden="true">🔍</span> Reset
+                    {{ $t('charts.moodTrend.resetZoom') }}
                 </button>
                 <select
                     v-model="timeRange"
                     class="glass-effect px-3 py-2 rounded-lg text-sm text-[#4E3B2B] focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Select time range for mood trend chart"
                 >
-                    <option value="7">Last 7 days</option>
-                    <option value="14">Last 14 days</option>
-                    <option value="30">Last 30 days</option>
-                    <option value="60">Last 60 days</option>
-                    <option value="90">Last 90 days</option>
+                    <option value="7">{{ $t('charts.moodTrend.last7Days') }}</option>
+                    <option value="14">{{ $t('charts.moodTrend.last14Days') }}</option>
+                    <option value="30">{{ $t('charts.moodTrend.last30Days') }}</option>
+                    <option value="60">{{ $t('charts.moodTrend.last60Days') }}</option>
+                    <option value="90">{{ $t('charts.moodTrend.last90Days') }}</option>
                 </select>
             </div>
         </div>
@@ -39,16 +39,31 @@
             />
         </div>
         <p class="text-xs text-[#7D5A36]/60 mt-2 text-center" aria-label="Chart interaction instructions">
-            <span aria-hidden="true">💡</span> Scroll to zoom horizontally, drag to pan left/right
+            {{ $t('charts.moodTrend.hint') }}
         </p>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watchEffect, onMounted, onUnmounted, type PropType } from 'vue'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  type ChartOptions,
+  type TooltipItem
+} from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 import { useStore } from 'vuex'
 import { DaySummary } from '@/store/types'
 
@@ -56,7 +71,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const store = useStore()
 const timeRange = ref(7)
-const chartRef = ref<InstanceType<typeof Line> | null>(null)
+const chartRef = ref<any>(null)
 const isZoomed = ref(false)
 const resizeTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
@@ -125,7 +140,7 @@ const chartDataPoints = computed(() => {
         // O(1) lookup instead of O(n) find
         const summary = summariesByDate.value.get(dateString)
 
-        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+        days.push(date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }))
         rawDates.push(dateString)
         values.push(summary ? moodToValue(summary.mood) : 3) // Default to neutral if no entry
     }
@@ -137,7 +152,7 @@ const chartData = computed(() => ({
     labels: chartDataPoints.value.days,
     datasets: [
         {
-            label: 'Mood Level',
+            label: t('charts.moodTrend.moodLevel'),
             data: chartDataPoints.value.values,
             borderColor: '#7D5A36',
             backgroundColor: 'rgba(125, 90, 54, 0.1)',
@@ -188,31 +203,31 @@ const chartOptions = computed(() => ({
             cornerRadius: 12,
             displayColors: false,
             callbacks: {
-                title: (context: Array<{ dataIndex: number; [key: string]: unknown }>) => {
-                    const index = context[0].dataIndex
+                title: (tooltipItems: TooltipItem<'line'>[]) => {
+                    const index = tooltipItems[0].dataIndex
                     const rawDate = chartDataPoints.value.rawDates[index]
                     const date = new Date(rawDate)
                     // More precise date display
-                    return date.toLocaleDateString('en-US', {
+                    return date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
                         year: 'numeric'
                     })
                 },
-                label: (context: { dataIndex: number; parsed: { y: number }; [key: string]: unknown }) => {
+                label: (context: TooltipItem<'line'>) => {
                     const index = context.dataIndex
                     const rawDate = chartDataPoints.value.rawDates[index]
                     const summary = summariesByDate.value.get(rawDate)
-                    const value = context.parsed.y
-                    const moodLabels = ['', 'Angry 😠', 'Sad 😢', 'Neutral 😐', 'Happy 😄', 'Excited 🎉']
+                    const value = context.parsed.y ?? 3
+                    const moodLabels = ['', t('charts.moodTrend.angry'), t('charts.moodTrend.sad'), t('charts.moodTrend.neutral'), t('charts.moodTrend.happy'), t('charts.moodTrend.excited')]
 
                     const lines: string[] = []
-                    lines.push(`Mood: ${moodLabels[value] || 'Unknown'}`)
+                    lines.push(`${t('charts.moodTrend.mood')}: ${moodLabels[value] || t('charts.moodTrend.unknown')}`)
 
                     if (summary?.dailyCheck) {
-                        lines.push(`Energy: ${summary.dailyCheck.energyLevel}/10`)
-                        lines.push(`Stress: ${summary.dailyCheck.stressLevel}/10`)
+                        lines.push(`${t('charts.moodTrend.energy')}: ${summary.dailyCheck.energyLevel}/10`)
+                        lines.push(`${t('charts.moodTrend.stress')}: ${summary.dailyCheck.stressLevel}/10`)
                     }
 
                     if (summary?.summary) {
@@ -220,7 +235,7 @@ const chartOptions = computed(() => ({
                         if (textContent.length > 0) {
                             const preview = textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '')
                             lines.push('─'.repeat(20))
-                            lines.push(`Note: "${preview}"`)
+                            lines.push(`${t('charts.moodTrend.note')}: "${preview}"`)
                         }
                     }
 
@@ -232,8 +247,7 @@ const chartOptions = computed(() => ({
             zoom: {
                 wheel: {
                     enabled: true,
-                    speed: 0.08, // Smoother zoom speed
-                    modifierKey: null
+                    speed: 0.08 // Smoother zoom speed
                 },
                 pinch: {
                     enabled: true
@@ -247,7 +261,6 @@ const chartOptions = computed(() => ({
             pan: {
                 enabled: true,
                 mode: 'x' as const,
-                modifierKey: null,
                 // Add smooth panning with inertia
                 speed: 20,
                 threshold: 10
@@ -264,9 +277,9 @@ const chartOptions = computed(() => ({
             ticks: {
                 stepSize: 1,
                 color: '#7D5A36',
-                callback: (value: number) => {
+                callback: (value: string | number) => {
                     const labels = ['', '😠', '😢', '😐', '😄', '🎉']
-                    return labels[value] || ''
+                    return labels[Number(value)] || ''
                 }
             },
             grid: {

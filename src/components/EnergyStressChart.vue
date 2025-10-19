@@ -4,9 +4,9 @@
             <div>
                 <h3 id="energy-stress-title" class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                     <span aria-hidden="true">⚡</span>
-                    Energy vs Stress
+                    {{ $t('charts.energyStress.title') }}
                 </h3>
-                <p class="text-sm text-[#7D5A36]/80">Discover patterns in your wellbeing</p>
+                <p class="text-sm text-[#7D5A36]/80">{{ $t('charts.energyStress.subtitle') }}</p>
             </div>
             <div class="flex gap-2">
                 <button
@@ -14,20 +14,20 @@
                     @click="resetZoom"
                     class="glass-effect px-3 py-2 rounded-lg text-xs text-[#4E3B2B] hover:bg-[#7D5A36]/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Reset zoom to default view"
-                    title="Reset zoom"
+                    :title="$t('charts.energyStress.resetZoom')"
                 >
-                    <span aria-hidden="true">🔍</span> Reset
+                    {{ $t('charts.energyStress.resetZoom') }}
                 </button>
                 <select
                     v-model="timeRange"
                     class="glass-effect px-3 py-2 rounded-lg text-sm text-[#4E3B2B] focus:outline-none focus:ring-2 focus:ring-[#7D5A36]"
                     aria-label="Select time range for energy vs stress chart"
                 >
-                    <option value="7">Last 7 days</option>
-                    <option value="14">Last 14 days</option>
-                    <option value="30">Last 30 days</option>
-                    <option value="60">Last 60 days</option>
-                    <option value="90">Last 90 days</option>
+                    <option value="7">{{ $t('charts.energyStress.last7Days') }}</option>
+                    <option value="14">{{ $t('charts.energyStress.last14Days') }}</option>
+                    <option value="30">{{ $t('charts.energyStress.last30Days') }}</option>
+                    <option value="60">{{ $t('charts.energyStress.last60Days') }}</option>
+                    <option value="90">{{ $t('charts.energyStress.last90Days') }}</option>
                 </select>
             </div>
         </div>
@@ -39,23 +39,23 @@
             />
         </div>
         <p class="text-xs text-[#7D5A36]/60 mt-2 text-center" aria-label="Chart interaction instructions">
-            <span aria-hidden="true">💡</span> Scroll to zoom, drag to pan in any direction
+            {{ $t('charts.energyStress.hint') }}
         </p>
         <div class="mt-4 grid grid-cols-2 gap-3">
             <div class="glass-effect p-3 rounded-lg transition-all hover:scale-105">
-                <p class="text-sm text-[#7D5A36]/80">Optimal Zone</p>
-                <p class="text-xs text-[#4E3B2B] mt-1">High energy, Low stress</p>
+                <p class="text-sm text-[#7D5A36]/80">{{ $t('daySummary.optimalZone') }}</p>
+                <p class="text-xs text-[#4E3B2B] mt-1">{{ $t('daySummary.highEnergyLowStress') }}</p>
                 <div class="mt-2 flex items-center gap-2">
                     <div class="w-3 h-3 rounded-full" style="background: #4ade80"></div>
-                    <span class="text-xs">{{ optimalCount }} days ({{ optimalPercentage }}%)</span>
+                    <span class="text-xs">{{ optimalCount }} {{ $t('calendar.weekDays.days') }} ({{ optimalPercentage }}%)</span>
                 </div>
             </div>
             <div class="glass-effect p-3 rounded-lg transition-all hover:scale-105">
-                <p class="text-sm text-[#7D5A36]/80">Burnout Risk</p>
-                <p class="text-xs text-[#4E3B2B] mt-1">Low energy, High stress</p>
+                <p class="text-sm text-[#7D5A36]/80">{{ $t('daySummary.burnoutRisk') }}</p>
+                <p class="text-xs text-[#4E3B2B] mt-1">{{ $t('daySummary.lowEnergyHighStress') }}</p>
                 <div class="mt-2 flex items-center gap-2">
                     <div class="w-3 h-3 rounded-full" style="background: #f87171"></div>
-                    <span class="text-xs">{{ burnoutCount }} days ({{ burnoutPercentage }}%)</span>
+                    <span class="text-xs">{{ burnoutCount }} {{ $t('calendar.weekDays.days') }} ({{ burnoutPercentage }}%)</span>
                 </div>
             </div>
         </div>
@@ -65,16 +65,19 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Scatter } from 'vue-chartjs'
-import { Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, type TooltipItem } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { useStore } from 'vuex'
 import { DaySummary } from '@/store/types'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, zoomPlugin)
 
 const store = useStore()
 const timeRange = ref(7)
-const chartRef = ref<InstanceType<typeof Scatter> | null>(null)
+const chartRef = ref<any>(null)
 const isZoomed = ref(false)
 const resizeTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
@@ -236,18 +239,18 @@ const chartOptions = computed(() => ({
             cornerRadius: 12,
             displayColors: false,
             callbacks: {
-                title: (context: Array<{ dataIndex: number; [key: string]: unknown }>) => {
-                    const point = scatterData.value[context[0].dataIndex]
+                title: (tooltipItems: TooltipItem<'scatter'>[]) => {
+                    const point = scatterData.value[tooltipItems[0].dataIndex]
                     const date = new Date(point.date)
                     // More precise date display
-                    return date.toLocaleDateString('en-US', {
+                    return date.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
                         year: 'numeric'
                     })
                 },
-                label: (context: { dataIndex: number; [key: string]: unknown }) => {
+                label: (context: TooltipItem<'scatter'>) => {
                     const point = scatterData.value[context.dataIndex]
                     const summary = summariesByDate.value.get(point.date)
                     const moodEmoji = {
@@ -284,8 +287,7 @@ const chartOptions = computed(() => ({
             zoom: {
                 wheel: {
                     enabled: true,
-                    speed: 0.08, // Smoother zoom speed
-                    modifierKey: null
+                    speed: 0.08 // Smoother zoom speed
                 },
                 pinch: {
                     enabled: true
@@ -299,7 +301,6 @@ const chartOptions = computed(() => ({
             pan: {
                 enabled: true,
                 mode: 'xy' as const,
-                modifierKey: null,
                 // Add smooth panning with inertia
                 speed: 20,
                 threshold: 10
@@ -314,7 +315,7 @@ const chartOptions = computed(() => ({
         x: {
             title: {
                 display: true,
-                text: 'Stress Level →',
+                text: t('charts.energyStress.stressAxis'),
                 color: '#7D5A36',
                 font: {
                     size: 14,
@@ -334,7 +335,7 @@ const chartOptions = computed(() => ({
         y: {
             title: {
                 display: true,
-                text: '↑ Energy Level',
+                text: t('charts.energyStress.energyAxis'),
                 color: '#7D5A36',
                 font: {
                     size: 14,

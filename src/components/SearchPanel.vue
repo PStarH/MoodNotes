@@ -11,7 +11,7 @@
     <!-- Search Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 id="search-panel-title" class="text-2xl font-bold" style="color: var(--color-text);">
-        <span class="mr-3" aria-hidden="true">🔍</span>Search & Filter
+        <span class="mr-3" aria-hidden="true">🔍</span>{{ $t('search.title') }}
       </h2>
       <button
         type="button"
@@ -19,7 +19,7 @@
         @click="$emit('close')"
         class="p-2 rounded-lg transition-all hover:opacity-80"
         style="color: var(--color-primary);"
-        aria-label="Close search panel"
+        :aria-label="$t('search.close')"
       >
         <X :size="24" aria-hidden="true" />
       </button>
@@ -27,61 +27,61 @@
 
     <!-- Search Input -->
     <div class="mb-6">
-      <label for="search-input" class="sr-only">Search diary entries</label>
+      <label for="search-input" class="sr-only">{{ $t('search.title') }}</label>
       <div class="relative">
         <input
           id="search-input"
           v-model="searchInput"
           @input="handleSearch"
           type="text"
-          placeholder="Search your diary entries..."
+          :placeholder="$t('search.placeholder')"
           class="w-full px-4 py-3 pl-12 glass-effect rounded-xl focus:outline-none focus:ring-2 transition-all"
           style="color: var(--color-text); border-color: var(--color-border);"
-          aria-label="Search diary entries"
+          :aria-label="$t('search.title')"
         />
         <Search class="absolute left-4 top-1/2 transform -translate-y-1/2" style="color: var(--color-primary);" :size="20" aria-hidden="true" />
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" role="group" aria-label="Search filters">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" role="group" :aria-label="$t('search.filters')">
       <!-- Date Range -->
       <div class="space-y-2">
-        <label for="date-start" class="block text-sm font-semibold" style="color: var(--color-text);">Date Range</label>
+        <label for="date-start" class="block text-sm font-semibold" style="color: var(--color-text);">{{ $t('search.dateRange') }}</label>
         <div class="space-y-2">
           <CustomDatePicker
             v-model="searchFilters.dateRange.start"
-            placeholder="开始日期"
+            :placeholder="$t('search.startDate')"
           />
           <CustomDatePicker
             v-model="searchFilters.dateRange.end"
-            placeholder="结束日期"
+            :placeholder="$t('search.endDate')"
           />
         </div>
       </div>
 
       <!-- Mood Filter -->
       <div class="space-y-2">
-        <label for="mood-filter" class="block text-sm font-semibold" style="color: var(--color-text);">Mood</label>
+        <label for="mood-filter" class="block text-sm font-semibold" style="color: var(--color-text);">{{ $t('search.moodFilter') }}</label>
         <select
           id="mood-filter"
           v-model="searchFilters.mood"
           class="themed-select w-full"
           style="color: var(--color-text);"
-          aria-label="Filter by mood"
+          :aria-label="$t('search.moodFilter')"
         >
-          <option value="">All Moods</option>
-          <option value="happy">😄 Happy</option>
-          <option value="neutral">😐 Neutral</option>
-          <option value="sad">😢 Sad</option>
-          <option value="excited">🎉 Excited</option>
-          <option value="angry">😠 Angry</option>
+          <option value="">{{ $t('search.allMoods') }}</option>
+          <option value="happy">😄 {{ $t('mood.happy.label') }}</option>
+          <option value="neutral">😐 {{ $t('mood.neutral.label') }}</option>
+          <option value="sad">😢 {{ $t('mood.sad.label') }}</option>
+          <option value="excited">🎉 {{ $t('mood.excited.label') }}</option>
+          <option value="angry">😠 {{ $t('mood.angry.label') }}</option>
         </select>
       </div>
 
       <!-- Tags Filter -->
       <div class="space-y-2">
-        <label id="tags-filter-label" class="block text-sm font-semibold" style="color: var(--color-text);">Tags</label>
+        <label id="tags-filter-label" class="block text-sm font-semibold" style="color: var(--color-text);">{{ $t('search.tagsLabel') }}</label>
         <div class="space-y-3" role="group" aria-labelledby="tags-filter-label">
           <div class="relative">
             <input
@@ -89,7 +89,7 @@
               v-model="tagQuery"
                 @keydown="handleTagInputKeydown"
               type="text"
-              placeholder="Type to find tags..."
+              :placeholder="$t('search.tagPlaceholder')"
               class="w-full px-4 py-2 glass-effect rounded-lg focus:outline-none focus:ring-2 transition-all"
               style="color: var(--color-text); border-color: var(--color-border);"
               role="combobox"
@@ -121,17 +121,17 @@
                     @click.prevent="handleTagSelection(tag)"
                     @mouseenter="setActiveTag(index)"
                     @focus="setActiveTag(index)"
-                    :aria-label="`Add tag ${tag}`"
+                    :aria-label="$t('search.addTag') + ' ' + tag"
                   >
                     #{{ tag }}
                   </button>
               </li>
             </ul>
             <p v-else-if="tagQuery" class="absolute left-0 right-0 mt-2 px-4 py-2 text-xs text-[#7D5A36]/80 bg-[#FAF3E0] rounded-lg shadow" role="status">
-              No matching tags yet.
+              {{ $t('search.noMatchingTags') }}
             </p>
           </div>
-            <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">Use ↑ ↓ to highlight a suggestion, then press Enter to add it.</p>
+            <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">{{ $t('search.tagHelper') }}</p>
           <div v-if="searchFilters.tags.length > 0" class="flex flex-wrap gap-2">
             <span
               v-for="tag in searchFilters.tags"
@@ -143,14 +143,14 @@
                 type="button"
                 class="text-[#7D5A36] hover:text-[#4E3B2B]"
                 @click="removeTag(tag)"
-                :aria-label="`Remove tag ${tag}`"
+                :aria-label="$t('search.removeTag') + ' ' + tag"
               >
                 <X :size="14" aria-hidden="true" />
               </button>
             </span>
           </div>
-          <div v-else class="text-xs text-[#7D5A36]/70">No tag filters applied.</div>
-          <p class="text-xs text-[#7D5A36]/70" aria-live="polite">Applied tags: {{ searchFilters.tags.length }}</p>
+          <div v-else class="text-xs text-[#7D5A36]/70">{{ $t('search.noTagsApplied') }}</div>
+          <p class="text-xs text-[#7D5A36]/70" aria-live="polite">{{ $t('search.appliedTags') }}: {{ searchFilters.tags.length }}</p>
         </div>
       </div>
     </div>
@@ -175,31 +175,31 @@
           class="text-[#7D5A36] rounded"
           aria-label="Filter entries with media"
         />
-        <span class="text-sm text-[#4E3B2B] font-medium">Has Media</span>
+        <span class="text-sm text-[#4E3B2B] font-medium">{{ $t('search.hasMedia') }}</span>
       </label>
     </div>
 
     <!-- Search Stats -->
     <div class="glass-effect p-4 rounded-xl mb-6 warm-shadow" role="region" aria-labelledby="search-stats-title" aria-live="polite">
       <h3 id="search-stats-title" class="text-lg font-semibold text-[#4E3B2B] mb-3 flex items-center">
-        <span class="mr-2" aria-hidden="true">📊</span>Search Results
+        <span class="mr-2" aria-hidden="true">📊</span>{{ $t('search.results') }}
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div>
           <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Number of entries found">{{ searchStats.filteredEntries }}</p>
-          <p class="text-sm text-[#4E3B2B]">Entries Found</p>
+          <p class="text-sm text-[#4E3B2B]">{{ $t('search.entriesFound') }}</p>
         </div>
         <div>
           <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Total word count">{{ searchStats.totalWords }}</p>
-          <p class="text-sm text-[#4E3B2B]">Total Words</p>
+          <p class="text-sm text-[#4E3B2B]">{{ $t('search.totalWords') }}</p>
         </div>
         <div>
           <p class="text-2xl font-bold text-[#7D5A36]" aria-label="Unique tag count">{{ searchStats.tagCount }}</p>
-          <p class="text-sm text-[#4E3B2B]">Unique Tags</p>
+          <p class="text-sm text-[#4E3B2B]">{{ $t('search.uniqueTags') }}</p>
         </div>
         <div>
           <p class="text-sm font-bold text-[#7D5A36]" aria-label="Date range span">{{ searchStats.dateRange ? searchStats.dateSpanLabel : '—' }}</p>
-          <p class="text-sm text-[#4E3B2B]">Time Span</p>
+          <p class="text-sm text-[#4E3B2B]">{{ $t('search.timeSpan') }}</p>
           <p v-if="searchStats.dateRange" class="text-xs text-[#7D5A36]/80 mt-1" aria-label="Date range details">
             {{ formatDateDisplay(searchStats.dateRange.earliest) }} → {{ formatDateDisplay(searchStats.dateRange.latest) }}
           </p>
@@ -215,7 +215,7 @@
         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-all duration-200 font-semibold"
         aria-label="Clear all search filters"
       >
-        Clear All
+        {{ $t('search.clearAll') }}
       </button>
       <button
         type="button"
@@ -223,14 +223,14 @@
         class="px-6 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow"
         aria-label="Apply search filters"
       >
-        Apply Search
+        {{ $t('search.applySearch') }}
       </button>
     </div>
 
     <!-- Results Preview -->
     <div v-if="filteredSummaries.length > 0" class="mt-6">
       <h3 id="results-preview-title" class="text-lg font-semibold text-[#4E3B2B] mb-4 flex items-center">
-        <span class="mr-2" aria-hidden="true">📋</span>Preview Results ({{ filteredSummaries.length }})
+        <span class="mr-2" aria-hidden="true">📋</span>{{ $t('search.previewResults') }} ({{ filteredSummaries.length }})
       </h3>
       <DynamicScroller
         :items="filteredSummaries"
@@ -276,7 +276,7 @@
                   {{ tag }}
                 </span>
                 <span v-if="summary.tags.length > 3" class="text-xs text-[#7D5A36]">
-                  +{{ summary.tags.length - 3 }} more
+                  +{{ summary.tags.length - 3 }} {{ $t('search.moreTags') }}
                 </span>
               </div>
             </div>
@@ -296,7 +296,9 @@ import CustomDatePicker from './CustomDatePicker.vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { formatDateDisplay } from '@/utils/dateFormatters'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const emit = defineEmits(['close', 'apply-search', 'select-entry'])
 
 const {
@@ -443,7 +445,7 @@ const getMoodEmoji = (mood: string) => {
 }
 
 const getPreviewText = (text: string) => {
-  if (!text) return 'No content'
+  if (!text) return t('search.noContent')
   const plainText = text.replace(/<[^>]*>/g, '').trim()
   return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText
 }
@@ -453,22 +455,22 @@ const searchHint = computed(() => {
   if (!stats) return ''
 
   if (stats.filteredEntries === 0) {
-    return 'No entries match yet — try broadening the filters or date range.'
+    return t('search.noEntriesMatch')
   }
 
   const parts: string[] = []
-  parts.push(`${stats.filteredEntries} ${stats.filteredEntries === 1 ? 'entry' : 'entries'}`)
-  parts.push(`${stats.tagCount} unique ${stats.tagCount === 1 ? 'tag' : 'tags'}`)
+  parts.push(`${stats.filteredEntries} ${stats.filteredEntries === 1 ? t('search.entry') : t('search.entries')}`)
+  parts.push(`${stats.tagCount} ${t('search.uniqueTags')}`)
 
   if (stats.appliedTagCount > 0) {
-    parts.push(`${stats.appliedTagCount} active tag filter${stats.appliedTagCount === 1 ? '' : 's'}`)
+    parts.push(`${stats.appliedTagCount} ${stats.appliedTagCount === 1 ? t('search.activeFilter') : t('search.activeFilters')}`)
   }
 
   if (stats.dateSpanLabel && stats.dateRange) {
     parts.push(stats.dateSpanLabel)
   }
 
-  return `Showing ${parts.join(' • ')}`
+  return `${t('search.showing')} ${parts.join(' • ')}`
 })
 </script>
 

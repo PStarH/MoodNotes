@@ -8,24 +8,24 @@
             <div>
                 <h3 id="habit-completion-title" class="text-xl font-bold text-[#4E3B2B] flex items-center gap-2">
                     <span aria-hidden="true">✅</span>
-                    Today's Habits
+                    {{ $t('habitCompletion.title') }}
                 </h3>
-                <p class="text-sm text-[#7D5A36]/80 mt-1">Track your daily progress</p>
+                <p class="text-sm text-[#7D5A36]/80 mt-1">{{ $t('habitCompletion.subtitle') }}</p>
             </div>
             <button
                 @click="$emit('manage-habits')"
                 class="text-xs font-semibold text-[#7D5A36] hover:underline"
                 aria-label="Manage habits"
             >
-                Manage
+                {{ $t('habitCompletion.manage') }}
             </button>
         </div>
 
         <!-- No Habits Message -->
         <div v-if="totalHabits === 0" class="text-center py-8">
             <span class="text-4xl mb-3 block" aria-hidden="true">🌱</span>
-            <p class="text-[#4E3B2B] font-semibold mb-2">No habits yet</p>
-            <p class="text-sm text-[#7D5A36]/80">Start building healthy routines by adding your first habit.</p>
+            <p class="text-[#4E3B2B] font-semibold mb-2">{{ $t('habitCompletion.noHabits') }}</p>
+            <p class="text-sm text-[#7D5A36]/80">{{ $t('habitCompletion.noHabitsDesc') }}</p>
         </div>
 
         <!-- Habit Stats -->
@@ -61,7 +61,7 @@
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
                         <span class="text-3xl font-bold text-[#4E3B2B]">{{ completionRate }}%</span>
-                        <span class="text-xs text-[#7D5A36]/70">Complete</span>
+                        <span class="text-xs text-[#7D5A36]/70">{{ $t('habitCompletion.complete') }}</span>
                     </div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                         <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
                         <span class="text-2xl font-bold text-[#4E3B2B]">{{ completedCount }}</span>
                     </div>
-                    <p class="text-xs text-[#7D5A36]/80">Done</p>
+                    <p class="text-xs text-[#7D5A36]/80">{{ $t('habitCompletion.done') }}</p>
                 </div>
 
                 <div
@@ -89,7 +89,7 @@
                         <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
                         <span class="text-2xl font-bold text-[#4E3B2B]">{{ partialCount }}</span>
                     </div>
-                    <p class="text-xs text-[#7D5A36]/80">Partial</p>
+                    <p class="text-xs text-[#7D5A36]/80">{{ $t('habitCompletion.partial') }}</p>
                 </div>
 
                 <div
@@ -101,7 +101,7 @@
                         <div class="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
                         <span class="text-2xl font-bold text-[#4E3B2B]">{{ notCompletedCount }}</span>
                     </div>
-                    <p class="text-xs text-[#7D5A36]/80">Todo</p>
+                    <p class="text-xs text-[#7D5A36]/80">{{ $t('habitCompletion.todo') }}</p>
                 </div>
             </div>
 
@@ -118,7 +118,7 @@
 
             <!-- Quick Habit List -->
             <div v-if="todayHabits.length > 0" class="space-y-2">
-                <h4 class="text-sm font-semibold text-[#4E3B2B] mb-2">Quick View</h4>
+                <h4 class="text-sm font-semibold text-[#4E3B2B] mb-2">{{ $t('habitCompletion.quickView') }}</h4>
                 <div
                     v-for="habit in todayHabits"
                     :key="habit.id"
@@ -156,11 +156,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
 import type { Habit, HabitStatus } from '@/store/types'
 
 const emit = defineEmits(['manage-habits'])
 
 const store = useStore()
+const { t } = useI18n()
 const habits = computed<Habit[]>(() => store.state.habits as Habit[])
 
 // Get today's date string
@@ -231,15 +233,15 @@ const progressMessage = computed(() => {
     if (totalHabits.value === 0) return ''
 
     if (completionRate.value === 100) {
-        return '🎉 Perfect day! All habits completed!'
+        return t('habitCompletion.perfect')
     } else if (completionRate.value >= 80) {
-        return '🌟 Excellent progress! Keep it up!'
+        return t('habitCompletion.excellent')
     } else if (completionRate.value >= 50) {
-        return '💪 Good effort! You\'re halfway there!'
+        return t('habitCompletion.halfway')
     } else if (completionRate.value > 0) {
-        return '🌱 Every step counts! Keep going!'
+        return t('habitCompletion.keepGoing')
     } else {
-        return '⏰ Start your day right—complete a habit!'
+        return t('habitCompletion.startNow')
     }
 })
 </script>

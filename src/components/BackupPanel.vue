@@ -10,14 +10,14 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h2 id="backup-title" class="text-2xl font-bold text-themed flex items-center">
-        <span class="mr-3" aria-hidden="true">💾</span>Backup & Export
+        <span class="mr-3" aria-hidden="true">💾</span>{{ $t('backup.title') }}
       </h2>
       <button
         type="button"
         id="backup-panel-close"
         @click="$emit('close')"
         class="p-2 rounded-lg transition-all themed-button-hover text-themed-primary"
-        aria-label="Close backup panel"
+        :aria-label="$t('backup.close')"
       >
         <X :size="24" aria-hidden="true" />
       </button>
@@ -26,9 +26,9 @@
     <!-- Export Section -->
     <div class="mb-8">
       <h3 id="export-section" class="text-xl font-semibold text-themed mb-4 flex items-center">
-        <span class="mr-2" aria-hidden="true">📤</span>Export Data
+        <span class="mr-2" aria-hidden="true">📤</span>{{ $t('backup.exportSection') }}
       </h3>
-      <p class="text-themed-secondary mb-4">Download your diary data in various formats for backup or migration.</p>
+      <p class="text-themed-secondary mb-4">{{ $t('backup.exportDescription') }}</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4" role="group" aria-labelledby="export-section">
         <button
@@ -41,8 +41,8 @@
           class="export-button flex flex-col items-center p-4 glass-effect rounded-xl hover-lift transition-all duration-200 warm-shadow disabled:opacity-50"
         >
           <div class="text-3xl mb-2" aria-hidden="true">📄</div>
-          <span class="font-semibold text-themed">JSON</span>
-          <span class="text-sm text-themed-secondary text-center">Complete backup with all data</span>
+          <span class="font-semibold text-themed">{{ $t('backup.exportJson') }}</span>
+          <span class="text-sm text-themed-secondary text-center">{{ $t('backup.exportJsonDesc') }}</span>
         </button>
 
         <button
@@ -54,8 +54,8 @@
           class="export-button flex flex-col items-center p-4 glass-effect rounded-xl hover-lift transition-all duration-200 warm-shadow disabled:opacity-50"
         >
           <div class="text-3xl mb-2" aria-hidden="true">📊</div>
-          <span class="font-semibold text-[#4E3B2B]">CSV</span>
-          <span class="text-sm text-[#7D5A36] text-center">Spreadsheet format for analysis</span>
+          <span class="font-semibold text-[#4E3B2B]">{{ $t('backup.exportCsv') }}</span>
+          <span class="text-sm text-[#7D5A36] text-center">{{ $t('backup.exportCsvDesc') }}</span>
         </button>
 
         <button
@@ -67,16 +67,16 @@
           class="export-button flex flex-col items-center p-4 glass-effect rounded-xl hover-lift transition-all duration-200 warm-shadow disabled:opacity-50"
         >
           <div class="text-3xl mb-2" aria-hidden="true">📝</div>
-          <span class="font-semibold text-[#4E3B2B]">Markdown</span>
-          <span class="text-sm text-[#7D5A36] text-center">Human-readable format</span>
+          <span class="font-semibold text-[#4E3B2B]">{{ $t('backup.exportMarkdown') }}</span>
+          <span class="text-sm text-[#7D5A36] text-center">{{ $t('backup.exportMarkdownDesc') }}</span>
         </button>
       </div>
 
       <!-- Export Progress -->
       <div v-if="isExporting" class="mt-4" role="status" aria-live="polite">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-[#4E3B2B]">Exporting...</span>
-          <span class="text-sm text-[#7D5A36]" aria-label="Export progress">{{ backupProgress }}%</span>
+          <span class="text-sm font-medium text-[#4E3B2B]">{{ $t('backup.exporting') }}</span>
+          <span class="text-sm text-[#7D5A36]" :aria-label="$t('backup.exportProgress')">{{ backupProgress }}%</span>
         </div>
         <div class="w-full bg-[#F0E9D2] rounded-full h-2" role="progressbar" :aria-valuenow="backupProgress" aria-valuemin="0" aria-valuemax="100">
           <div
@@ -90,9 +90,9 @@
     <!-- Import Section -->
     <div class="mb-8">
       <h3 id="import-section" class="text-xl font-semibold text-[#4E3B2B] mb-4 flex items-center">
-        <span class="mr-2" aria-hidden="true">📥</span>Import Data
+        <span class="mr-2" aria-hidden="true">📥</span>{{ $t('backup.importSection') }}
       </h3>
-      <p class="text-[#7D5A36] mb-4">Restore your data from a previous backup (JSON format only).</p>
+      <p class="text-[#7D5A36] mb-4">{{ $t('backup.importDescription') }}</p>
 
       <div class="border-2 border-dashed border-[#D3C9A6] rounded-xl p-6 text-center" role="region" aria-labelledby="import-section">
         <input
@@ -109,11 +109,11 @@
           type="button"
           class="w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7D5A36] rounded-xl py-4"
           @click="triggerFileSelect"
-          aria-label="Click to select backup file"
+          :aria-label="$t('backup.clickToSelect')"
         >
           <div class="text-4xl mb-3" aria-hidden="true">📁</div>
-          <p class="text-[#4E3B2B] font-semibold mb-2">Click to select backup file</p>
-          <p class="text-sm text-[#7D5A36]">Only JSON backup files are supported</p>
+          <p class="text-[#4E3B2B] font-semibold mb-2">{{ $t('backup.clickToSelect') }}</p>
+          <p class="text-sm text-[#7D5A36]">{{ $t('backup.jsonOnly') }}</p>
         </button>
 
         <div v-else class="space-y-4">
@@ -130,9 +130,9 @@
               type="button"
               @click="clearSelectedFile"
               class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all"
-              aria-label="Cancel file selection"
+              :aria-label="$t('common.cancel')"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button
               type="button"
@@ -142,7 +142,7 @@
               class="px-6 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-lg hover-lift transition-all duration-200 font-semibold warm-shadow disabled:opacity-50"
               aria-label="Import data from selected file"
             >
-              Import Data
+              {{ $t('backup.importBtn') }}
             </button>
           </div>
         </div>
@@ -151,8 +151,8 @@
       <!-- Import Progress -->
       <div v-if="isImporting" class="mt-4" role="status" aria-live="polite">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-[#4E3B2B]">Importing...</span>
-          <span class="text-sm text-[#7D5A36]" aria-label="Import progress">{{ backupProgress }}%</span>
+          <span class="text-sm font-medium text-[#4E3B2B]">{{ $t('backup.importing') }}</span>
+          <span class="text-sm text-[#7D5A36]" :aria-label="$t('backup.importProgress')">{{ backupProgress }}%</span>
         </div>
         <div class="w-full bg-[#F0E9D2] rounded-full h-2" role="progressbar" :aria-valuenow="backupProgress" aria-valuemin="0" aria-valuemax="100">
           <div
@@ -171,24 +171,20 @@
     <!-- Backup Tips -->
     <div class="glass-effect p-4 rounded-xl warm-shadow">
       <h4 class="font-semibold text-[#4E3B2B] mb-3 flex items-center">
-        <span class="mr-2">💡</span>Backup Tips
+        {{ $t('backup.tips') }}
       </h4>
       <ul class="space-y-2 text-sm text-[#7D5A36]">
         <li class="flex items-start">
           <span class="mr-2">•</span>
-          <span>Export regularly to prevent data loss</span>
+          <span>{{ $t('backup.tip1') }}</span>
         </li>
         <li class="flex items-start">
           <span class="mr-2">•</span>
-          <span>JSON format preserves all data including media references</span>
+          <span>{{ $t('backup.tip2') }}</span>
         </li>
         <li class="flex items-start">
           <span class="mr-2">•</span>
-          <span>Store backups in multiple locations (cloud storage, external drives)</span>
-        </li>
-        <li class="flex items-start">
-          <span class="mr-2">•</span>
-          <span>Import will merge with existing data, not replace it</span>
+          <span>{{ $t('backup.tip3') }}</span>
         </li>
       </ul>
     </div>

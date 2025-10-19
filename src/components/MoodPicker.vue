@@ -20,7 +20,7 @@
         >
             <span class="text-xl" aria-hidden="true">{{ selectedOption?.emoji ?? '🙂' }}</span>
             <div class="flex-1">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#7D5A36]/70">Choose a mood</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#7D5A36]/70">{{ $t('daySummary.chooseMood') }}</p>
                 <p class="text-sm font-semibold leading-tight">{{ selectedOption?.label ?? '\n' }}</p>
                 <p class="text-xs text-[#7D5A36]/70">{{ selectedOption?.caption ?? defaultCaption }}</p>
             </div>
@@ -81,7 +81,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronDown } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 interface MoodOption {
     value: string
@@ -110,7 +113,7 @@ const listboxId = `mood-picker-${Math.random().toString(36).slice(2)}`
 const selectedOption = computed(() => props.options.find(option => option.value === props.modelValue))
 const selectedIndex = computed(() => props.options.findIndex(option => option.value === props.modelValue))
 const activeOptionId = computed(() => highlightIndex.value >= 0 ? optionId(highlightIndex.value) : undefined)
-const defaultCaption = computed(() => props.defaultCaption ?? 'Tap to set how the day feels')
+const defaultCaption = computed(() => props.defaultCaption ?? t('daySummary.chooseMoodHint'))
 
 const optionId = (index: number) => `${listboxId}-option-${index}`
 
