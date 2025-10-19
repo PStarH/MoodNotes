@@ -78,7 +78,7 @@
             #{{ tag }}
           </span>
         </div>
-        <p v-else class="text-xs text-themed-secondary">{{ $t('home.noTagsYet') }}</p>
+        <p v-else class="text-xs text-themed-secondary">{{ tagDescription }}</p>
       </div>
     </div>
 
@@ -136,13 +136,13 @@ import type { DaySummary, Habit } from '@/store/types'
 
 const emit = defineEmits(['open-entry', 'open-habits', 'view-insights'])
 const store = useStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // Get today's date - reactive to handle date changes
 const today = computed(() => new Date().toISOString().split('T')[0])
 
 const formattedToday = computed(() => {
-  return new Date().toLocaleDateString('en-US', {
+  return new Date().toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -225,6 +225,10 @@ const tagCount = computed(() => {
 
 const topTags = computed(() => {
   return todaySummary.value?.tags || []
+})
+
+const tagDescription = computed(() => {
+  return tagCount.value === 0 ? t('home.noTagsYet') : `${tagCount.value} ${t('home.tags')}`
 })
 </script>
 

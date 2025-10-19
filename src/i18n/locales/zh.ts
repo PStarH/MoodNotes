@@ -93,6 +93,8 @@ export default {
     noTasksDesc: '添加第一个任务，让计划更清晰。',
     addNewTask: '新增任务',
     createTask: '创建任务',
+    editTask: '编辑任务',
+    deleteTask: '删除任务',
     description: '描述',
     priority: '优先级',
     dueDate: '截止日期',
@@ -105,7 +107,26 @@ export default {
   averageEnergy: '平均能量',
     basedOnCheckins: '基于每日签到',
     tasksQueued: '任务队列',
-    youAreOnTrack: '一切正在有序进行'
+    youAreOnTrack: '一切正在有序进行',
+    // TodaySummary 组件
+    todaysOverview: '今日总览',
+    editEntry: '编辑日记',
+    moodCard: '心情',
+    habitsCard: '习惯',
+    wordsCard: '字数',
+    tagsCard: '标签',
+    noTagsYet: '暂无标签',
+    noWordsYet: '还没有字数',
+    justGettingStarted: '刚刚开始',
+    goodProgress: '进展不错',
+    greatReflection: '深度思考',
+    excellentDetail: '细致入微',
+    startTodaysEntry: '开始今日记录',
+    completeHabits: '完成习惯',
+    viewInsightsBtn: '洞察',
+    startYourDay: '开启美好的一天',
+    startYourDayDesc: '记录你的想法，追踪习惯，让今天更有意义。',
+    createFirstEntry: '创建首条记录'
   },
 
   // 分析
@@ -187,6 +208,11 @@ export default {
     sparksDesc: '记录那些激励你的瞬间',
     addSpark: '捕捉灵感',
     sparkPlaceholder: '记录这一刻的灵感…（Enter 发送，Shift+Enter 换行）',
+    goalsReflection: '目标反思',
+    goalsReflectionDesc: '回顾即将到期的目标，记录进展与思考。',
+    goalReflectionPlaceholder: '这个目标进展如何？今天采取了哪些行动？',
+    dueToday: '今日到期',
+    dueTomorrow: '明日到期',
     habits: '今日习惯',
     habitsDesc: '追踪每个小进步，见证成长',
     completed: '已完成',
@@ -235,6 +261,16 @@ export default {
     dueIn: '剩余',
     anytime: '暂无期限',
     noDueDate: '未设截止'
+  },
+
+  // 优先级翻译
+  priority: {
+    lowest: '最低',
+    low: '较低',
+    normal: '普通',
+    medium: '中等',
+    high: '较高',
+    highest: '最高'
   },
 
   // 习惯

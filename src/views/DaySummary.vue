@@ -236,6 +236,48 @@
                         </div>
                     </div>
 
+                    <!-- Goals Reflection Section -->
+                    <div v-if="relevantGoals.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                        <div class="flex items-start gap-3">
+                            <div class="meta-icon flex-shrink-0" aria-hidden="true">
+                                <span class="meta-icon__glyph">🎯</span>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-[#4E3B2B] mb-2">{{ $t('daySummary.goalsReflection') }}</label>
+                                <p class="text-xs text-[#7D5A36]/80 mb-3">{{ $t('daySummary.goalsReflectionDesc') }}</p>
+
+                                <!-- Goals List -->
+                                <div class="space-y-3">
+                                    <div
+                                        v-for="goal in relevantGoals"
+                                        :key="goal.id"
+                                        class="glass-effect p-4 rounded-lg hover-lift transition-all border-l-4"
+                                        :class="isGoalDueToday(goal) ? 'border-l-red-500' : 'border-l-yellow-500'"
+                                    >
+                                        <div class="flex items-start justify-between gap-3 mb-2">
+                                            <div class="flex-1">
+                                                <p class="text-sm font-semibold text-[#4E3B2B] mb-1">{{ goal.description }}</p>
+                                                <p class="text-xs text-[#7D5A36]/70">
+                                                    <span v-if="isGoalDueToday(goal)" class="font-semibold text-red-600">📅 {{ $t('daySummary.dueToday') }}</span>
+                                                    <span v-else class="font-semibold text-yellow-600">📅 {{ $t('daySummary.dueTomorrow') }}</span>
+                                                </p>
+                                            </div>
+                                            <span class="text-xs px-2 py-1 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">{{ goal.priority }}</span>
+                                        </div>
+                                        <!-- Goal Reflection Textarea -->
+                                        <textarea
+                                            v-model="goalReflections[goal.id]"
+                                            :placeholder="$t('daySummary.goalReflectionPlaceholder')"
+                                            class="w-full px-3 py-2 glass-effect text-[#4E3B2B] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#7D5A36] transition-all mt-2"
+                                            rows="3"
+                                            :aria-label="`Reflection for goal: ${goal.description}`"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="surface-card daily-review__editor-card bounce-in mb-6">
                         <label for="quill-editor" class="sr-only">Journal entry content</label>
                         <div class="editor-shell">
@@ -595,9 +637,41 @@ const tags: Ref<string[]> = ref([])
 const newTag = ref('')
 const sparks: Ref<string[]> = ref([])
 const newSpark = ref('')
+const goalReflections: Ref<Record<number, string>> = ref({})
 const isSaving = ref(false)
 const saveSuccess = ref(false)
 const isQuillLoading = ref(false)
+
+// Get tasks from store for goals reflection
+const tasks = computed(() => store.state.tasks || [])
+
+// Compute relevant goals (due today or tomorrow)
+const relevantGoals = computed(() => {
+    const currentDateObj = new Date(currentDate.value)
+    currentDateObj.setHours(0, 0, 0, 0)
+    
+    const tomorrow = new Date(currentDateObj)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    
+    return tasks.value.filter((task: any) => {
+        if (!task.dueDate) return false
+        const taskDueDate = new Date(task.dueDate)
+        taskDueDate.setHours(0, 0, 0, 0)
+        
+        // Include tasks due today or tomorrow
+        return taskDueDate.getTime() === currentDateObj.getTime() || 
+               taskDueDate.getTime() === tomorrow.getTime()
+    })
+})
+
+// Check if a goal is due today
+const isGoalDueToday = (goal: any) => {
+    const currentDateObj = new Date(currentDate.value)
+    currentDateObj.setHours(0, 0, 0, 0)
+    const taskDueDate = new Date(goal.dueDate)
+    taskDueDate.setHours(0, 0, 0, 0)
+    return taskDueDate.getTime() === currentDateObj.getTime()
+}
 
 const moodOptions = computed(() => [
     {
@@ -692,6 +766,7 @@ const loadExistingData = () => {
         customSections.value = existingSummary.customSections || []
         tags.value = existingSummary.tags || []
         sparks.value = existingSummary.sparks || []
+        goalReflections.value = existingSummary.goalReflections || {}
         media.value = existingSummary.media || []
         
         // Update Quill content
@@ -953,7 +1028,8 @@ const saveAll = () => {
             customSections: cleanCustomSections,
             tags: [...tags.value],
             sparks: [...sparks.value],
-            media: cleanMedia
+            media: cleanMedia,
+            goalReflections: { ...goalReflections.value }
         }
 
         console.log('💾 Saving day summary:', summaryData)

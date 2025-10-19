@@ -61,6 +61,7 @@ export interface DaySummary {
   tags: string[]
   media: Array<{ type: string; url: string }>
   sparks: string[] // Daily inspiration/highlights
+  goalReflections?: Record<number, string> // Reflections on goals due today or tomorrow
 }
 
 export interface MoodDetails {

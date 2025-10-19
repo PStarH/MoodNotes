@@ -298,16 +298,19 @@
                             </span>
                         </div>
 
-                        <ul v-if="upcomingTasks.length" class="space-y-3">
-                            <li v-for="task in upcomingTasks" :key="task.id"
-                                class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3 flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="font-semibold text-[#4E3B2B]">{{ task.description }}</p>
-                                    <p class="text-xs text-[#7D5A36]/70 mt-1">{{ describeTaskDueDate(task.dueDate) }}</p>
-                                </div>
-                                <span class="text-xs px-2 py-1 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">{{ task.priority }}</span>
-                            </li>
-                        </ul>
+                        <!-- 固定高度可滚动的任务列表 -->
+                        <div v-if="upcomingTasks.length" class="tasks-scroll-container custom-scrollbar">
+                            <ul class="space-y-3">
+                                <li v-for="task in upcomingTasks" :key="task.id"
+                                    class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3 flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="font-semibold text-[#4E3B2B]">{{ task.description }}</p>
+                                        <p class="text-xs text-[#7D5A36]/70 mt-1">{{ describeTaskDueDate(task.dueDate) }}</p>
+                                    </div>
+                                    <span class="text-xs px-2 py-1 rounded-full bg-[#7D5A36]/10 text-[#7D5A36] font-semibold">{{ task.priority }}</span>
+                                </li>
+                            </ul>
+                        </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
                             <p class="font-medium mb-2">{{ $t('home.noTasksDue') }}</p>
                             <p>{{ $t('home.addTaskHint') }}</p>
@@ -568,12 +571,19 @@
                 aria-labelledby="tasks-tab"
             >
                 <div class="bounce-in">
-                    <h3 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center"><span class="mr-2">✅</span>{{ $t('home.tasks') }}</h3>
-                    <button @click="isTaskFormOpen = true"
-                        class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer w-full mb-4 hover-lift transition-all duration-200 warm-shadow">
-                        <Plus color="#7D5A36" :size="24" class="mr-3" />
-                        <span class="text-[#4E3B2B] font-medium">{{ $t('home.addNewTask') }}</span>
-                    </button>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-[#4E3B2B] mb-1 flex items-center">
+                                <span class="mr-2">✅</span>{{ $t('home.tasks') }}
+                            </h3>
+                            <p class="text-sm text-[#7D5A36]/80">{{ $t('home.manageGoals') }}</p>
+                        </div>
+                        <button @click="isTaskFormOpen = true"
+                            class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer hover-lift transition-all duration-200 warm-shadow bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold">
+                            <Plus :size="20" class="mr-2" />
+                            <span>{{ $t('home.addNewTask') }}</span>
+                        </button>
+                    </div>
 
                     <EmptyState
                         v-if="tasks.length === 0"
@@ -585,10 +595,78 @@
                         @action="isTaskFormOpen = true"
                     />
 
-                    <div v-else v-for="(task, index) in tasks" :key="index"
-                        class="glass-effect p-4 rounded-lg mb-3 flex justify-between items-center hover-lift transition-all duration-200 warm-shadow">
-                        <span class="text-[#4E3B2B] font-medium">{{ task.description }}</span>
-                        <span class="text-[#7D5A36] text-sm font-semibold px-2 py-1 bg-[#7D5A36] bg-opacity-10 rounded-full">{{ task.priority }}</span>
+                    <!-- Tasks Grid -->
+                    <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        <div v-for="(task, index) in tasks" :key="index"
+                            class="group relative glass-effect rounded-2xl hover-lift transition-all duration-300 warm-shadow-lg overflow-hidden border border-[#D3C9A6]/20 hover:border-[#7D5A36]/40 hover:shadow-xl">
+                            
+                            <!-- 背景渐变装饰 -->
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#7D5A36]/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <!-- 卡片头部 - 优先级标签 -->
+                            <div class="relative bg-gradient-to-r from-[#7D5A36]/5 via-[#D3C9A6]/5 to-[#6B4A2E]/5 px-5 py-4 border-b border-[#D3C9A6]/30">
+                                <div class="flex justify-between items-center">
+                                    <span class="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full font-bold shadow-sm transition-all duration-200 group-hover:scale-105"
+                                        :class="getPriorityBadgeClass(task.priority)">
+                                        <span class="text-base">{{ getPriorityIcon(task.priority) }}</span>
+                                        {{ $t(`priority.${task.priority.toLowerCase()}`) || task.priority }}
+                                    </span>
+                                    
+                                    <!-- 操作按钮 -->
+                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <button 
+                                            @click="editTask(task)"
+                                            class="p-2 rounded-lg hover:bg-[#7D5A36]/10 transition-colors"
+                                            :aria-label="$t('home.editTask')"
+                                            title="Edit task">
+                                            <Edit2 :size="16" class="text-[#7D5A36]" />
+                                        </button>
+                                        <button 
+                                            @click="deleteTask(index)"
+                                            class="p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                                            :aria-label="$t('home.deleteTask')"
+                                            title="Delete task">
+                                            <Trash2 :size="16" class="text-red-600" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 卡片内容 -->
+                            <div class="relative p-5">
+                                <!-- 任务描述 -->
+                                <div class="mb-4 min-h-[60px]">
+                                    <p class="text-[#4E3B2B] font-semibold text-base leading-relaxed line-clamp-3">
+                                        {{ task.description }}
+                                    </p>
+                                </div>
+                                
+                                <!-- 截止日期 -->
+                                <div class="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-[#7D5A36]/5 to-transparent rounded-xl border border-[#D3C9A6]/30">
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50 shadow-sm">
+                                        <Calendar :size="16" class="text-[#7D5A36]" />
+                                    </div>
+                                    <div class="flex-1">
+                                        <span v-if="task.dueDate" 
+                                            class="text-sm font-bold block"
+                                            :class="getTaskDateClass(task.dueDate)">
+                                            {{ formatTaskDueDate(task.dueDate) }}
+                                        </span>
+                                        <span v-else class="text-sm text-[#7D5A36]/60 italic font-medium">
+                                            {{ $t('task.noDueDate') }}
+                                        </span>
+                                        <span v-if="task.dueDate" class="text-xs text-[#7D5A36]/50 block mt-0.5">
+                                            {{ getTaskDueDateLabel(task.dueDate) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 底部装饰条 -->
+                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r"
+                                :class="getTaskStatusGradient(task.dueDate)">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -729,7 +807,6 @@
                                 <div class="emotion-icon">{{ day.emotion.emoji }}</div>
                                 <span>{{ day.day }}</span>
                                 <div v-if="hasTasks(day.date)" class="task-indicator"></div>
-                                <div v-if="hasSummary(day.date)" class="summary-indicator"></div>
                             </div>
                             <div v-else class="calendar-day empty"></div>
 
@@ -742,10 +819,6 @@
                         <div class="flex items-center">
                             <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-primary);"></div>
                             <span class="text-themed">{{ $t('calendar.tasks') }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-3 h-3 rounded-full mr-1.5" style="background: var(--color-secondary);"></div>
-                            <span class="text-themed">{{ $t('calendar.daySummary') }}</span>
                         </div>
                     </div>
                 </div>
@@ -872,9 +945,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Developer Panel (only in development) -->
-    <DevPanel />
 </template>
 
 <script setup lang="ts">
@@ -882,14 +952,13 @@ import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3, Settings } from 'lucide-vue-next'
+import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3, Settings, Trash2 } from 'lucide-vue-next'
 import DOMPurify from 'dompurify'
 import { formatDate, formatRelativeTime, formatDateLong } from '@/utils/dateFormatters'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
 import SearchPanel from '../components/SearchPanel.vue'
 import BackupPanel from '../components/BackupPanel.vue'
-import DevPanel from '../components/DevPanel.vue'
 import EmptyState from '../components/EmptyState.vue'
 import HabitStreak from '../components/HabitStreak.vue'
 import TabNavigation from '../components/TabNavigation.vue'
@@ -1280,7 +1349,6 @@ const upcomingTasks = computed<TaskWithMeta[]>(() => {
 
     return sortedTasksByDueDate.value
         .filter((task: TaskWithMeta) => task.dueDateObj && task.dueDateObj.getTime() >= todayStart.getTime() && task.dueDateObj.getTime() <= withinWeek.getTime())
-        .slice(0, 3)
 })
 
 const tasksWithoutDueDateCount = computed(() => {
@@ -1406,6 +1474,101 @@ const getPriorityIcon = (priority: string): string => {
         'Highest': '🔥'
     }
     return icons[priority] || '➡️'
+}
+
+const getPriorityClass = (priority: string): string => {
+    const classes: Record<string, string> = {
+        'Lowest': 'text-gray-500',
+        'Low': 'text-blue-500',
+        'Normal': 'text-green-500',
+        'Medium': 'text-yellow-500',
+        'High': 'text-orange-500',
+        'Highest': 'text-red-500'
+    }
+    return classes[priority] || 'text-green-500'
+}
+
+const getTaskDateClass = (dateString?: string): string => {
+    if (!dateString) return 'text-gray-500'
+    
+    const dueDate = new Date(dateString)
+    if (Number.isNaN(dueDate.getTime())) return 'text-gray-500'
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    
+    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 0) return 'text-red-600 font-bold' // Overdue
+    if (diffDays === 0) return 'text-orange-600 font-semibold' // Due today
+    if (diffDays === 1) return 'text-yellow-600' // Due tomorrow
+    return 'text-gray-600' // Future
+}
+
+// 获取优先级徽章的样式类
+const getPriorityBadgeClass = (priority: string): string => {
+    const classes: Record<string, string> = {
+        'Lowest': 'bg-gray-100 text-gray-700 border border-gray-300',
+        'Low': 'bg-blue-50 text-blue-700 border border-blue-200',
+        'Normal': 'bg-green-50 text-green-700 border border-green-200',
+        'Medium': 'bg-yellow-50 text-yellow-700 border border-yellow-300',
+        'High': 'bg-orange-50 text-orange-700 border border-orange-300',
+        'Highest': 'bg-gradient-to-r from-red-500 to-rose-600 text-white border border-red-600'
+    }
+    return classes[priority] || 'bg-green-50 text-green-700 border border-green-200'
+}
+
+// 获取任务截止日期的标签文字
+const getTaskDueDateLabel = (dateString?: string): string => {
+    if (!dateString) return ''
+    
+    const dueDate = new Date(dateString)
+    if (Number.isNaN(dueDate.getTime())) return ''
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    
+    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 0) return locale.value === 'zh' ? `逾期 ${Math.abs(diffDays)} 天` : `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} overdue`
+    if (diffDays === 0) return locale.value === 'zh' ? '今天到期' : 'Due today'
+    if (diffDays === 1) return locale.value === 'zh' ? '明天到期' : 'Due tomorrow'
+    return locale.value === 'zh' ? `${diffDays} 天后到期` : `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`
+}
+
+// 获取任务状态的渐变色
+const getTaskStatusGradient = (dateString?: string): string => {
+    if (!dateString) return 'from-gray-400 to-gray-500'
+    
+    const dueDate = new Date(dateString)
+    if (Number.isNaN(dueDate.getTime())) return 'from-gray-400 to-gray-500'
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    
+    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 0) return 'from-red-500 to-rose-600' // Overdue
+    if (diffDays === 0) return 'from-orange-500 to-amber-600' // Due today
+    if (diffDays === 1) return 'from-yellow-500 to-amber-500' // Due tomorrow
+    if (diffDays <= 7) return 'from-green-500 to-emerald-600' // Within a week
+    return 'from-blue-500 to-cyan-600' // Future
+}
+
+// 编辑任务
+const editTask = (task: any) => {
+    // TODO: 实现编辑功能
+    console.log('Edit task:', task)
+}
+
+// 删除任务
+const deleteTask = (index: number) => {
+    if (confirm(locale.value === 'zh' ? '确定要删除这个任务吗？' : 'Are you sure you want to delete this task?')) {
+        store.commit('deleteTask', index)
+    }
 }
 
 const openJournalForToday = () => {
@@ -1811,23 +1974,14 @@ watch(locale, (newLocale) => {
     margin-bottom: 5px;
 }
 
-.task-indicator,
-.summary-indicator {
+.task-indicator {
     position: absolute;
     bottom: 2px;
+    left: 2px;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-}
-
-.task-indicator {
-    left: 2px;
     background-color: #4E3B2B;
-}
-
-.summary-indicator {
-    right: 2px;
-    background-color: #7D5A36;
 }
 
 .monthly-summary h3 {
@@ -1952,5 +2106,100 @@ watch(locale, (newLocale) => {
     .journal-entry:hover {
         transform: translateY(-4px) scale(1.002);
     }
+}
+
+/* Tasks scroll container */
+.tasks-scroll-container {
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.tasks-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tasks-scroll-container::-webkit-scrollbar-track {
+    background: rgba(211, 201, 166, 0.2);
+    border-radius: 3px;
+}
+
+.tasks-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(125, 90, 54, 0.4);
+    border-radius: 3px;
+}
+
+/* Enhanced Task Card Styles */
+.group:hover .opacity-0 {
+    opacity: 1;
+}
+
+/* Task card animation */
+@keyframes task-card-appear {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Staggered animation for task cards */
+.grid > div:nth-child(1) {
+    animation: task-card-appear 0.4s ease-out 0.05s backwards;
+}
+
+.grid > div:nth-child(2) {
+    animation: task-card-appear 0.4s ease-out 0.1s backwards;
+}
+
+.grid > div:nth-child(3) {
+    animation: task-card-appear 0.4s ease-out 0.15s backwards;
+}
+
+.grid > div:nth-child(4) {
+    animation: task-card-appear 0.4s ease-out 0.2s backwards;
+}
+
+.grid > div:nth-child(5) {
+    animation: task-card-appear 0.4s ease-out 0.25s backwards;
+}
+
+.grid > div:nth-child(6) {
+    animation: task-card-appear 0.4s ease-out 0.3s backwards;
+}
+
+/* Task priority badge hover effect */
+.group:hover [class*="px-4 py-2 rounded-full"] {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Task card background blur effect */
+.group::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    background: radial-gradient(circle at top right, rgba(125, 90, 54, 0.08), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.group:hover::after {
+    opacity: 1;
+}
+
+/* Date section hover effect */
+.group:hover [class*="bg-gradient-to-r from-"] {
+    background: linear-gradient(to right, rgba(125, 90, 54, 0.1), transparent);
+}
+
+
+.tasks-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(125, 90, 54, 0.6);
 }
 </style>

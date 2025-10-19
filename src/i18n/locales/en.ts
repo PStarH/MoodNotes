@@ -221,6 +221,8 @@ export default {
     noTasksDesc: 'Start organizing your day by adding your first task. Set priorities and due dates to stay on track.',
     addNewTask: 'Add new task',
     createTask: 'Create Task',
+    editTask: 'Edit Task',
+    deleteTask: 'Delete Task',
     description: 'Description',
     priority: 'Priority',
     dueDate: 'Due Date',
@@ -444,6 +446,11 @@ export default {
     sparksDesc: 'Record highlights, ideas and beautiful moments from today',
     addSpark: 'Add',
     sparkPlaceholder: 'Enter a spark... (Enter to add, Shift+Enter for new line)',
+    goalsReflection: 'Goals Reflection',
+    goalsReflectionDesc: 'Reflect on your upcoming goals and track your progress.',
+    goalReflectionPlaceholder: 'How are you progressing on this goal? What steps did you take today?',
+    dueToday: 'Due Today',
+    dueTomorrow: 'Due Tomorrow',
     habits: 'Daily Habits',
     habitsDesc: 'Track your daily habits and maintain a positive lifestyle',
     completed: 'Completed',
@@ -496,6 +503,16 @@ export default {
     dueIn: 'Due in',
     anytime: 'Anytime',
     noDueDate: 'No due date'
+  },
+
+  // Priority translations
+  priority: {
+    lowest: 'Lowest',
+    low: 'Low',
+    normal: 'Normal',
+    medium: 'Medium',
+    high: 'High',
+    highest: 'Highest'
   },
 
   // Habits
