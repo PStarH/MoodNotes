@@ -72,7 +72,34 @@ export default {
     tip1: 'Regular backups help prevent data loss',
     tip2: 'JSON format includes all data (moods, tasks, habits)',
     tip3: 'CSV format is great for analyzing in Excel or Google Sheets',
-    close: 'Close backup panel'
+    close: 'Close backup panel',
+    error: {
+      unsupportedFormat: 'Only JSON files are supported for import',
+      invalidStructure: 'Invalid backup file structure',
+      invalidObject: 'Backup data is not a valid object',
+      missingSummaries: 'Invalid backup structure: missing or invalid daySummaries array',
+      invalidField: 'Invalid backup structure: {field} must be an array'
+    }
+  },
+
+  // Storage
+  storage: {
+    warning: {
+      criticalTitle: 'Storage Almost Full',
+      criticalMessage: "You're using {percent}% of available storage ({usage} of {quota}). Consider exporting and deleting old entries to free up space.",
+      criticalAction: 'Export & Clean',
+      warningTitle: 'Storage Running Low',
+      warningMessage: "You're using {percent}% of available storage ({usage} of {quota}). You may want to export your data soon.",
+      warningAction: 'Export Data'
+    },
+    cleanup: {
+      summariesMessage: 'Day summaries are using {size}. Consider archiving older entries.',
+      summariesAction: 'Archive Old Entries',
+      tasksMessage: 'Tasks are using {size}. Consider deleting completed tasks.',
+      tasksAction: 'Clean Completed Tasks',
+      habitsMessage: 'Habits are using {size}. Consider removing old habit tracking data.',
+      habitsAction: 'Clean Habit History'
+    }
   },
 
   // Data Migration

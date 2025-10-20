@@ -5,8 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MoodNotes</title>
-    
-    <!-- Content Security Policy -->
+
+    <!--
+      Content Security Policy (CSP)
+
+      Protects against XSS attacks by controlling which resources can be loaded.
+
+      Directives explained:
+      - default-src: Fallback for other resource types
+      - script-src: JavaScript execution sources (unsafe-eval needed for Vite HMR in dev)
+      - style-src: CSS sources (unsafe-inline needed for Vue scoped styles)
+      - img-src: Image sources (data: for base64, blob: for file uploads)
+      - media-src: Audio/video sources (blob: for file uploads)
+      - connect-src: Fetch/XHR/WebSocket sources
+      - font-src: Web font sources
+      - object-src: Plugin sources (none for security)
+      - base-uri: Restricts <base> tag URLs
+      - form-action: Restricts form submission targets
+      - frame-ancestors: Prevents embedding in iframes (clickjacking protection)
+      - upgrade-insecure-requests: Upgrades HTTP to HTTPS
+    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-eval';
@@ -16,7 +34,17 @@
       connect-src 'self';
       font-src 'self';
       object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests;
     ">
+
+    <!-- Additional Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="no-referrer">
   </head>
   <body>
     <div id="app"></div>

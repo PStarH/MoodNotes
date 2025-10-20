@@ -1,4 +1,4 @@
-import { ref, Ref } from 'vue'
+import { ref, Ref, onUnmounted } from 'vue'
 import { useToast } from './useToast'
 
 export interface MediaFile {
@@ -42,6 +42,37 @@ export function useMediaManager() {
   const toast = useToast()
   const mediaFiles: Ref<MediaFile[]> = ref([])
   const isUploading = ref(false)
+
+  // Track all blob URLs created to ensure cleanup
+  const blobUrls = new Set<string>()
+
+  /**
+   * Track a blob URL for cleanup
+   */
+  const trackBlobUrl = (url: string) => {
+    if (url && url.startsWith('blob:')) {
+      blobUrls.add(url)
+    }
+  }
+
+  /**
+   * Cleanup all tracked blob URLs
+   */
+  const cleanupBlobs = () => {
+    blobUrls.forEach(url => {
+      try {
+        URL.revokeObjectURL(url)
+      } catch (e) {
+        console.warn('Failed to revoke blob URL:', e)
+      }
+    })
+    blobUrls.clear()
+  }
+
+  // Cleanup on component unmount
+  onUnmounted(() => {
+    cleanupBlobs()
+  })
 
   /**
    * Validate file before upload
@@ -185,10 +216,18 @@ export function useMediaManager() {
         }
         url = result.url
         thumbnail = result.thumbnail
+        // Track thumbnail if it's a blob URL
+        if (thumbnail) {
+          trackBlobUrl(thumbnail)
+        }
       } else {
         // Fallback to blob URL for web
         url = URL.createObjectURL(file)
+        trackBlobUrl(url) // Track the blob URL
         thumbnail = await generateThumbnail(file, url)
+        if (thumbnail) {
+          trackBlobUrl(thumbnail) // Track thumbnail if it's a blob URL
+        }
       }
 
       const mediaFile: MediaFile = {
@@ -231,12 +270,14 @@ export function useMediaManager() {
         }
       }
 
-      // Revoke blob URL to free memory
+      // Revoke blob URL to free memory and remove from tracking
       if (file.url.startsWith('blob:')) {
         URL.revokeObjectURL(file.url)
+        blobUrls.delete(file.url)
       }
       if (file.thumbnail && file.thumbnail.startsWith('blob:')) {
         URL.revokeObjectURL(file.thumbnail)
+        blobUrls.delete(file.thumbnail)
       }
 
       mediaFiles.value.splice(index, 1)
@@ -258,12 +299,14 @@ export function useMediaManager() {
         }
       }
 
-      // Revoke blob URLs
+      // Revoke blob URLs and remove from tracking
       if (file.url.startsWith('blob:')) {
         URL.revokeObjectURL(file.url)
+        blobUrls.delete(file.url)
       }
       if (file.thumbnail && file.thumbnail.startsWith('blob:')) {
         URL.revokeObjectURL(file.thumbnail)
+        blobUrls.delete(file.thumbnail)
       }
     }
     mediaFiles.value = []
@@ -344,6 +387,7 @@ export function useMediaManager() {
     getDisplayUrl,
     validateFile,
     convertDataUrlToMediaFile,
+    cleanupBlobs, // Expose for manual cleanup if needed
     DEFAULT_VALIDATION,
     isElectron: isElectron()
   }

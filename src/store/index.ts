@@ -10,6 +10,7 @@ import {
   MoodType,
   HabitStatus
 } from './types'
+import { handleStorageError } from '@/utils/storageErrorHandler'
 
 localforage.config({
   name: 'MoodNotes',
@@ -113,6 +114,9 @@ const isHabit = (obj: any): obj is Habit => {
   )
 }
 
+// Export type guards for use in other modules
+export { isDaySummary, isTask, isHabit }
+
 
 export interface State {
   daySummaries: DaySummary[]
@@ -156,6 +160,15 @@ const store: StoreOptions<State> = {
     },
     ADD_TASK(state, task: Task) {
       state.tasks.push(task)
+    },
+    UPDATE_TASK(state, updatedTask: Task & { id: number }) {
+      const index = state.tasks.findIndex(t => t.id === updatedTask.id)
+      if (index !== -1) {
+        state.tasks[index] = updatedTask
+      }
+    },
+    DELETE_TASK(state, index: number) {
+      state.tasks.splice(index, 1)
     },
     // Habits
     SET_HABITS(state, habits: Habit[]) {
@@ -391,15 +404,43 @@ const store: StoreOptions<State> = {
       }
     },
     async addTask({ commit, state }, task: Task) {
+      // Store original state for rollback
+      const originalTasks = [...state.tasks]
+
       try {
         commit('ADD_TASK', task)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.tasks)
         const cleanedTasks = JSON.parse(serialized)
         await localforage.setItem('tasks', cleanedTasks)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to add task:', error)
-        throw new Error('Failed to add task. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_TASKS', originalTasks)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'add task', 'tasks')
+      }
+    },
+    async updateTask({ commit, state }, task: Task & { id: number }) {
+      // Store original state for rollback
+      const originalTasks = [...state.tasks]
+
+      try {
+        commit('UPDATE_TASK', task)
+        // Serialize to ensure IndexedDB compatibility
+        const serialized = JSON.stringify(state.tasks)
+        const cleanedTasks = JSON.parse(serialized)
+        await localforage.setItem('tasks', cleanedTasks)
+      } catch (error: any) {
+        console.error('Failed to update task:', error)
+
+        // Rollback state mutation
+        commit('SET_TASKS', originalTasks)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'update task', 'tasks')
       }
     },
     // Habits
@@ -440,39 +481,63 @@ const store: StoreOptions<State> = {
       }
     },
     async addHabit({ commit, state }, habit: Habit) {
+      // Store original state for rollback
+      const originalHabits = [...state.habits]
+
       try {
         commit('ADD_HABIT', habit)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.habits)
         const cleanedHabits = JSON.parse(serialized)
         await localforage.setItem('habits', cleanedHabits)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to add habit:', error)
-        throw new Error('Failed to add habit. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_HABITS', originalHabits)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'add habit', 'habits')
       }
     },
     async updateHabit({ commit, state }, habit: Habit) {
+      // Store original state for rollback
+      const originalHabits = [...state.habits]
+
       try {
         commit('UPDATE_HABIT', habit)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.habits)
         const cleanedHabits = JSON.parse(serialized)
         await localforage.setItem('habits', cleanedHabits)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to update habit:', error)
-        throw new Error('Failed to update habit. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_HABITS', originalHabits)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'update habit', 'habits')
       }
     },
     async updateHabitStatus({ commit, state }, payload: { habitId: number; date: string; status: 'did' | 'partial' | 'not' | null }) {
+      // Store original state for rollback
+      const originalHabits = [...state.habits]
+
       try {
         commit('UPDATE_HABIT_STATUS', payload)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.habits)
         const cleanedHabits = JSON.parse(serialized)
         await localforage.setItem('habits', cleanedHabits)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to update habit status:', error)
-        throw new Error('Failed to update habit status. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_HABITS', originalHabits)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'update habit status', 'habits')
       }
     },
     // Sparks
@@ -488,15 +553,23 @@ const store: StoreOptions<State> = {
       }
     },
     async addSpark({ commit, state }, spark: string) {
+      // Store original state for rollback
+      const originalSparks = [...state.sparks]
+
       try {
         commit('ADD_SPARK', spark)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.sparks)
         const cleanedSparks = JSON.parse(serialized)
         await localforage.setItem('sparks', cleanedSparks)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to add spark:', error)
-        throw new Error('Failed to add spark. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_SPARKS', originalSparks)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'add spark', 'sparks')
       }
     },
     // Calendar Entries
@@ -512,23 +585,43 @@ const store: StoreOptions<State> = {
       }
     },
     async addCalendarEntry({ commit, state }, entry: { date: string; content: string }) {
+      // Store original state for rollback
+      const originalEntries = [...state.calendarEntries]
+
       try {
         commit('ADD_CALENDAR_ENTRY', entry)
         // Serialize to ensure IndexedDB compatibility
         const serialized = JSON.stringify(state.calendarEntries)
         const cleanedEntries = JSON.parse(serialized)
         await localforage.setItem('calendarEntries', cleanedEntries)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to add calendar entry:', error)
-        throw new Error('Failed to add calendar entry. Please try again.')
+
+        // Rollback state mutation
+        commit('SET_CALENDAR_ENTRIES', originalEntries)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'add calendar entry', 'calendarEntries')
       }
     },
   },
   getters: {
-    // Day Summaries
+    // Day Summaries with O(1) indexed lookup
     getDaySummary: (state) => (date: string): DaySummary | undefined => {
-      return state.daySummaries.find(summary => summary.date === date)
+      // Create an indexed Map for O(1) lookups
+      const summaryMap = new Map(
+        state.daySummaries.map(s => [s.date, s])
+      )
+      return summaryMap.get(date)
     },
+
+    // Alternative: Get day summaries as a Map for multiple lookups
+    getDaySummariesMap: (state) => {
+      return new Map(
+        state.daySummaries.map(s => [s.date, s])
+      )
+    },
+
     // Tasks
     getTasks: (state) => state.tasks,
     // Habits

@@ -124,7 +124,7 @@
                     </div>
 
                     <!-- Sparks Section -->
-                    <div class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                    <div class="surface-card p-4 rounded-xl mb-4 bounce-in glass-effect">
                         <div class="flex items-start gap-3">
                             <div class="meta-icon flex-shrink-0" aria-hidden="true">
                                 <span class="meta-icon__glyph">✨</span>
@@ -176,7 +176,7 @@
                     </div>
 
                     <!-- Daily Habits Section -->
-                    <div v-if="habits.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                    <div v-if="habits.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in glass-effect">
                         <div class="flex items-start gap-3">
                             <div class="meta-icon flex-shrink-0" aria-hidden="true">
                                 <span class="meta-icon__glyph">✅</span>
@@ -237,7 +237,7 @@
                     </div>
 
                     <!-- Goals Reflection Section -->
-                    <div v-if="relevantGoals.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in" style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(250, 243, 224, 0.8) 100%);">
+                    <div v-if="relevantGoals.length > 0" class="surface-card p-4 rounded-xl mb-4 bounce-in glass-effect">
                         <div class="flex items-start gap-3">
                             <div class="meta-icon flex-shrink-0" aria-hidden="true">
                                 <span class="meta-icon__glyph">🎯</span>
@@ -332,8 +332,8 @@
                             </div>
 
                             <!-- Summary Preview -->
-                            <div v-if="lastYearSummaryPreview" class="glass-effect p-3 rounded-lg bg-[#F0E9D2]/50">
-                                <p class="text-xs text-[#4E3B2B] italic leading-relaxed">{{ lastYearSummaryPreview }}</p>
+                            <div v-if="lastYearSummaryPreview" class="glass-effect p-3 rounded-lg">
+                                <p class="text-xs text-themed italic leading-relaxed">{{ lastYearSummaryPreview }}</p>
                             </div>
 
                             <!-- Tags -->
@@ -391,7 +391,7 @@
                                     v-model.number="dailyCheck.energyLevel"
                                     min="1"
                                     max="10"
-                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    class="flex-1 h-2 glass-effect rounded-lg appearance-none cursor-pointer slider"
                                     :aria-label="`${$t('daySummary.energyLevel')}: ${dailyCheck.energyLevel} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"
@@ -411,7 +411,7 @@
                                     v-model.number="dailyCheck.stressLevel"
                                     min="1"
                                     max="10"
-                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    class="flex-1 h-2 glass-effect rounded-lg appearance-none cursor-pointer slider"
                                     :aria-label="`${$t('daySummary.stressLevel')}: ${dailyCheck.stressLevel} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"
@@ -431,7 +431,7 @@
                                     v-model.number="dailyCheck.productivity"
                                     min="1"
                                     max="10"
-                                    class="flex-1 h-2 bg-[#F0E9D2] rounded-lg appearance-none cursor-pointer slider"
+                                    class="flex-1 h-2 glass-effect rounded-lg appearance-none cursor-pointer slider"
                                     :aria-label="`${$t('daySummary.productivity')}: ${dailyCheck.productivity} out of 10`"
                                     aria-valuemin="1"
                                     aria-valuemax="10"

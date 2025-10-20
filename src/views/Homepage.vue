@@ -598,64 +598,64 @@
                     <!-- Tasks Grid -->
                     <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         <div v-for="(task, index) in tasks" :key="index"
-                            class="group relative glass-effect rounded-2xl hover-lift transition-all duration-300 warm-shadow-lg overflow-hidden border border-[#D3C9A6]/20 hover:border-[#7D5A36]/40 hover:shadow-xl">
-                            
+                            class="group relative glass-effect rounded-2xl hover-lift transition-all duration-300 warm-shadow-lg overflow-hidden border-2 border-themed hover:border-primary hover:shadow-2xl">
+
                             <!-- 背景渐变装饰 -->
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#7D5A36]/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
                             <!-- 卡片头部 - 优先级标签 -->
-                            <div class="relative bg-gradient-to-r from-[#7D5A36]/5 via-[#D3C9A6]/5 to-[#6B4A2E]/5 px-5 py-4 border-b border-[#D3C9A6]/30">
+                            <div class="relative bg-surface-elevated px-5 py-4 border-b-2 border-themed">
                                 <div class="flex justify-between items-center">
-                                    <span class="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full font-bold shadow-sm transition-all duration-200 group-hover:scale-105"
+                                    <span class="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full font-bold shadow-lg transition-all duration-200 group-hover:scale-110"
                                         :class="getPriorityBadgeClass(task.priority)">
-                                        <span class="text-base">{{ getPriorityIcon(task.priority) }}</span>
-                                        {{ $t(`priority.${task.priority.toLowerCase()}`) || task.priority }}
+                                        <span class="text-lg">{{ getPriorityIcon(task.priority) }}</span>
+                                        <span class="text-sm">{{ $t(`priority.${task.priority.toLowerCase()}`) || task.priority }}</span>
                                     </span>
-                                    
+
                                     <!-- 操作按钮 -->
-                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <button 
+                                    <div class="flex items-center gap-2">
+                                        <button
                                             @click="editTask(task)"
-                                            class="p-2 rounded-lg hover:bg-[#7D5A36]/10 transition-colors"
+                                            class="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 border-2 border-blue-500/30 hover:border-blue-500 hover:scale-110"
                                             :aria-label="$t('home.editTask')"
-                                            title="Edit task">
-                                            <Edit2 :size="16" class="text-[#7D5A36]" />
+                                            :title="$t('home.editTask')">
+                                            <Edit2 :size="18" class="text-blue-600 dark:text-blue-400" />
                                         </button>
-                                        <button 
-                                            @click="deleteTask(index)"
-                                            class="p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                                        <button
+                                            @click="confirmDeleteTask(index)"
+                                            class="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-all duration-200 border-2 border-red-500/30 hover:border-red-500 hover:scale-110"
                                             :aria-label="$t('home.deleteTask')"
-                                            title="Delete task">
-                                            <Trash2 :size="16" class="text-red-600" />
+                                            :title="$t('home.deleteTask')">
+                                            <Trash2 :size="18" class="text-red-600 dark:text-red-400" />
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 卡片内容 -->
-                            <div class="relative p-5">
+                            <div class="relative p-6 bg-gradient-to-br from-surface to-surface-elevated">
                                 <!-- 任务描述 -->
-                                <div class="mb-4 min-h-[60px]">
-                                    <p class="text-[#4E3B2B] font-semibold text-base leading-relaxed line-clamp-3">
+                                <div class="mb-5 min-h-[70px]">
+                                    <p class="text-themed font-bold text-lg leading-relaxed">
                                         {{ task.description }}
                                     </p>
                                 </div>
-                                
+
                                 <!-- 截止日期 -->
-                                <div class="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-[#7D5A36]/5 to-transparent rounded-xl border border-[#D3C9A6]/30">
-                                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50 shadow-sm">
-                                        <Calendar :size="16" class="text-[#7D5A36]" />
+                                <div class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-transparent rounded-xl border-2 border-primary/30 shadow-inner">
+                                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 shadow-md">
+                                        <Calendar :size="20" class="text-primary" />
                                     </div>
                                     <div class="flex-1">
-                                        <span v-if="task.dueDate" 
-                                            class="text-sm font-bold block"
+                                        <span v-if="task.dueDate"
+                                            class="text-sm font-extrabold block"
                                             :class="getTaskDateClass(task.dueDate)">
                                             {{ formatTaskDueDate(task.dueDate) }}
                                         </span>
-                                        <span v-else class="text-sm text-[#7D5A36]/60 italic font-medium">
+                                        <span v-else class="text-sm font-bold italic" style="color: var(--color-text-secondary);">
                                             {{ $t('task.noDueDate') }}
                                         </span>
-                                        <span v-if="task.dueDate" class="text-xs text-[#7D5A36]/50 block mt-0.5">
+                                        <span v-if="task.dueDate" class="text-xs font-semibold block mt-1" style="color: var(--color-text-secondary);">
                                             {{ getTaskDueDateLabel(task.dueDate) }}
                                         </span>
                                     </div>
@@ -663,7 +663,7 @@
                             </div>
 
                             <!-- 底部装饰条 -->
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r"
+                            <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r shadow-lg"
                                 :class="getTaskStatusGradient(task.dueDate)">
                             </div>
                         </div>
@@ -689,7 +689,9 @@
                 aria-labelledby="task-form-title"
             >
                 <div class="flex justify-between items-center mb-6">
-                    <h2 id="task-form-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center"><span class="mr-2">✒️</span>{{ $t('home.createTask') }}</h2>
+                    <h2 id="task-form-title" class="text-2xl font-bold text-[#4E3B2B] flex items-center">
+                        <span class="mr-2">✒️</span>{{ editingTaskIndex !== null ? $t('home.editTask') : $t('home.createTask') }}
+                    </h2>
                     <button type="button" @click="isTaskFormOpen = false" class="text-[#7D5A36] hover:text-opacity-80 p-2 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all" aria-label="Close task form">
                         <X :size="24" />
                     </button>
@@ -803,7 +805,7 @@
                         </div>
                         <template v-for="(day, index) in calendarDays" :key="index">
                             <div v-if="day.type === 'day'" class="calendar-day"
-                                :style="{ backgroundColor: day.emotion.color }" @click="handleDayClick(day.date)">
+                                @click="handleDayClick(day.date)">
                                 <div class="emotion-icon">{{ day.emotion.emoji }}</div>
                                 <span>{{ day.day }}</span>
                                 <div v-if="hasTasks(day.date)" class="task-indicator"></div>
@@ -944,6 +946,19 @@
                 </form>
             </div>
         </div>
+
+        <!-- Delete Task Confirmation Dialog -->
+        <ConfirmDialog
+            v-model:isOpen="isDeleteConfirmOpen"
+            type="danger"
+            icon="🗑️"
+            :title="locale === 'zh' ? '确认删除' : 'Confirm Delete'"
+            :message="locale === 'zh' ? '确定要删除这个任务吗？此操作无法撤销。' : 'Are you sure you want to delete this task? This action cannot be undone.'"
+            :confirmText="locale === 'zh' ? '删除' : 'Delete'"
+            :cancelText="locale === 'zh' ? '取消' : 'Cancel'"
+            @confirm="handleDeleteConfirm"
+            @cancel="handleDeleteCancel"
+        />
     </div>
 </template>
 
@@ -965,6 +980,7 @@ import TabNavigation from '../components/TabNavigation.vue'
 import TodayHabitCompletion from '../components/TodayHabitCompletion.vue'
 import TodaySummary from '../components/TodaySummary.vue'
 import CustomDatePicker from '../components/CustomDatePicker.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useSearch } from '@/composables/useSearch'
@@ -1107,6 +1123,9 @@ const selectedDate = ref('')
 const isSearchPanelOpen = ref(false)
 const isBackupPanelOpen = ref(false)
 const activeTab = ref('dashboard')
+const isDeleteConfirmOpen = ref(false)
+const taskToDelete = ref<number | null>(null)
+const editingTaskIndex = ref<number | null>(null)
 
 const isOverlayActive = computed(() => [
     isTaskFormOpen.value,
@@ -1115,7 +1134,8 @@ const isOverlayActive = computed(() => [
     isHabitPopupOpen.value,
     isHabitModalOpen.value,
     isSearchPanelOpen.value,
-    isBackupPanelOpen.value
+    isBackupPanelOpen.value,
+    isDeleteConfirmOpen.value
 ].some(Boolean))
 
 const previousOverflow = ref('')
@@ -1212,7 +1232,8 @@ const calendarDays = computed<CalendarDayItem[]>(() => {
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
         const dateString = formatDate(date)
-        const daySummary = daySummaries.value.find(summary => summary.date === dateString)
+        // Use indexed getter for O(1) lookup instead of .find() O(n)
+        const daySummary = store.getters.getDaySummary(dateString)
 
         const emotion = daySummary && daySummary.mood
             ? mapMoodToEmotion(daySummary.mood)
@@ -1267,7 +1288,8 @@ const completedHabitCount = (habits: DaySummaryHabit[] = []) => {
 
 const currentDaySummary = computed<DaySummaryEntry | undefined>(() => {
     const dateString = currentDate.value.toISOString().split('T')[0]
-    return daySummaries.value.find((summary: DaySummaryEntry) => summary.date === dateString)
+    // Use indexed getter for O(1) lookup instead of .find() O(n)
+    return store.getters.getDaySummary(dateString)
 })
 
 const greetingMessage = computed(() => {
@@ -1458,8 +1480,17 @@ const handleAddSpark = () => {
 }
 
 const handleSaveTask = () => {
-    store.dispatch('addTask', { ...newTask.value, id: Date.now() })
-    toast.success('Task added successfully!', 'Task Created')
+    if (editingTaskIndex.value !== null) {
+        // Edit existing task
+        const taskId = tasks.value[editingTaskIndex.value].id
+        store.dispatch('updateTask', { id: taskId, ...newTask.value })
+        toast.success(t('toast.updated'), t('toast.success'))
+        editingTaskIndex.value = null
+    } else {
+        // Create new task
+        store.dispatch('addTask', { ...newTask.value, id: Date.now() })
+        toast.success('Task added successfully!', 'Task Created')
+    }
     newTask.value = { description: '', priority: 'Normal', dueDate: '' }
     isTaskFormOpen.value = false
 }
@@ -1559,16 +1590,34 @@ const getTaskStatusGradient = (dateString?: string): string => {
 }
 
 // 编辑任务
-const editTask = (task: any) => {
-    // TODO: 实现编辑功能
-    console.log('Edit task:', task)
+const editTask = (task: Task) => {
+    newTask.value = {
+        description: task.description,
+        priority: task.priority,
+        dueDate: task.dueDate || ''
+    }
+    editingTaskIndex.value = tasks.value.findIndex(t => t.id === task.id)
+    isTaskFormOpen.value = true
 }
 
-// 删除任务
-const deleteTask = (index: number) => {
-    if (confirm(locale.value === 'zh' ? '确定要删除这个任务吗？' : 'Are you sure you want to delete this task?')) {
-        store.commit('deleteTask', index)
+// 确认删除任务
+const confirmDeleteTask = (index: number) => {
+    taskToDelete.value = index
+    isDeleteConfirmOpen.value = true
+}
+
+// 处理删除确认
+const handleDeleteConfirm = () => {
+    if (taskToDelete.value !== null) {
+        store.commit('deleteTask', taskToDelete.value)
+        toast.success(t('toast.deleted'), t('toast.success'))
+        taskToDelete.value = null
     }
+}
+
+// 处理删除取消
+const handleDeleteCancel = () => {
+    taskToDelete.value = null
 }
 
 const openJournalForToday = () => {
@@ -1577,6 +1626,8 @@ const openJournalForToday = () => {
 }
 
 const openTaskModal = () => {
+    newTask.value = { description: '', priority: 'Normal', dueDate: '' }
+    editingTaskIndex.value = null
     isTaskFormOpen.value = true
 }
 
@@ -1956,17 +2007,21 @@ watch(locale, (newLocale) => {
     justify-content: center;
     height: 60px;
     border-radius: 5px;
-    color: #4E3B2B;
+    color: var(--color-text);
     transition: transform 0.2s;
     position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
 }
 
 .calendar-day:hover {
     transform: scale(1.05);
+    background: var(--color-surface-hover);
 }
 
 .calendar-day.empty {
     background-color: transparent;
+    border: none;
 }
 
 .emotion-icon {

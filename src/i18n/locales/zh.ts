@@ -25,6 +25,159 @@ export default {
     settings: '设置'
   },
 
+  // 日历
+  calendar: {
+    title: '详细日历',
+    weekDays: {
+      sun: '周日',
+      mon: '周一',
+      tue: '周二',
+      wed: '周三',
+      thu: '周四',
+      fri: '周五',
+      sat: '周六',
+      days: '天'
+    },
+    tasks: '任务',
+    daySummary: '每日总结',
+    close: '关闭日历'
+  },
+
+  // 备份与导出
+  backup: {
+    title: '备份与导出',
+    subtitle: '将你的日记数据以多种格式导出保存',
+    exportSection: '导出数据',
+    exportDescription: '将日记数据以不同格式导出，用于备份或迁移。',
+    exportJson: '导出 JSON',
+    exportJsonDesc: '完整备份所有数据',
+    exportCsv: '导出 CSV',
+    exportCsvDesc: '适合在电子表格中分析',
+    exportMarkdown: 'Markdown',
+    exportMarkdownDesc: '人类可读的文本格式',
+    exportPdf: '导出 PDF',
+    exportPdfDesc: '适合打印的格式',
+    exporting: '正在导出…',
+    exportProgress: '导出进度',
+    importSection: '导入数据',
+    importDescription: '从以前的备份恢复数据（仅支持 JSON 格式）。',
+    selectFile: '选择备份文件',
+    clickToSelect: '点击选择备份文件',
+    jsonOnly: '仅支持 JSON 备份文件',
+    selectedFile: '已选择文件',
+    importing: '正在导入…',
+    importProgress: '导入进度',
+    importBtn: '导入备份',
+    tips: '💡 备份小贴士',
+    tip1: '定期备份有助于防止数据丢失',
+    tip2: 'JSON 格式包含所有数据（心情、任务、习惯）',
+    tip3: 'CSV 格式适合在 Excel 或 Google Sheets 中分析',
+    close: '关闭备份面板',
+    error: {
+      unsupportedFormat: '仅支持 JSON 文件导入',
+      invalidStructure: '备份文件结构无效',
+      invalidObject: '备份数据不是有效的对象',
+      missingSummaries: '备份结构无效：缺少或无效的 daySummaries 数组',
+      invalidField: '备份结构无效：{field} 必须是数组'
+    }
+  },
+
+  // 存储空间
+  storage: {
+    warning: {
+      criticalTitle: '存储空间即将用尽',
+      criticalMessage: '你已使用 {percent}% 的可用存储空间（{usage} / {quota}）。请考虑导出并删除旧条目以释放空间。',
+      criticalAction: '导出并清理',
+      warningTitle: '存储空间不足',
+      warningMessage: '你已使用 {percent}% 的可用存储空间（{usage} / {quota}）。你可能需要尽快导出数据。',
+      warningAction: '导出数据'
+    },
+    cleanup: {
+      summariesMessage: '每日总结占用 {size}。请考虑归档较旧的条目。',
+      summariesAction: '归档旧条目',
+      tasksMessage: '任务占用 {size}。请考虑删除已完成的任务。',
+      tasksAction: '清理已完成任务',
+      habitsMessage: '习惯占用 {size}。请考虑删除旧的习惯跟踪数据。',
+      habitsAction: '清理习惯历史'
+    }
+  },
+
+  // 数据迁移
+  migration: {
+    title: '数据迁移',
+    description: '将旧版数据 URL 迁移到新的文件系统，以提高性能和可靠性。',
+    upToDate: '所有数据均为最新',
+    upToDateDesc: '你的媒体文件已在使用新的文件系统。',
+    recommended: '建议进行迁移',
+    foundFiles: '发现 {count} 个使用旧版数据 URL 的媒体文件。',
+    whatHappens: '将会发生什么：',
+    step1: '媒体文件将从数据 URL 转换为正确的文件引用',
+    step2: '你的数据将被保留 - 不会丢失任何信息',
+    step3: '应用性能将显著提高',
+    step4: '数据库大小将减小',
+    startMigration: '开始迁移',
+    inProgress: '迁移进行中…',
+    currentFile: '当前文件',
+    filesProcessed: '{processed} / {total} 个文件',
+    estimatedTime: '⏱️ 预计剩余时间：',
+    filesFailed: '{count} 个文件迁移失败',
+    fileStatus: '📋 文件状态',
+    inProgressFiles: '⏳ 进行中 ({count})',
+    completedFiles: '✓ 已完成 ({count})',
+    completed: '迁移完成！',
+    successMessage: '成功迁移 {count} 个文件。',
+    partialMigration: '⚠️ 部分迁移',
+    partialMessage: '{count} 个文件无法迁移。原始数据已保留。',
+    migrationResults: '📋 迁移结果',
+    retry: '🔄 重试',
+    close: '关闭',
+    failed: '迁移失败',
+    failedMessage: '迁移过程中发生错误。你的数据未被修改。',
+    tryAgain: '重试'
+  },
+
+  // 搜索
+  search: {
+    title: '搜索条目',
+    placeholder: '搜索心情、标签、内容…',
+    filters: '筛选器',
+    dateRange: '日期范围',
+    moodFilter: '心情筛选',
+    allMoods: '所有心情',
+    results: '搜索结果',
+    noResults: '未找到匹配的条目',
+    searching: '搜索中…',
+    close: '关闭搜索面板',
+    tags: '标签',
+    tagsLabel: '标签',
+    tagPlaceholder: '输入以查找标签…',
+    tagHelper: '使用 ↑ ↓ 高亮显示建议，然后按 Enter 添加。',
+    noMatchingTags: '暂无匹配的标签。',
+    removeTag: '移除标签',
+    addTag: '添加标签',
+    noTagsApplied: '未应用标签筛选。',
+    appliedTags: '已应用的标签',
+    hasMedia: '包含媒体',
+    entriesFound: '找到的条目',
+    totalWords: '总字数',
+    uniqueTags: '唯一标签',
+    timeSpan: '时间跨度',
+    clearAll: '清除全部',
+    applySearch: '应用搜索',
+    previewResults: '预览结果',
+    startDate: '开始日期',
+    endDate: '结束日期',
+    noEntriesMatch: '暂无匹配的条目 - 尝试放宽筛选条件或日期范围。',
+    showing: '显示',
+    entry: '条',
+    entries: '条',
+    tag: '个标签',
+    activeFilter: '个活动标签筛选',
+    activeFilters: '个活动标签筛选',
+    noContent: '无内容',
+    moreTags: '更多'
+  },
+
   // 首页
   home: {
     greeting: {
@@ -129,6 +282,25 @@ export default {
     createFirstEntry: '创建首条记录'
   },
 
+  // 今日习惯完成
+  habitCompletion: {
+    title: '今日习惯',
+    subtitle: '追踪每日进展',
+    manage: '管理',
+    noHabits: '还没有习惯',
+    noHabitsDesc: '开始建立健康的习惯，添加你的第一个习惯。',
+    complete: '完成',
+    done: '已完成',
+    partial: '部分完成',
+    todo: '待完成',
+    quickView: '快速查看',
+    perfect: '🎉 完美的一天！所有习惯都完成了！',
+    excellent: '🌟 进展很好！继续保持！',
+    halfway: '💪 不错的努力！你已经完成一半了！',
+    keepGoing: '🌱 每一步都很重要！继续前进！',
+    startNow: '⏰ 开启美好的一天——完成一个习惯！'
+  },
+
   // 分析
   analytics: {
     title: '洞察数据',
@@ -145,6 +317,95 @@ export default {
     wordCount: '字数统计',
     energyStress: '能量与压力',
     habitTrends: '习惯变化'
+  },
+
+  // 图表
+  charts: {
+    // 心情趋势图
+    moodTrend: {
+      title: '心情趋势',
+      subtitle: '你的情感旅程',
+      resetZoom: '🔍 重置',
+      last7Days: '最近 7 天',
+      last14Days: '最近 14 天',
+      last30Days: '最近 30 天',
+      last60Days: '最近 60 天',
+      last90Days: '最近 90 天',
+      hint: '💡 滚动可横向缩放，拖动可左右平移',
+      moodLevel: '心情水平',
+      mood: '心情',
+      energy: '能量',
+      stress: '压力',
+      note: '笔记',
+      angry: '愤怒 😠',
+      sad: '难过 😢',
+      neutral: '平静 😐',
+      happy: '开心 😄',
+      excited: '激动 🎉',
+      unknown: '未知'
+    },
+    // 字数统计图
+    wordCount: {
+      title: '字数统计',
+      subtitle: '追踪你的书写量',
+      resetZoom: '🔍 重置',
+      last7Days: '最近 7 天',
+      last14Days: '最近 14 天',
+      last30Days: '最近 30 天',
+      last60Days: '最近 60 天',
+      last90Days: '最近 90 天',
+      hint: '💡 滚动可横向缩放，拖动可左右平移',
+      words: '字数',
+      totalWords: '总字数',
+      avgWords: '平均字数'
+    },
+    // 能量与压力图
+    energyStress: {
+      title: '能量与压力',
+      subtitle: '追踪你的能量和压力水平',
+      resetZoom: '🔍 重置',
+      last7Days: '最近 7 天',
+      last14Days: '最近 14 天',
+      last30Days: '最近 30 天',
+      last60Days: '最近 60 天',
+      last90Days: '最近 90 天',
+      hint: '💡 滚动可横向缩放，拖动可左右平移',
+      energy: '能量',
+      stress: '压力',
+      productivity: '生产力',
+      level: '水平',
+      stressAxis: '压力水平 →',
+      energyAxis: '↑ 能量水平'
+    },
+    // 习惯洞察
+    habitInsights: {
+      title: '习惯洞察',
+      subtitle: '追踪你的进展，建立更好的习惯',
+      manageHabits: '管理习惯',
+      startBuilding: '开始建立更好的习惯',
+      startBuildingDesc: '追踪日常习惯，建立一致性，见证进步的增长。小步骤带来大变化！',
+      addFirstHabit: '添加你的第一个习惯',
+      activeHabits: '进行中的习惯',
+      completedToday: '今日已完成',
+      thisWeek: '本周',
+      bestStreak: '最佳连续',
+      keepGoing: '继续保持！',
+      habitPerformance: '习惯表现',
+      currentStreak: '当前连续',
+      thisMonth: '本月',
+      totalDays: '总天数',
+      lastCompleted: '最近完成',
+      never: '从未',
+      today: '今天',
+      yesterday: '昨天',
+      daysAgo: '{count} 天前',
+      allTimeRate: '历史完成率'
+    },
+    // 通用
+    common: {
+      noData: '暂无数据',
+      loading: '加载中…'
+    }
   },
 
   // 设置
@@ -325,7 +586,8 @@ export default {
     sourcePending: '来源加载中',
     waitingForFirst: '等待第一条灵感',
     offlineMode: '当前离线',
-    capturePlaceholder: '留下一句话，唤醒更多灵感。'
+    capturePlaceholder: '留下一句话，唤醒更多灵感。',
+    updated: '更新于'
   },
 
   // 提示与通知
