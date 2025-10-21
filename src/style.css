@@ -14,6 +14,7 @@
   --color-accent: #D3C9A6;
   --color-background: #F0E9D2;
   --color-surface: #FAF3E0;
+  --color-surface-elevated: #FFFFFF;
   --color-text: #4E3B2B;
   --color-text-secondary: #7D5A36;
   --color-border: #D3C9A6;
@@ -34,6 +35,7 @@
   --color-accent: #8B7355;
   --color-background: #1A1410;
   --color-surface: #2B2318;
+  --color-surface-elevated: #3A2F24;
   --color-surface-hover: #3A2F24;
   --color-text: #F5EFE7;
   --color-text-secondary: #C9B99A;

@@ -32,7 +32,6 @@
         <input
           id="search-input"
           v-model="searchInput"
-          @input="handleSearch"
           type="text"
           :placeholder="$t('search.placeholder')"
           class="w-full px-4 py-3 pl-12 glass-effect rounded-xl focus:outline-none focus:ring-2 transition-all"
@@ -50,11 +49,11 @@
         <label for="date-start" class="block text-sm font-semibold" style="color: var(--color-text);">{{ $t('search.dateRange') }}</label>
         <div class="space-y-2">
           <CustomDatePicker
-            v-model="searchFilters.dateRange.start"
+            v-model="localFilters.dateRange.start"
             :placeholder="$t('search.startDate')"
           />
           <CustomDatePicker
-            v-model="searchFilters.dateRange.end"
+            v-model="localFilters.dateRange.end"
             :placeholder="$t('search.endDate')"
           />
         </div>
@@ -65,7 +64,7 @@
         <label for="mood-filter" class="block text-sm font-semibold" style="color: var(--color-text);">{{ $t('search.moodFilter') }}</label>
         <select
           id="mood-filter"
-          v-model="searchFilters.mood"
+          v-model="localFilters.mood"
           class="themed-select w-full"
           style="color: var(--color-text);"
           :aria-label="$t('search.moodFilter')"
@@ -132,9 +131,9 @@
             </p>
           </div>
             <p id="tag-helper-text" class="text-xs text-[#7D5A36]/70">{{ $t('search.tagHelper') }}</p>
-          <div v-if="searchFilters.tags.length > 0" class="flex flex-wrap gap-2">
+          <div v-if="localFilters.tags.length > 0" class="flex flex-wrap gap-2">
             <span
-              v-for="tag in searchFilters.tags"
+              v-for="tag in localFilters.tags"
               :key="tag"
               class="flex items-center gap-2 px-3 py-1.5 bg-[#7D5A36]/15 text-[#7D5A36] rounded-full text-xs font-medium"
             >
@@ -150,7 +149,7 @@
             </span>
           </div>
           <div v-else class="text-xs text-[#7D5A36]/70">{{ $t('search.noTagsApplied') }}</div>
-          <p class="text-xs text-[#7D5A36]/70" aria-live="polite">{{ $t('search.appliedTags') }}: {{ searchFilters.tags.length }}</p>
+          <p class="text-xs text-[#7D5A36]/70" aria-live="polite">{{ $t('search.appliedTags') }}: {{ localFilters.tags.length }}</p>
         </div>
       </div>
     </div>
@@ -171,7 +170,7 @@
         <input
           id="has-media-filter"
           type="checkbox"
-          v-model="searchFilters.hasMedia"
+          v-model="localFilters.hasMedia"
           class="text-[#7D5A36] rounded"
           aria-label="Filter entries with media"
         />
@@ -219,7 +218,7 @@
       </button>
       <button
         type="button"
-        @click="$emit('apply-search', { query: searchQuery, filters: searchFilters })"
+        @click="applySearch"
         class="px-6 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow"
         aria-label="Apply search filters"
       >
@@ -312,13 +311,21 @@ const {
 } = useSearch()
 
 const { containerRef: panelRef } = useModalFocus({ initialFocus: '#search-input', returnFocus: true, onEscape: () => emit('close') })
+
+// Local state for user input (not applied until user clicks Apply Search)
 const searchInput = ref('')
+const localFilters = ref({
+  dateRange: { start: '', end: '' },
+  mood: '',
+  tags: [] as string[],
+  hasMedia: false
+})
 const tagQuery = ref('')
 const activeTagIndex = ref(-1)
 
 const matchingTags = computed(() => {
   const query = tagQuery.value.trim().toLowerCase()
-  const exclude = new Set(searchFilters.value.tags)
+  const exclude = new Set(localFilters.value.tags)
 
   if (!query) {
     return []
@@ -344,9 +351,15 @@ watch(tagQuery, value => {
   }
 })
 
-const handleSearch = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  debouncedSearch(target.value)
+const applySearch = () => {
+  // Apply local filters to the actual search
+  searchQuery.value = searchInput.value
+  searchFilters.value = {
+    dateRange: { ...localFilters.value.dateRange },
+    mood: localFilters.value.mood,
+    tags: [...localFilters.value.tags],
+    hasMedia: localFilters.value.hasMedia
+  }
 }
 
 const resolveTagName = (input: string) => {
@@ -356,8 +369,8 @@ const resolveTagName = (input: string) => {
 
 const addTagFilter = (tag: string) => {
   if (!tag) return
-  if (searchFilters.value.tags.includes(tag)) return
-  searchFilters.value.tags = [...searchFilters.value.tags, tag]
+  if (localFilters.value.tags.includes(tag)) return
+  localFilters.value.tags = [...localFilters.value.tags, tag]
 }
 
 const handleTagSelection = (tag: string) => {
@@ -377,13 +390,19 @@ const handleTagSubmit = () => {
 }
 
 const removeTag = (tag: string) => {
-  searchFilters.value.tags = searchFilters.value.tags.filter(existing => existing !== tag)
+  localFilters.value.tags = localFilters.value.tags.filter(existing => existing !== tag)
 }
 
 const handleClearFilters = () => {
   clearFilters()
   tagQuery.value = ''
   searchInput.value = ''
+  localFilters.value = {
+    dateRange: { start: '', end: '' },
+    mood: '',
+    tags: [],
+    hasMedia: false
+  }
   activeTagIndex.value = -1
 }
 

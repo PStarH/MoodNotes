@@ -596,75 +596,68 @@
                     />
 
                     <!-- Tasks Grid -->
-                    <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div v-for="(task, index) in tasks" :key="index"
-                            class="group relative glass-effect rounded-2xl hover-lift transition-all duration-300 warm-shadow-lg overflow-hidden border-2 border-themed hover:border-primary hover:shadow-2xl">
+                            class="group relative glass-effect rounded-xl hover-lift transition-all duration-300 overflow-hidden warm-shadow border border-themed">
 
-                            <!-- 背景渐变装饰 -->
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                            <!-- 卡片头部 - 优先级标签 -->
-                            <div class="relative bg-surface-elevated px-5 py-4 border-b-2 border-themed">
-                                <div class="flex justify-between items-center">
-                                    <span class="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full font-bold shadow-lg transition-all duration-200 group-hover:scale-110"
-                                        :class="getPriorityBadgeClass(task.priority)">
-                                        <span class="text-lg">{{ getPriorityIcon(task.priority) }}</span>
-                                        <span class="text-sm">{{ $t(`priority.${task.priority.toLowerCase()}`) || task.priority }}</span>
+                            <!-- 卡片内容 -->
+                            <div class="relative p-4">
+                                <!-- 顶部：优先级和操作按钮 -->
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-bold"
+                                        :class="getPriorityBadgeStyle(task.priority)">
+                                        <span class="text-base">{{ getPriorityIcon(task.priority) }}</span>
+                                        <span>{{ $t(`priority.${task.priority.toLowerCase()}`) || task.priority }}</span>
                                     </span>
 
                                     <!-- 操作按钮 -->
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
                                         <button
                                             @click="editTask(task)"
-                                            class="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 border-2 border-blue-500/30 hover:border-blue-500 hover:scale-110"
+                                            class="p-1.5 rounded-lg transition-all duration-200 opacity-70 hover:opacity-100"
+                                            style="background: rgba(125, 90, 54, 0.1);"
                                             :aria-label="$t('home.editTask')"
                                             :title="$t('home.editTask')">
-                                            <Edit2 :size="18" class="text-blue-600 dark:text-blue-400" />
+                                            <Edit2 :size="16" class="text-primary" />
                                         </button>
                                         <button
                                             @click="confirmDeleteTask(index)"
-                                            class="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-all duration-200 border-2 border-red-500/30 hover:border-red-500 hover:scale-110"
+                                            class="p-1.5 rounded-lg transition-all duration-200 opacity-70 hover:opacity-100"
+                                            style="background: rgba(220, 38, 38, 0.1);"
                                             :aria-label="$t('home.deleteTask')"
                                             :title="$t('home.deleteTask')">
-                                            <Trash2 :size="18" class="text-red-600 dark:text-red-400" />
+                                            <Trash2 :size="16" class="text-red-600 dark:text-red-400" />
                                         </button>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- 卡片内容 -->
-                            <div class="relative p-6 bg-gradient-to-br from-surface to-surface-elevated">
                                 <!-- 任务描述 -->
-                                <div class="mb-5 min-h-[70px]">
-                                    <p class="text-themed font-bold text-lg leading-relaxed">
+                                <div class="mb-3">
+                                    <p class="text-themed font-semibold text-base leading-snug line-clamp-2">
                                         {{ task.description }}
                                     </p>
                                 </div>
 
                                 <!-- 截止日期 -->
-                                <div class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-transparent rounded-xl border-2 border-primary/30 shadow-inner">
-                                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 shadow-md">
-                                        <Calendar :size="20" class="text-primary" />
-                                    </div>
-                                    <div class="flex-1">
-                                        <span v-if="task.dueDate"
-                                            class="text-sm font-extrabold block"
-                                            :class="getTaskDateClass(task.dueDate)">
-                                            {{ formatTaskDueDate(task.dueDate) }}
-                                        </span>
-                                        <span v-else class="text-sm font-bold italic" style="color: var(--color-text-secondary);">
-                                            {{ $t('task.noDueDate') }}
-                                        </span>
-                                        <span v-if="task.dueDate" class="text-xs font-semibold block mt-1" style="color: var(--color-text-secondary);">
-                                            {{ getTaskDueDateLabel(task.dueDate) }}
-                                        </span>
-                                    </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <Calendar :size="14" class="text-themed-secondary opacity-70" />
+                                    <span v-if="task.dueDate"
+                                        class="font-medium"
+                                        :class="getTaskDateClass(task.dueDate)">
+                                        {{ formatTaskDueDate(task.dueDate) }}
+                                    </span>
+                                    <span v-else class="font-medium text-themed-secondary opacity-60">
+                                        {{ $t('task.noDueDate') }}
+                                    </span>
+                                    <span v-if="task.dueDate" class="text-xs text-themed-secondary opacity-50 ml-auto">
+                                        {{ getTaskDueDateLabel(task.dueDate) }}
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- 底部装饰条 -->
-                            <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r shadow-lg"
-                                :class="getTaskStatusGradient(task.dueDate)">
+                            <!-- 左侧优先级颜色条 -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                                :style="{ background: getPriorityColor(task.priority) }">
                             </div>
                         </div>
                     </div>
@@ -1507,47 +1500,48 @@ const getPriorityIcon = (priority: string): string => {
     return icons[priority] || '➡️'
 }
 
-const getPriorityClass = (priority: string): string => {
-    const classes: Record<string, string> = {
-        'Lowest': 'text-gray-500',
-        'Low': 'text-blue-500',
-        'Normal': 'text-green-500',
-        'Medium': 'text-yellow-500',
-        'High': 'text-orange-500',
-        'Highest': 'text-red-500'
+// 获取优先级徽章样式（使用应用的暖色调）
+const getPriorityBadgeStyle = (priority: string): string => {
+    const styles: Record<string, string> = {
+        'Lowest': 'bg-[#4E3B2B]/5 dark:bg-[#F5EFE7]/5 text-[#7D5A36] dark:text-[#C9B99A]',
+        'Low': 'bg-[#7D5A36]/10 dark:bg-[#D4A574]/10 text-[#7D5A36] dark:text-[#D4A574]',
+        'Normal': 'bg-[#7D5A36]/15 dark:bg-[#D4A574]/15 text-[#6B4A2E] dark:text-[#D4A574]',
+        'Medium': 'bg-[#B8956A]/20 dark:bg-[#B8956A]/20 text-[#7D5A36] dark:text-[#D4A574]',
+        'High': 'bg-[#D4A574]/25 dark:bg-[#D4A574]/25 text-[#6B4A2E] dark:text-[#F5EFE7]',
+        'Highest': 'bg-gradient-to-r from-[#D4A574] to-[#B8956A] text-white'
     }
-    return classes[priority] || 'text-green-500'
+    return styles[priority] || styles['Normal']
+}
+
+// 获取优先级颜色（用于左侧颜色条）
+const getPriorityColor = (priority: string): string => {
+    const colors: Record<string, string> = {
+        'Lowest': '#8B7355',
+        'Low': '#A67C52',
+        'Normal': '#7D5A36',
+        'Medium': '#D4A574',
+        'High': '#B8956A',
+        'Highest': 'linear-gradient(180deg, #D4A574 0%, #B8956A 100%)'
+    }
+    return colors[priority] || colors['Normal']
 }
 
 const getTaskDateClass = (dateString?: string): string => {
-    if (!dateString) return 'text-gray-500'
-    
+    if (!dateString) return 'text-themed-secondary'
+
     const dueDate = new Date(dateString)
-    if (Number.isNaN(dueDate.getTime())) return 'text-gray-500'
-    
+    if (Number.isNaN(dueDate.getTime())) return 'text-themed-secondary'
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     dueDate.setHours(0, 0, 0, 0)
-    
-    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (diffDays < 0) return 'text-red-600 font-bold' // Overdue
-    if (diffDays === 0) return 'text-orange-600 font-semibold' // Due today
-    if (diffDays === 1) return 'text-yellow-600' // Due tomorrow
-    return 'text-gray-600' // Future
-}
 
-// 获取优先级徽章的样式类
-const getPriorityBadgeClass = (priority: string): string => {
-    const classes: Record<string, string> = {
-        'Lowest': 'bg-gray-100 text-gray-700 border border-gray-300',
-        'Low': 'bg-blue-50 text-blue-700 border border-blue-200',
-        'Normal': 'bg-green-50 text-green-700 border border-green-200',
-        'Medium': 'bg-yellow-50 text-yellow-700 border border-yellow-300',
-        'High': 'bg-orange-50 text-orange-700 border border-orange-300',
-        'Highest': 'bg-gradient-to-r from-red-500 to-rose-600 text-white border border-red-600'
-    }
-    return classes[priority] || 'bg-green-50 text-green-700 border border-green-200'
+    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (diffDays < 0) return 'text-[#D4A574] dark:text-[#D4A574] font-bold' // Overdue - 用暖金色强调
+    if (diffDays === 0) return 'text-[#B8956A] dark:text-[#B8956A] font-semibold' // Due today
+    if (diffDays === 1) return 'text-[#7D5A36] dark:text-[#C9B99A]' // Due tomorrow
+    return 'text-themed-secondary' // Future
 }
 
 // 获取任务截止日期的标签文字
@@ -1567,26 +1561,6 @@ const getTaskDueDateLabel = (dateString?: string): string => {
     if (diffDays === 0) return locale.value === 'zh' ? '今天到期' : 'Due today'
     if (diffDays === 1) return locale.value === 'zh' ? '明天到期' : 'Due tomorrow'
     return locale.value === 'zh' ? `${diffDays} 天后到期` : `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`
-}
-
-// 获取任务状态的渐变色
-const getTaskStatusGradient = (dateString?: string): string => {
-    if (!dateString) return 'from-gray-400 to-gray-500'
-    
-    const dueDate = new Date(dateString)
-    if (Number.isNaN(dueDate.getTime())) return 'from-gray-400 to-gray-500'
-    
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    dueDate.setHours(0, 0, 0, 0)
-    
-    const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (diffDays < 0) return 'from-red-500 to-rose-600' // Overdue
-    if (diffDays === 0) return 'from-orange-500 to-amber-600' // Due today
-    if (diffDays === 1) return 'from-yellow-500 to-amber-500' // Due tomorrow
-    if (diffDays <= 7) return 'from-green-500 to-emerald-600' // Within a week
-    return 'from-blue-500 to-cyan-600' // Future
 }
 
 // 编辑任务
@@ -1609,7 +1583,7 @@ const confirmDeleteTask = (index: number) => {
 // 处理删除确认
 const handleDeleteConfirm = () => {
     if (taskToDelete.value !== null) {
-        store.commit('deleteTask', taskToDelete.value)
+        store.commit('DELETE_TASK', taskToDelete.value)
         toast.success(t('toast.deleted'), t('toast.success'))
         taskToDelete.value = null
     }
@@ -2185,7 +2159,15 @@ watch(locale, (newLocale) => {
 }
 
 /* Enhanced Task Card Styles */
-.group:hover .opacity-0 {
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Task card hover effects */
+.group:hover .opacity-60 {
     opacity: 1;
 }
 
@@ -2193,65 +2175,39 @@ watch(locale, (newLocale) => {
 @keyframes task-card-appear {
     from {
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
 /* Staggered animation for task cards */
 .grid > div:nth-child(1) {
-    animation: task-card-appear 0.4s ease-out 0.05s backwards;
+    animation: task-card-appear 0.3s ease-out 0.05s backwards;
 }
 
 .grid > div:nth-child(2) {
-    animation: task-card-appear 0.4s ease-out 0.1s backwards;
+    animation: task-card-appear 0.3s ease-out 0.1s backwards;
 }
 
 .grid > div:nth-child(3) {
-    animation: task-card-appear 0.4s ease-out 0.15s backwards;
+    animation: task-card-appear 0.3s ease-out 0.15s backwards;
 }
 
 .grid > div:nth-child(4) {
-    animation: task-card-appear 0.4s ease-out 0.2s backwards;
+    animation: task-card-appear 0.3s ease-out 0.2s backwards;
 }
 
 .grid > div:nth-child(5) {
-    animation: task-card-appear 0.4s ease-out 0.25s backwards;
+    animation: task-card-appear 0.3s ease-out 0.25s backwards;
 }
 
 .grid > div:nth-child(6) {
-    animation: task-card-appear 0.4s ease-out 0.3s backwards;
+    animation: task-card-appear 0.3s ease-out 0.3s backwards;
 }
 
-/* Task priority badge hover effect */
-.group:hover [class*="px-4 py-2 rounded-full"] {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Task card background blur effect */
-.group::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 1rem;
-    background: radial-gradient(circle at top right, rgba(125, 90, 54, 0.08), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-}
-
-.group:hover::after {
-    opacity: 1;
-}
-
-/* Date section hover effect */
-.group:hover [class*="bg-gradient-to-r from-"] {
-    background: linear-gradient(to right, rgba(125, 90, 54, 0.1), transparent);
-}
 
 
 .tasks-scroll-container::-webkit-scrollbar-thumb:hover {

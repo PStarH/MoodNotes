@@ -22,8 +22,9 @@
       - object-src: Plugin sources (none for security)
       - base-uri: Restricts <base> tag URLs
       - form-action: Restricts form submission targets
-      - frame-ancestors: Prevents embedding in iframes (clickjacking protection)
-      - upgrade-insecure-requests: Upgrades HTTP to HTTPS
+
+      Note: frame-ancestors and X-Frame-Options must be set via HTTP headers,
+      not meta tags. Configure these in your production server (nginx, Apache, etc.)
     -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
@@ -36,14 +37,10 @@
       object-src 'none';
       base-uri 'self';
       form-action 'self';
-      frame-ancestors 'none';
-      upgrade-insecure-requests;
     ">
 
     <!-- Additional Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="no-referrer">
   </head>
   <body>
