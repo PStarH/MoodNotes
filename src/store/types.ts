@@ -57,9 +57,9 @@ export interface DaySummary {
     productivity: number
   }
   comfortZoneEntry: string
-  customSections: Array<{ title: string; content: string }>
+  customSections: CustomSection[]
   tags: string[]
-  media: Array<{ type: string; url: string }>
+  media: MediaItem[]
   sparks: string[] // Daily inspiration/highlights
   goalReflections?: Record<number, string> // Reflections on goals due today or tomorrow
 }

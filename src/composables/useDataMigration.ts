@@ -74,12 +74,13 @@ export function useDataMigration() {
     for (const summary of summaries) {
       if (summary.media && Array.isArray(summary.media)) {
         for (const media of summary.media) {
+          // Check for legacy string format (data URLs stored directly as strings)
           if (typeof media === 'string' && isDataUrl(media)) {
             fileList.push({
               summaryDate: summary.date,
               filename: 'Legacy media file',
               status: 'pending',
-              originalUrl: media.substring(0, 100) + '...' // Show first 100 chars
+              originalUrl: (media as string).substring(0, 100) + '...' // Show first 100 chars
             })
           } else if (typeof media === 'object' && media.url && isDataUrl(media.url)) {
             fileList.push({
@@ -313,8 +314,9 @@ export function useDataMigration() {
 
       // Find the media item to retry
       const mediaIndex = summary.media.findIndex(media => {
+        // Check for legacy string format
         if (typeof media === 'string' && isDataUrl(media)) {
-          return media.substring(0, 100) === fileInfo.originalUrl?.substring(0, 100)
+          return (media as string).substring(0, 100) === fileInfo.originalUrl?.substring(0, 100)
         } else if (typeof media === 'object' && media.url && isDataUrl(media.url)) {
           return media.filename === fileInfo.filename
         }

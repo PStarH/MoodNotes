@@ -50,7 +50,8 @@ describe('useDataBackup', () => {
           comfortZoneEntry: 'Tried a new restaurant',
           customSections: [],
           habits: [],
-          media: []
+          media: [],
+          sparks: []
         },
         {
           date: '2025-01-16',
@@ -62,7 +63,8 @@ describe('useDataBackup', () => {
           comfortZoneEntry: '',
           customSections: [],
           habits: [],
-          media: []
+          media: [],
+          sparks: []
         }
       ] as DaySummary[],
       tasks: [],
@@ -235,7 +237,8 @@ describe('useDataBackup', () => {
           comfortZoneEntry: '',
           customSections: [],
           habits: [],
-          media: []
+          media: [],
+          sparks: []
         }
       ] as DaySummary[]
 
@@ -307,7 +310,8 @@ describe('useDataBackup', () => {
             { title: 'Custom Section', content: 'Custom content' }
           ],
           habits: [],
-          media: []
+          media: [],
+          sparks: []
         }
       ] as DaySummary[]
 

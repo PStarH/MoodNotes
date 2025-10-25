@@ -13,6 +13,7 @@
     "serve": "vite serve",
     "electron:serve": "vue-cli-service electron:serve",
     "electron:build": "vue-cli-service electron:build",
+    "type-check": "vue-tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -24,7 +25,6 @@
     "chart.js": "^4.5.1",
     "chartjs-plugin-zoom": "^2.2.0",
     "dompurify": "^3.3.0",
-    "electron": "^33.0.1",
     "jspdf": "^2.5.2",
     "localforage": "^1.10.0",
     "lucide-vue-next": "^0.130.0",
@@ -44,12 +44,14 @@
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
+    "electron": "^33.0.1",
     "happy-dom": "^20.0.4",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "terser": "^5.43.1",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.1.2"
   }
 }

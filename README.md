@@ -55,17 +55,17 @@
 ### 其他
 
 - **Electron:** 用于构建跨平台桌面应用程序的框架。
-- **SQLite:** 用于本地存储日记条目和用户数据的轻量级SQL数据库。
+- **LocalForage:** 简单的离线存储库，使用类似 localStorage 的 API 访问 IndexedDB、WebSQL 或 localStorage。
 
 ## 🏗 架构
 
-为了简化应用程序并提高性能，晨暮日记尽可能地采用前端技术实现所有功能，减少对后端的依赖。应用程序主要基于Vue.js构建，通过Electron打包为跨平台的桌面应用。数据存储使用SQLite，并通过前端直接与数据库进行交互，实现快速响应和离线使用能力。
+为了简化应用程序并提高性能，晨暮日记尽可能地采用前端技术实现所有功能，减少对后端的依赖。应用程序主要基于Vue.js构建，通过Electron打包为跨平台的桌面应用。数据存储使用LocalForage，提供简单的客户端存储 API，通过 IndexedDB 实现前端直接存储和检索数据，实现快速响应和离线使用能力。
 
 **主要组件包括：**
 
 - **Vue.js 前端:** 负责用户界面和用户体验，管理所有用户交互。
 - **Vuex 状态管理:** 管理应用的全局状态，包括日记条目、用户设置等。
-- **SQLite 数据库:** 存储所有日记条目、媒体文件和用户数据，确保数据持久性和快速访问。
+- **LocalForage 存储:** 使用浏览器存储（IndexedDB/localStorage）存储所有日记条目、媒体文件和用户数据，确保数据持久性和快速访问。
 - **Electron 框架:** 将Vue.js应用打包为跨平台的桌面应用，支持Windows、macOS和Linux。
 
 ## 🚀 安装
@@ -242,17 +242,17 @@ MoodNotes is a cross-platform diary application built with Vue.js and Electron. 
 ### Others
 
 - **Electron:** Framework for building cross-platform desktop applications.
-- **SQLite:** Lightweight SQL database for local storage of diary entries and user data.
+- **LocalForage:** Simple offline storage library that uses IndexedDB, WebSQL, or localStorage with a localStorage-like API.
 
 ## 🏗 Architecture
 
-To simplify the application and enhance performance, MoodNotes leverages frontend technologies to implement all functionalities, minimizing backend dependencies. The application is primarily built with Vue.js and packaged with Electron for cross-platform desktop use. Data storage utilizes SQLite, allowing the frontend to interact directly with the database for rapid responses and offline capabilities.
+To simplify the application and enhance performance, MoodNotes leverages frontend technologies to implement all functionalities, minimizing backend dependencies. The application is primarily built with Vue.js and packaged with Electron for cross-platform desktop use. Data storage utilizes LocalForage, which provides a simple API for client-side storage using IndexedDB, allowing the frontend to store and retrieve data directly for rapid responses and offline capabilities.
 
 **Key Components:**
 
 - **Vue.js Frontend:** Handles the user interface and experience, managing all user interactions.
 - **Vuex State Management:** Manages the global state of the application, including diary entries and user settings.
-- **SQLite Database:** Stores all diary entries, media files, and user data, ensuring data persistence and quick access.
+- **LocalForage Storage:** Uses browser storage (IndexedDB/localStorage) for all diary entries, media files, and user data, ensuring data persistence and quick access.
 - **Electron Framework:** Packages the Vue.js application into a cross-platform desktop app supporting Windows, macOS, and Linux.
 
 ## 🚀 Installation
