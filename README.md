@@ -101,7 +101,16 @@ npm run preview
   ```bash
   npm run build
   ```
-  说明：当前仓库未集成安装包打包工具（如 electron-builder），上面的命令会构建前端并编译 Electron TS。若需生成 .app/.exe 安装包，可在后续版本接入打包流程或提交 PR。
+
+- 打包为应用程序（安装 electron-builder 后）
+  ```bash
+  npm install  # 首次运行先安装依赖
+  npm run package        # 自动检测当前平台打包
+  npm run package:mac    # 打包 macOS .dmg
+  npm run package:win    # 打包 Windows .exe
+  npm run package:linux  # 打包 Linux AppImage/deb
+  ```
+  打包产物会输出到 `dist-electron/` 目录。
 
 - 测试
   ```bash

@@ -101,7 +101,16 @@ npm run preview
   ```bash
   npm run build
   ```
-  Note: An installer packager (e.g., electron-builder) isn’t integrated yet. The command builds the frontend and compiles Electron TS. If you need .app/.exe installers, feel free to open a PR to add a packaging pipeline.
+
+- Package as application (after installing electron-builder)
+  ```bash
+  npm install  # Install dependencies first
+  npm run package        # Auto-detect current platform
+  npm run package:mac    # Package for macOS .dmg
+  npm run package:win    # Package for Windows .exe
+  npm run package:linux  # Package for Linux AppImage/deb
+  ```
+  Build artifacts will be output to `dist-electron/` directory.
 
 - Tests
   ```bash

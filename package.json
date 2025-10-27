@@ -9,6 +9,10 @@
     "electron": "npm run --prefix electron start",
     "build": "vite build && npm run build-electron",
     "build-electron": "npm run --prefix electron build",
+    "package": "npm run build && electron-builder",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:win": "npm run build && electron-builder --win",
+    "package:linux": "npm run build && electron-builder --linux",
     "preview": "vite preview",
     "serve": "vite serve",
     "electron:serve": "vue-cli-service electron:serve",
@@ -45,6 +49,7 @@
     "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
     "electron": "^33.0.1",
+    "electron-builder": "^25.1.8",
     "happy-dom": "^20.0.4",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
@@ -53,5 +58,40 @@
     "vite": "^5.4.8",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.2"
+  },
+  "build": {
+    "appId": "com.pstarh.moodnotes",
+    "productName": "MoodNotes",
+    "directories": {
+      "output": "dist-electron",
+      "buildResources": "build-resources"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/dist/**/*"
+    ],
+    "mac": {
+      "icon": "build-resources/icon.icns",
+      "category": "public.app-category.lifestyle",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "icon": "build-resources/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "icon": "public/AppIcons/Assets.xcassets/AppIcon.appiconset/512.png",
+      "category": "Office",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   }
 }
