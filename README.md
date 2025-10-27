@@ -1,370 +1,180 @@
-# 晨暮日记 MoodNotes
+# 晨暮日记 MoodNotes · v1.0.0
 
-[English Version](#english-version)
+简体中文 | [English](./README.en.md)
 
-![Workflow](https://img.shields.io/github/workflow/status/PStarH/MoodNotes/CI)
-![License](https://img.shields.io/github/license/PStarH/MoodNotes)
-![Star](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
+让日常的光影与心绪，有一处可以安放的地方。
 
-晨暮日记是一个跨平台的日记应用程序，基于Vue.js和Electron构建。它提供用户一个无缝和直观的界面，记录他们的日常想法、情绪和活动。晨暮日记包含多媒体支持、天气集成和日历视图等功能，旨在增强写作体验。
+![Stars](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
-## 📖 内容表
+晨暮日记是一款基于 Vue 3 + Vite 与 Electron 打造的本地优先日记应用。它把「写下来」这件事变得温柔、顺手而有力量：从每日小结、灵感速记，到情绪趋势、习惯打卡与可视化洞察；从离线保存到一键备份/导入，重要的不是功能本身，而是你与生活之间更真诚的对话。
 
-- [功能 (Features)](#功能-features)
-- [技术栈 (Tech Stack)](#技术栈-tech-stack)
-- [架构 (Architecture)](#架构-architecture)
-- [安装 (Installation)](#安装-installation)
-- [使用 (Usage)](#使用-usage)
-- [未来计划 (Future Plans)](#未来计划-future-plans)
-- [项目结构 (Project Structure)](#项目结构-project-structure)
-- [贡献 (Contributing)](#贡献-contributing)
-- [许可证 (License)](#许可证-license)
-- [联系方式 (Contact)](#联系方式-contact)
+—— 写给认真生活的人。
 
-## ✨ 功能
+## 目录
 
-- **日记**
-  - **每日总结:**
-    - 文字编辑器页面
-    - 导出为 PDF/Markdown/HTML
-    - 包含天气/情绪
-    - 待办事项清单 - 我今天做了...吗?
-    - 图片、视频、音频
-    - 舒适区条目
-  - **灵感记录 (Spark):** 方便放在主页
-    - 照片、视频
-    - 文字
-- **去年今日:**
-  - 我去年今天做了什么
-- **日历:**
-  - 显示当天的日记及表情符号表示情绪
-  - 待办事项清单
-  - 每日名言
-- **跨平台:** 基于Electron构建，支持桌面和移动设备。
-- **隐私功能:** 密码保护和私人模式以保持条目安全。
+- [亮点功能](#亮点功能)
+- [安装与运行](#安装与运行)
+- [打包与测试](#打包与测试)
+- [数据与隐私](#数据与隐私)
+- [技术栈](#技术栈)
+- [项目结构](#项目结构)
+- [常见问题](#常见问题)
+- [参与贡献](#参与贡献)
+- [许可证](#许可证)
+- [更新日志](#更新日志)
 
-## 🛠 技术栈
+## 亮点功能
 
-### 前端
+- 写作体验
+  - 每日总结：支持富文本编辑（基于 Quill），气象与心情标注、标签与自定义小节、舒适区条目
+  - 灵感 Spark：灵光一现，随手一记；更快、更轻、更贴身
+  - 媒体库：图片 / 视频 / 音频 本地保存与读取
+  - 导出：支持 JSON / CSV / Markdown；PDF 计划中
 
-- **Vue.js 3:** 用于构建用户界面的JavaScript框架。
-- **Vuex:** Vue.js的状态管理模式+库。
-- **Tailwind CSS:** 实用优先的CSS框架。
-- **Axios:** 用于API请求的HTTP客户端。
+- 时间与视图
+  - 日历视图：一眼看见当日心情、待办与每日名言
+  - 去年今日：同一天的前一年，你在做什么
 
-### 其他
+- 数据洞察与习惯
+  - 情绪趋势、能量与压力曲线、月度字数统计（Chart.js 可视化）
+  - 习惯打卡与趋势洞察、今日习惯完成度
 
-- **Electron:** 用于构建跨平台桌面应用程序的框架。
-- **LocalForage:** 简单的离线存储库，使用类似 localStorage 的 API 访问 IndexedDB、WebSQL 或 localStorage。
+- 本地优先与备份
+  - 日志数据存储于本地 IndexedDB（LocalForage），离线可用
+  - 一键导出/导入，内置版本迁移与冲突预检（预览、合并、替换）
 
-## 🏗 架构
+- 体验与可及性
+  - 快捷键体系（可扩展），虚拟列表与懒加载优化，深浅色主题
+  - 更友好的可访问性：焦点陷阱、键盘可达、语义化 aria 标签
 
-为了简化应用程序并提高性能，晨暮日记尽可能地采用前端技术实现所有功能，减少对后端的依赖。应用程序主要基于Vue.js构建，通过Electron打包为跨平台的桌面应用。数据存储使用LocalForage，提供简单的客户端存储 API，通过 IndexedDB 实现前端直接存储和检索数据，实现快速响应和离线使用能力。
+## 安装与运行
 
-**主要组件包括：**
+环境要求
+- macOS / Windows / Linux
+- Node.js 18+（推荐）
 
-- **Vue.js 前端:** 负责用户界面和用户体验，管理所有用户交互。
-- **Vuex 状态管理:** 管理应用的全局状态，包括日记条目、用户设置等。
-- **LocalForage 存储:** 使用浏览器存储（IndexedDB/localStorage）存储所有日记条目、媒体文件和用户数据，确保数据持久性和快速访问。
-- **Electron 框架:** 将Vue.js应用打包为跨平台的桌面应用，支持Windows、macOS和Linux。
+本地开发
+1. 安装依赖
+   ```bash
+   npm install
+   ```
+2. 启动开发（同时开启 Vite 与 Electron）
+   ```bash
+   npm run dev
+   ```
+   默认会在浏览器开发服务器与 Electron 主进程之间建立热重载开发环境。
 
-## 🚀 安装
+预览前端构建产物
+```bash
+npm run preview
+```
 
-1. **直接下载**
+## 打包与测试
 
-   用户可以直接从[发布页面](https://github.com/PStarH/MoodNotes/releases)下载安装包。
+- 生产构建（前端 + Electron TS 编译）
+  ```bash
+  npm run build
+  ```
+  说明：当前仓库未集成安装包打包工具（如 electron-builder），上面的命令会构建前端并编译 Electron TS。若需生成 .app/.exe 安装包，可在后续版本接入打包流程或提交 PR。
 
-## 🎯 使用
+- 测试
+  ```bash
+  npm run test       # 运行单测（Vitest）
+  npm run test:ui    # 以交互式 UI 运行
+  npm run test:coverage
+  ```
 
-1. **访问应用程序**
+## 数据与隐私
 
-   打开应用程序，它将提供用户友好的界面供您交互。
+- 本地数据存储
+  - 结构化数据（每日总结、任务、习惯、灵感、日历条目）持久化于 IndexedDB（通过 LocalForage 实现）
+  - 备份导出文件包含版本号与导出时间戳，支持 JSON/CSV/Markdown
 
-2. **创建日记条目**
+- 媒体文件存储（Electron）
+  - 存放路径：系统用户数据目录下的 `media`（`app.getPath('userData')/media`）
+  - 文件限制：单文件 ≤ 10MB，总占用 ≤ 100MB；支持的后缀包含 `.jpg/.jpeg/.png/.gif/.webp/.mp4/.webm/.ogg/.mp3/.wav`
 
-   - 导航到**每日总结**页面。
-   - 填写文字编辑器，附加图像/视频，并选择情绪和天气。
-   - 保存条目。
+- 备份与迁移
+  - 导入前会进行结构校验与冲突预检，可选择「合并」「替换」「跳过」等策略
+  - 备份文件包含内置格式版本控制（当前备份格式版本为 2.0.0），旧格式会在导入时自动迁移
 
-3. **利用灵感记录**
+我们尽可能将一切留在本地，并提供可理解、可掌控的导出方式。
 
-   - 使用主页上的**灵感**功能进行快速记录。
-   - 以照片、视频和文本的各种格式捕捉您的想法。
+## 技术栈
 
-4. **查看过去条目**
+- 前端：Vue 3、TypeScript、Vite、Tailwind CSS、Vue Router、Vuex 4、Vue I18n
+- 可视化：Chart.js、chartjs-plugin-zoom、vue-chartjs
+- 编辑与富文本：Quill、DOMPurify（内容安全）
+- 数据：LocalForage（IndexedDB 持久化）
+- 桌面端：Electron 33（安全上下文隔离、预加载桥）
+- 其他：vue-virtual-scroller、jspdf（预留 PDF 支持）
 
-   - 访问**去年今日**功能，回顾过去的活动。
-
-5. **日历概览**
-
-   - 在**日历**页面查看条目，包括情绪表情和每日名言。
-
-## 🚀 未来计划
-
-晨暮日记不断发展，以增强用户体验和功能。即将推出的功能包括：
-
-- **用户身份验证:**
-  - 允许用户创建帐户并跨设备管理他们的日记条目。
-
-- **高级媒体支持:**
-  - 实现音频录制和标签功能，以便更好地组织。
-
-- **搜索功能:**
-  - 允许用户通过关键字和日期搜索过去的条目。
-
-- **数据分析:**
-  - 根据用户条目提供洞察，例如情绪趋势分析。
-
-- **多语言支持:**
-  - 允许用户选择不同语言以更好地实现无障碍访问。
-
-## 📂 项目结构
-
-晨暮日记/
+## 项目结构
 
 ```
-├── backend/
-│   ├── app.py
-│   ├── models.py
-│   ├── database.py
-│   ├── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── views/
-│   │   │   ├── DaySummary.vue
-│   │   │   ├── Spark.vue
-│   │   │   └── Calendar.vue
-│   │   ├── store/
-│   │   │   └── index.js
-│   │   ├── components/
-│   ├── public/
-│   ├── package.json
-├── README.md
-└── LICENSE
+.
+├── electron/                # Electron 主进程与预加载脚本
+│   ├── main.ts              # BrowserWindow、媒体 IPC、存储限制等
+│   ├── preload.ts           # 安全暴露 API 到渲染进程
+│   └── package.json         # Electron 构建脚本
+├── src/
+│   ├── App.vue
+│   ├── main.ts              # Vite 入口
+│   ├── components/          # 组件（备份、趋势、图表、主题、虚拟列表等）
+│   ├── composables/         # 组合式工具（备份、迁移、快捷键、性能等）
+│   ├── i18n/                # 多语言（zh / en）
+│   ├── router/              # 路由
+│   ├── store/               # Vuex 与类型守卫
+│   ├── utils/               # 工具方法（格式化、性能监测、错误处理）
+│   └── views/               # 页面（首页、设置、分析、当日摘要等）
+├── public/
+├── vite.config.ts
+├── vitest.config.ts
+├── tailwind.config.js
+└── package.json
 ```
-- **backend/**: 包含所有后端相关代码，包括数据库模型和API。
-- **frontend/**: 包含Vue.js前端应用程序。
-- **requirements.txt**: 列出Python依赖项。
-- **package.json**: 列出前端依赖项。
 
-## 🤝 贡献 (Contributing)
+## 常见问题
 
-欢迎贡献！请遵循以下步骤：
+- 无法生成安装包？
+  - 当前版本尚未集成安装包打包工具。可直接 `npm run dev` 在 Electron 中开发运行，或基于 electron-builder/forge 提交 PR 完善打包流程。
 
-1. **分叉仓库 (Fork the Repository)**
+- 导入备份失败或部分条目丢弃？
+  - 导入前会进行结构校验与类型守卫过滤（无效条目会被跳过）。可先使用「预览」查看冲突与数据质量，再选择合适的合并策略。
 
-2. **创建功能分支 (Create a Feature Branch)**
+- 媒体文件超限？
+  - 单文件上限 10MB、总占用上限 100MB。建议定期导出备份并清理不再需要的媒体资源。
 
+## 参与贡献
+
+欢迎任何形式的贡献，包括文案、设计、性能、可用性、国际化等。
+
+1. Fork 本仓库
+2. 创建分支
    ```bash
-   git checkout -b feature/YourFeature
+   git checkout -b feature/your-feature
+   ```
+3. 提交变更
+   ```bash
+   git commit -m "feat: your message"
+   ```
+4. 推送与发起 PR
+   ```bash
+   git push origin feature/your-feature
    ```
 
-3. **提交更改 (Commit Your Changes)**
+## 许可证
 
-   ```bash
-   git commit -m "添加一些功能"
-   ```
+本项目采用 AGPL-3.0 许可证发布。详见 [LICENSE](./LICENSE)。
 
-4. **推送到分支 (Push to the Branch)**
+## 更新日志
 
-   ```bash
-   git push origin feature/YourFeature
-   ```
+- v1.0.0（首个公开版本）
+  - 核心日记/灵感/媒体/日历体验
+  - 图表分析：心情趋势、能量/压力、字数统计
+  - 习惯打卡与趋势洞察
+  - 备份导出/导入（含版本迁移与冲突预检）
+  - 本地优先、离线可用；多语言（中 / 英）与深浅色主题
 
-5. **打开拉取请求 (Open a Pull Request)**
-
-## 📜 许可证 (License)
-
-该项目根据 [自定义许可证](LICENSE) 许可。您可以根据许可证条款使用、修改和分发此软件。
-
----
-
-❤️ 由 [PStarH](https://github.com/PStarH) 制作
-
----
-
-# English Version
-
-[M中文版本](#中文版本)
-
-# MoodNotes
-
-![Workflow](https://img.shields.io/github/workflow/status/PStarH/MoodNotes/CI)
-![License](https://img.shields.io/github/license/PStarH/MoodNotes)
-![Star](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
-
-MoodNotes is a cross-platform diary application built with Vue.js and Electron. It provides users with a seamless and intuitive interface to record their daily thoughts, emotions, and activities. MoodNotes includes features such as multimedia support, weather integration, and calendar views, aiming to enhance the writing experience.
-
-## 📖 Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Future Plans](#future-plans)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-
-## ✨ Features
-
-- **Diary**
-  - **Daily Summary:**
-    - Text editor page
-    - Export as PDF/Markdown/HTML
-    - Includes weather/emotions
-    - To-do list - Did I do this in the day?
-    - Image, Video, Audio
-    - Comfort zone entry
-  - **Spark:** Easily placed on the homepage for convenience
-    - Photo, video
-    - Text
-- **Last Year This Day:**
-  - What did I do last year on this day?
-- **Calendar:**
-  - Show the diary of the day with emojis representing mood
-  - To-do list
-  - Daily quote
-- **Cross-Platform:** Built with Electron, supporting desktop and mobile devices.
-- **Privacy Features:** Password protection and private mode to keep entries secure.
-
-## 🛠 Tech Stack
-
-### Frontend
-
-- **Vue.js 3:** JavaScript framework for building user interfaces.
-- **Vuex:** State management pattern + library for Vue.js.
-- **Tailwind CSS:** Utility-first CSS framework.
-- **Axios:** HTTP client for API requests.
-
-### Others
-
-- **Electron:** Framework for building cross-platform desktop applications.
-- **LocalForage:** Simple offline storage library that uses IndexedDB, WebSQL, or localStorage with a localStorage-like API.
-
-## 🏗 Architecture
-
-To simplify the application and enhance performance, MoodNotes leverages frontend technologies to implement all functionalities, minimizing backend dependencies. The application is primarily built with Vue.js and packaged with Electron for cross-platform desktop use. Data storage utilizes LocalForage, which provides a simple API for client-side storage using IndexedDB, allowing the frontend to store and retrieve data directly for rapid responses and offline capabilities.
-
-**Key Components:**
-
-- **Vue.js Frontend:** Handles the user interface and experience, managing all user interactions.
-- **Vuex State Management:** Manages the global state of the application, including diary entries and user settings.
-- **LocalForage Storage:** Uses browser storage (IndexedDB/localStorage) for all diary entries, media files, and user data, ensuring data persistence and quick access.
-- **Electron Framework:** Packages the Vue.js application into a cross-platform desktop app supporting Windows, macOS, and Linux.
-
-## 🚀 Installation
-
-1. **Direct Download**
-
-   Users can directly download the installation package from the [Releases Page](https://github.com/PStarH/MoodNotes/releases).
-
-## 🎯 Usage
-
-1. **Access the Application**
-
-   Open the application, which will provide a user-friendly interface for interaction.
-
-2. **Create Diary Entries**
-
-   - Navigate to the **Daily Summary** page.
-   - Fill in the text editor, attach images/videos, and select emotions and weather.
-   - Save the entry.
-
-3. **Utilize Spark**
-
-   - Use the **Spark** feature on the homepage for quick entries.
-   - Capture your thoughts in various formats like photos, videos, and text.
-
-4. **View Past Entries**
-
-   - Access the **Last Year This Day** feature to review past activities.
-
-5. **Calendar Overview**
-
-   - View entries on the **Calendar** page, including emotion emojis and daily quotes.
-
-## 🚀 Future Plans
-
-MoodNotes is continuously evolving to enhance user experience and functionality. Upcoming features include:
-
-- **User Authentication:**
-  - Allow users to create accounts and manage their diary entries across devices.
-
-- **Advanced Media Support:**
-  - Implement audio recording and tagging functionality for better organization.
-
-- **Search Functionality:**
-  - Allow users to search past entries by keywords and dates.
-
-- **Data Analytics:**
-  - Provide insights based on user entries, such as emotion trend analysis.
-
-- **Multilingual Support:**
-  - Allow users to select different languages for better accessibility.
-
-## 📂 Project Structure
-
-MoodNotes/
-```
-├── backend/
-│   ├── app.py
-│   ├── models.py
-│   ├── database.py
-│   ├── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── views/
-│   │   │   ├── DaySummary.vue
-│   │   │   ├── Spark.vue
-│   │   │   └── Calendar.vue
-│   │   ├── store/
-│   │   │   └── index.js
-│   │   ├── components/
-│   ├── public/
-│   ├── package.json
-├── README.md
-└── LICENSE
-```
-- **backend/**: Contains all backend-related code, including database models and APIs.
-- **frontend/**: Contains the Vue.js frontend application.
-- **requirements.txt**: Lists Python dependencies.
-- **package.json**: Lists frontend dependencies.
-
-## 🤝 Contributing
-
-Welcome to contribute! Please follow these steps:
-
-1. **Fork the Repository**
-
-2. **Create a Feature Branch**
-
-   ```bash
-   git checkout -b feature/YourFeature
-   ```
-
-3. **Commit Your Changes**
-
-   ```bash
-   git commit -m "Add some feature"
-   ```
-
-4. **Push to the Branch**
-
-   ```bash
-   git push origin feature/YourFeature
-   ```
-
-5. **Open a Pull Request**
-
-## 📜 License
-
-This project is licensed under the [Custom License](LICENSE). You may use, modify, and distribute this software under the terms of the license.
-
----
-
-❤️ Made by [PStarH](https://github.com/PStarH)
-
----
+—— 由 [PStarH](https://github.com/PStarH) 与贡献者们用心打磨。
