@@ -31,5 +31,6 @@ store.dispatch('loadSparks')
 store.dispatch('loadCalendarEntries')
 store.dispatch('loadTasks')
 store.dispatch('loadHabits')
+store.dispatch('loadSettings')
 
 app.mount('#app')

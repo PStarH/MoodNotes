@@ -362,12 +362,15 @@
                             </h3>
                             <span class="text-xs text-[#7D5A36]/70">{{ recentSparks.length }} {{ $t('home.logged') }}</span>
                         </div>
-                        <div v-if="recentSparks.length" class="space-y-3">
-                            <div class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3"
-                                v-for="(spark, index) in recentSparks.slice(0, 3)" :key="index">
-                                <p class="text-sm text-[#4E3B2B]">{{ spark }}</p>
+                        
+                        <!-- 固定高度可滚动的sparks列表 -->
+                        <div v-if="recentSparks.length" class="sparks-scroll-container custom-scrollbar">
+                            <div class="space-y-3">
+                                <div class="border border-[#D3C9A6]/40 rounded-xl px-4 py-3"
+                                    v-for="(spark, index) in recentSparks" :key="index">
+                                    <p class="text-sm text-[#4E3B2B]">{{ spark }}</p>
+                                </div>
                             </div>
-                            <p v-if="recentSparks.length > 3" class="text-xs text-[#7D5A36]/70">+ {{ recentSparks.length - 3 }} {{ $t('home.moreSparks') }}</p>
                         </div>
                         <div v-else class="text-sm text-[#7D5A36]/80">
                             <p class="font-medium mb-2">{{ $t('home.captureSpark') }}</p>
@@ -798,7 +801,10 @@
                         </div>
                         <template v-for="(day, index) in calendarDays" :key="index">
                             <div v-if="day.type === 'day'" class="calendar-day"
+                                :class="{ 'last-year-anniversary': day.isLastYearAnniversary }"
+                                :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }"
                                 @click="handleDayClick(day.date)">
+                                <div v-if="day.isLastYearAnniversary" class="anniversary-badge">🕰️</div>
                                 <div class="emotion-icon">{{ day.emotion.emoji }}</div>
                                 <span>{{ day.day }}</span>
                                 <div v-if="hasTasks(day.date)" class="task-indicator"></div>
@@ -2140,7 +2146,7 @@ watch(locale, (newLocale) => {
 
 /* Tasks scroll container */
 .tasks-scroll-container {
-    max-height: 100px;
+    max-height: 300px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -2155,6 +2161,27 @@ watch(locale, (newLocale) => {
 }
 
 .tasks-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(125, 90, 54, 0.4);
+    border-radius: 3px;
+}
+
+/* Sparks scroll container */
+.sparks-scroll-container {
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.sparks-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sparks-scroll-container::-webkit-scrollbar-track {
+    background: rgba(211, 201, 166, 0.2);
+    border-radius: 3px;
+}
+
+.sparks-scroll-container::-webkit-scrollbar-thumb {
     background: rgba(125, 90, 54, 0.4);
     border-radius: 3px;
 }

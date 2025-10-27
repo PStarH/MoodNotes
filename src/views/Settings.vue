@@ -213,6 +213,35 @@
           </div>
         </div>
 
+        <!-- Auto-Save Settings -->
+        <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
+          <h2 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center">
+            <span class="mr-2">💾</span>
+            {{ $t('settings.autoSave') }}
+          </h2>
+          <p class="text-sm text-[#7D5A36]/80 mb-4">{{ $t('settings.autoSaveDesc') }}</p>
+
+          <div class="flex items-center justify-between p-4 glass-effect rounded-xl">
+            <div class="flex-1">
+              <p class="font-semibold text-[#4E3B2B] mb-1">{{ $t('settings.autoSaveOnClose') }}</p>
+              <p class="text-xs text-[#7D5A36]/70">{{ $t('settings.autoSaveOnCloseDesc') }}</p>
+            </div>
+            <button
+              @click="toggleAutoSave"
+              :class="autoSaveEnabled ? 'bg-[#7D5A36]' : 'bg-[#D3C9A6]'"
+              class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7D5A36] focus-visible:ring-offset-2"
+              role="switch"
+              :aria-checked="autoSaveEnabled"
+              :aria-label="$t('settings.autoSaveOnClose')"
+            >
+              <span
+                :class="autoSaveEnabled ? 'translate-x-5' : 'translate-x-0'"
+                class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+              />
+            </button>
+          </div>
+        </div>
+
         <!-- Daily Quote Bank Settings -->
         <div class="glass-effect p-6 rounded-2xl warm-shadow-lg">
           <h2 class="text-xl font-bold text-[#4E3B2B] mb-4 flex items-center">
@@ -331,6 +360,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useStore } from 'vuex'
 import {
   List,
   BarChart3,
@@ -346,11 +376,14 @@ import {
   Check
 } from 'lucide-vue-next'
 import { useTheme, type Theme } from '@/composables/useTheme'
+import { useToast } from '@/composables/useToast'
 import localforage from 'localforage'
 
 const router = useRouter()
 const { locale, t } = useI18n()
 const { currentTheme, themes, setTheme } = useTheme()
+const store = useStore()
+const toast = useToast()
 
 interface ThemeCard {
   key: Theme
@@ -419,6 +452,23 @@ const setLanguage = async (lang: 'en' | 'zh') => {
   await localforage.setItem('settings:language', lang)
 }
 
+// Auto-save settings
+const autoSaveEnabled = computed(() => store.getters.getSettings?.autoSaveOnClose ?? true)
+
+const toggleAutoSave = async () => {
+  const newValue = !autoSaveEnabled.value
+  try {
+    await store.dispatch('updateSetting', { key: 'autoSaveOnClose', value: newValue })
+    toast.success(
+      newValue ? t('settings.autoSaveEnabled') : t('settings.autoSaveDisabled'),
+      t('toast.success')
+    )
+  } catch (error) {
+    console.error('Failed to update auto-save setting:', error)
+    toast.error(t('settings.autoSaveError'), t('toast.error'))
+  }
+}
+
 // Quote settings
 const customQuotes = ref<Array<{ text: string; author: string }>>([])
 const showAddQuoteForm = ref(false)
@@ -452,6 +502,11 @@ const openHabits = () => {
 
 // Load settings on mount
 onMounted(async () => {
+  // Ensure settings are loaded (main.ts should have already loaded it, but just in case)
+  if (!store.state.settings || Object.keys(store.state.settings).length === 0) {
+    await store.dispatch('loadSettings')
+  }
+  
   const savedLanguage = await localforage.getItem('settings:language') as string | null
   if (savedLanguage) {
     currentLanguage.value = savedLanguage

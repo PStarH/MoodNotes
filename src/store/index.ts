@@ -117,6 +117,9 @@ const isHabit = (obj: any): obj is Habit => {
 // Export type guards for use in other modules
 export { isDaySummary, isTask, isHabit }
 
+export interface AppSettings {
+  autoSaveOnClose: boolean
+}
 
 export interface State {
   daySummaries: DaySummary[]
@@ -124,6 +127,7 @@ export interface State {
   habits: Habit[]
   sparks: string[]
   calendarEntries: { date: string; content: string }[]
+  settings: AppSettings
 }
 
 
@@ -134,6 +138,9 @@ const store: StoreOptions<State> = {
     habits: [],
     sparks: [],
     calendarEntries: [],
+    settings: {
+      autoSaveOnClose: true, // Default to enabled
+    },
   },
   mutations: {
     // Day Summaries
@@ -216,6 +223,16 @@ const store: StoreOptions<State> = {
     },
     ADD_CALENDAR_ENTRY(state, entry: { date: string; content: string }) {
       state.calendarEntries.push(entry)
+    },
+    // Settings
+    SET_SETTINGS(state, settings: AppSettings) {
+      state.settings = settings
+    },
+    UPDATE_SETTING(state, { key, value }: { key: keyof AppSettings; value: any }) {
+      if (!state.settings) {
+        state.settings = { autoSaveOnClose: true }
+      }
+      state.settings[key] = value
     },
   },
   actions: {
@@ -604,6 +621,74 @@ const store: StoreOptions<State> = {
         throw handleStorageError(error, 'add calendar entry', 'calendarEntries')
       }
     },
+    // Settings
+    async loadSettings({ commit }) {
+      console.log('📥 Loading settings from storage...')
+      try {
+        const settings = (await localforage.getItem('settings')) as AppSettings | null
+        console.log('📦 Raw settings from storage:', settings)
+        
+        if (settings) {
+          // Merge with defaults to ensure all keys exist
+          const defaultSettings: AppSettings = {
+            autoSaveOnClose: true,
+          }
+          const mergedSettings: AppSettings = {
+            ...defaultSettings,
+            ...settings,
+          }
+          console.log('✅ Merged settings:', mergedSettings)
+          commit('SET_SETTINGS', mergedSettings)
+        } else {
+          // Initialize with defaults if no settings exist
+          const defaultSettings: AppSettings = {
+            autoSaveOnClose: true,
+          }
+          console.log('🆕 Initializing with default settings:', defaultSettings)
+          commit('SET_SETTINGS', defaultSettings)
+          await localforage.setItem('settings', defaultSettings)
+        }
+        console.log('✅ Settings loaded successfully')
+      } catch (error) {
+        console.error('❌ Failed to load settings:', error)
+        // Use defaults on error
+        const fallbackSettings = { autoSaveOnClose: true }
+        console.log('🔄 Using fallback settings:', fallbackSettings)
+        commit('SET_SETTINGS', fallbackSettings)
+      }
+    },
+    async updateSetting({ commit, state }, { key, value }: { key: keyof AppSettings; value: any }) {
+      console.log('🔧 Updating setting:', { key, value, currentSettings: state.settings })
+      
+      // Store original state for rollback
+      const originalSettings = { ...state.settings }
+
+      try {
+        commit('UPDATE_SETTING', { key, value })
+        console.log('✅ Mutation completed, new settings:', state.settings)
+        
+        // Serialize and parse to ensure clean, cloneable object
+        const cleanSettings = JSON.parse(JSON.stringify(state.settings))
+        
+        // Save to storage
+        await localforage.setItem('settings', cleanSettings)
+        console.log('✅ Settings saved to storage')
+      } catch (error: any) {
+        console.error('❌ Failed to update setting:', error)
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          key,
+          value
+        })
+
+        // Rollback state mutation
+        commit('SET_SETTINGS', originalSettings)
+
+        // Throw user-friendly error
+        throw handleStorageError(error, 'update setting', 'settings')
+      }
+    },
   },
   getters: {
     // Day Summaries with O(1) indexed lookup
@@ -630,6 +715,8 @@ const store: StoreOptions<State> = {
     getSparks: (state) => state.sparks,
     // Calendar Entries
     getCalendarEntries: (state) => state.calendarEntries,
+    // Settings
+    getSettings: (state) => state.settings || { autoSaveOnClose: true },
     // Getter to calculate total words this month
     totalWordsThisMonth: (state) => (year: number, month: number): number => {
       return state.daySummaries

@@ -7,8 +7,8 @@
             aria-labelledby="day-summary-title"
             aria-modal="true"
         >
-            <!-- Main Container with Padding to Avoid Overlap -->
-            <div class="relative pb-20">
+            <!-- Main Container -->
+            <div class="relative">
 
                 <!-- Container for Close Button and Export Options -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 pb-3 border-b border-[#D3C9A6]">
@@ -47,7 +47,7 @@
                         <!-- Close Button -->
                         <button
                             type="button"
-                            @click="$emit('close')"
+                            @click="handleClose"
                             class="text-[#7D5A36] hover:text-opacity-80 p-1.5 hover:bg-[#7D5A36] hover:bg-opacity-10 rounded-lg transition-all"
                             aria-label="Close daily review"
                         >
@@ -557,18 +557,20 @@
                 </div>
             </div>
 
-            <!-- Save Button (Bottom Right Corner) -->
-            <button
-                @click="saveAll"
-                :disabled="isSaving"
-                class="sticky bottom-4 float-right mr-4 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-full text-base font-bold hover-lift transition-all duration-200 warm-shadow-lg z-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-                :class="{ 'bg-green-500': saveSuccess }"
-                :aria-label="isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll'))"
-                :aria-busy="isSaving"
-            >
-                <span class="mr-2" aria-hidden="true">{{ isSaving ? '⏳' : (saveSuccess ? '✅' : '💾') }}</span>
-                {{ isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll')) }}
-            </button>
+            <!-- Save Button (Fixed Bottom Right Corner) -->
+            <div class="flex justify-end mt-8">
+                <button
+                    @click="() => saveAll()"
+                    :disabled="isSaving"
+                    class="bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white px-6 py-3 rounded-full text-base font-bold hover-lift transition-all duration-200 warm-shadow-lg z-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    :class="{ 'bg-green-500': saveSuccess }"
+                    :aria-label="isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll'))"
+                    :aria-busy="isSaving"
+                >
+                    <span class="mr-2" aria-hidden="true">{{ isSaving ? '⏳' : (saveSuccess ? '✅' : '💾') }}</span>
+                    {{ isSaving ? $t('daySummary.saving') : (saveSuccess ? $t('daySummary.saved') : $t('daySummary.saveAll')) }}
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -739,6 +741,42 @@ watch(mood, (newMood) => {
 
 const daySummary = computed(() => store.getters.getDaySummary(currentDate.value))
 
+// Change tracking - store the original state when loading data
+const originalState = ref<string>('')
+const hasUnsavedChanges = ref(false)
+
+// Helper to create a snapshot of current state for change detection
+const createStateSnapshot = () => {
+    return JSON.stringify({
+        content: content.value,
+        mood: mood.value,
+        weather: weather.value.description,
+        habits: habits.value,
+        dailyCheck: dailyCheck.value,
+        comfortZoneEntry: comfortZoneEntry.value,
+        customSections: customSections.value,
+        tags: tags.value,
+        sparks: sparks.value,
+        goalReflections: goalReflections.value,
+        media: media.value
+    })
+}
+
+// Track changes with debounce to avoid excessive checks
+const checkForChanges = () => {
+    const currentSnapshot = createStateSnapshot()
+    hasUnsavedChanges.value = currentSnapshot !== originalState.value
+}
+
+// Debounced change checker
+let changeCheckTimeout: number | null = null
+const debouncedChangeCheck = () => {
+    if (changeCheckTimeout) {
+        clearTimeout(changeCheckTimeout)
+    }
+    changeCheckTimeout = window.setTimeout(checkForChanges, 300)
+}
+
 // Define helper functions first
 const updateQuillContent = (newContent: string) => {
     if (quillInstance.value) {
@@ -756,7 +794,9 @@ const updateQuillContent = (newContent: string) => {
 // Load existing data function - defined before it's used
 const loadExistingData = () => {
     const existingSummary = store.getters.getDaySummary(currentDate.value)
+    
     if (existingSummary) {
+        // Load existing data
         content.value = existingSummary.summary || ''
         mood.value = existingSummary.mood || 'happy'
         weather.value = { description: existingSummary.weather || 'Partly cloudy, 22°C' }
@@ -773,7 +813,42 @@ const loadExistingData = () => {
         nextTick(() => {
             updateQuillContent(content.value)
         })
+    } else {
+        // Reset to default values for dates without entries
+        content.value = ''
+        mood.value = 'happy'
+        weather.value = { description: 'Partly cloudy, 22°C' }
+        dailyCheck.value = { energyLevel: 5, stressLevel: 5, productivity: 5 }
+        comfortZoneEntry.value = ''
+        customSections.value = []
+        tags.value = []
+        sparks.value = []
+        goalReflections.value = {}
+        media.value = []
+        
+        // Load habits from store for the new date
+        const storeHabits = store.getters.getHabits
+        habits.value = storeHabits.map((habit: any) => {
+            const todayStatus = habit.statuses?.find((s: HabitStatus) => s.date === currentDate.value)
+            return {
+                id: habit.id,
+                name: habit.name,
+                completed: todayStatus?.status === 'did',
+                status: todayStatus?.status || null
+            }
+        })
+        
+        // Update Quill content to empty
+        nextTick(() => {
+            updateQuillContent('')
+        })
     }
+    
+    // After loading, snapshot the original state and reset change flag
+    nextTick(() => {
+        originalState.value = createStateSnapshot()
+        hasUnsavedChanges.value = false
+    })
 }
 
 // Watch for selectedDate changes
@@ -781,6 +856,13 @@ watch(() => props.selectedDate, (newDate) => {
     currentDate.value = newDate || new Date().toISOString().split('T')[0]
     loadExistingData()
 }, { immediate: true })
+
+// Watch for currentDate changes (when user changes date in the date picker)
+watch(currentDate, (newDate) => {
+    if (newDate) {
+        loadExistingData()
+    }
+})
 
 watch(daySummary, (newSummary) => {
     if (newSummary) {
@@ -835,6 +917,7 @@ const initializeQuill = async () => {
 
         quillInstance.value.on('text-change', () => {
             content.value = quillInstance.value?.root.innerHTML || ''
+            debouncedChangeCheck() // Track changes when content changes
         })
 
         if (content.value) {
@@ -878,6 +961,15 @@ onMounted(async () => {
     loadExistingData()
 })
 
+// Watch for changes in all reactive data to track unsaved changes
+watch([mood, weather, () => JSON.stringify(habits.value), dailyCheck, comfortZoneEntry, 
+       () => JSON.stringify(customSections.value), () => JSON.stringify(tags.value), 
+       () => JSON.stringify(sparks.value), () => JSON.stringify(goalReflections.value), 
+       () => JSON.stringify(media.value)], 
+    debouncedChangeCheck, 
+    { deep: true }
+)
+
 watch(() => daySummary.value, async (newSummary) => {
     if (newSummary) {
         content.value = newSummary.summary || ''
@@ -904,6 +996,9 @@ const cycleHabitStatus = async (habit: DaySummaryHabit, status: 'did' | 'partial
 
         // Also update completed checkbox based on status
         habit.completed = newStatus === 'did'
+        
+        // Track change
+        debouncedChangeCheck()
     } catch (error) {
         toast.error('Failed to update habit status', 'Error')
     }
@@ -933,6 +1028,8 @@ const handleFileUpload = async (event: Event) => {
             filename: mediaFile.filename,
             id: mediaFile.id
         })
+        // Track change
+        debouncedChangeCheck()
         // Note: toast is already shown by uploadFile
     }
 
@@ -941,6 +1038,7 @@ const handleFileUpload = async (event: Event) => {
 
 const removeMedia = (index: number) => {
     media.value.splice(index, 1)
+    debouncedChangeCheck()
 }
 
 const saveCustomSection = () => {
@@ -952,6 +1050,7 @@ const saveCustomSection = () => {
         newSectionTitle.value = ''
         newSectionContent.value = ''
         showAddSection.value = false
+        debouncedChangeCheck()
     }
 }
 
@@ -959,22 +1058,26 @@ const addTag = () => {
     if (newTag.value.trim() && !tags.value.includes(newTag.value.trim())) {
         tags.value.push(newTag.value.trim())
         newTag.value = ''
+        debouncedChangeCheck()
     }
 }
 
 const removeTag = (tag: string) => {
     tags.value = tags.value.filter(t => t !== tag)
+    debouncedChangeCheck()
 }
 
 const addSpark = () => {
     if (newSpark.value.trim()) {
         sparks.value.push(newSpark.value.trim())
         newSpark.value = ''
+        debouncedChangeCheck()
     }
 }
 
 const removeSpark = (index: number) => {
     sparks.value = sparks.value.filter((_, i) => i !== index)
+    debouncedChangeCheck()
 }
 
 const handleSparkKeydown = (event: KeyboardEvent) => {
@@ -986,7 +1089,15 @@ const handleSparkKeydown = (event: KeyboardEvent) => {
     // Shift+Enter: allow new line (default textarea behavior)
 }
 
-const saveAll = () => {
+const saveAll = (autoClose = true, silent = false) => {
+    // Don't save if there are no changes
+    if (!hasUnsavedChanges.value && !silent) {
+        if (autoClose) {
+            emit('close')
+        }
+        return
+    }
+
     isSaving.value = true
     saveSuccess.value = false
 
@@ -1034,31 +1145,47 @@ const saveAll = () => {
 
         console.log('💾 Saving day summary:', summaryData)
 
-        // Save to store
+        // If autoClose is true, close immediately and save in background
+        if (autoClose) {
+            emit('close')
+        }
+
+        // Save to store (async, runs in background)
         store.dispatch('updateDaySummary', summaryData)
             .then(() => {
                 console.log('✅ Day summary saved successfully')
                 isSaving.value = false
                 saveSuccess.value = true
-                toast.success('Your day summary has been saved successfully!', 'Saved')
+                
+                // Update original state snapshot after successful save
+                originalState.value = createStateSnapshot()
+                hasUnsavedChanges.value = false
 
-                // Close after brief success display
-                setTimeout(() => {
-                    saveSuccess.value = false
-                    emit('close')
-                }, 1500)
+                if (!autoClose && !silent) {
+                    toast.success('Your day summary has been saved successfully!', 'Saved')
+                    // Reset success state after a moment
+                    setTimeout(() => {
+                        saveSuccess.value = false
+                    }, 2000)
+                }
             })
             .catch((error: unknown) => {
                 console.error('⚠️ Failed to save day summary:', error)
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error'
                 console.error('Error details:', errorMessage)
                 isSaving.value = false
-                toast.error(`Could not save your summary: ${errorMessage}`, 'Save Failed')
+                
+                if (!silent) {
+                    toast.error(`Could not save your summary: ${errorMessage}`, 'Save Failed')
+                }
             })
     } catch (error: unknown) {
         console.error('⚠️ Error preparing day summary:', error)
         isSaving.value = false
-        toast.error('Failed to prepare summary data. Please check your input.', 'Save Failed')
+        
+        if (!silent) {
+            toast.error('Failed to prepare summary data. Please check your input.', 'Save Failed')
+        }
     }
 }
 
@@ -1073,6 +1200,18 @@ const deleteDaySummary = () => {
                 console.error('⚠️ Failed to delete day summary:', error)
                 toast.error('Could not delete the summary. Please try again.', 'Delete Failed')
             })
+    }
+}
+
+const handleClose = () => {
+    const autoSaveEnabled = store.getters.getSettings?.autoSaveOnClose ?? true
+    
+    if (autoSaveEnabled && hasUnsavedChanges.value) {
+        // Auto-save before closing (will close immediately and save in background)
+        saveAll(true)
+    } else {
+        // Just close without saving
+        emit('close')
     }
 }
 
@@ -1159,6 +1298,12 @@ const exportContent = (format: 'pdf' | 'md' | 'html') => {
 
 // Cleanup on unmount to prevent memory leaks
 onUnmounted(() => {
+    // Clear the debounce timeout
+    if (changeCheckTimeout) {
+        clearTimeout(changeCheckTimeout)
+        changeCheckTimeout = null
+    }
+    
     if (quillInstance.value) {
         // Properly remove event listeners before destroying
         quillInstance.value.off('text-change')
