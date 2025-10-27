@@ -1,6 +1,14 @@
+<div align="center">
+  <img src="./public/icon.png" alt="MoodNotes Icon" width="120" />
+</div>
+
 # 晨暮日记 MoodNotes · v1.0.0
 
+<div align="center">
+
 简体中文 | [English](./README.en.md)
+
+</div>
 
 让日常的光影与心绪，有一处可以安放的地方。
 
@@ -14,6 +22,7 @@
 ## 目录
 
 - [亮点功能](#亮点功能)
+- [产品截图](#产品截图)
 - [安装与运行](#安装与运行)
 - [打包与测试](#打包与测试)
 - [数据与隐私](#数据与隐私)
@@ -47,6 +56,22 @@
 - 体验与可及性
   - 快捷键体系（可扩展），虚拟列表与懒加载优化，深浅色主题
   - 更友好的可访问性：焦点陷阱、键盘可达、语义化 aria 标签
+
+## 产品截图
+
+<div align="center">
+  <img src="./public/screenshots/homepage.png" alt="首页" width="45%" />
+  <img src="./public/screenshots/diary.png" alt="日记编辑" width="45%" />
+</div>
+
+<div align="center">
+  <img src="./public/screenshots/journal.png" alt="日记列表" width="45%" />
+  <img src="./public/screenshots/analytic.png" alt="数据分析" width="45%" />
+</div>
+
+<div align="center">
+  <img src="./public/screenshots/setting.png" alt="设置页面" width="45%" />
+</div>
 
 ## 安装与运行
 

@@ -2,7 +2,10 @@
   <div class="h-screen flex gradient-bg">
     <!-- Sidebar -->
     <div class="w-64 sidebar-gradient p-6 warm-shadow-lg flex flex-col h-full">
-      <h2 class="text-[#4E3B2B] mb-8 text-2xl font-bold tracking-wide">📝 MoodNotes</h2>
+      <div class="mb-8 flex items-center">
+        <img src="/icon1.png" alt="MoodNotes" class="w-10 h-10 mr-3" />
+        <h2 class="text-[#4E3B2B] text-2xl font-bold tracking-wide">MoodNotes</h2>
+      </div>
       <nav class="flex-1">
         <ul class="list-none p-0 space-y-2">
           <li class="mb-3">

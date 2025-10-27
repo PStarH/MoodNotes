@@ -1,6 +1,14 @@
+<div align="center">
+  <img src="./public/icon.png" alt="MoodNotes Icon" width="120" />
+</div>
+
 # MoodNotes · v1.0.0
 
+<div align="center">
+
 [简体中文](./README.md) | English
+
+</div>
 
 Let your days and moods have a warm place to rest.
 
@@ -14,6 +22,7 @@ MoodNotes is a local-first journaling app built with Vue 3 + Vite and Electron. 
 ## Contents
 
 - [Highlights](#highlights)
+- [Screenshots](#screenshots)
 - [Install & Run](#install--run)
 - [Build & Test](#build--test)
 - [Data & Privacy](#data--privacy)
@@ -47,6 +56,22 @@ MoodNotes is a local-first journaling app built with Vue 3 + Vite and Electron. 
 - Experience & accessibility
   - Extensible keyboard shortcuts, virtual list and lazy loading, light/dark themes
   - Better a11y: focus trap, keyboard reachability, semantic aria labels
+
+## Screenshots
+
+<div align="center">
+  <img src="./public/screenshots/homepage.png" alt="Homepage" width="45%" />
+  <img src="./public/screenshots/diary.png" alt="Diary Editor" width="45%" />
+</div>
+
+<div align="center">
+  <img src="./public/screenshots/journal.png" alt="Journal List" width="45%" />
+  <img src="./public/screenshots/analytic.png" alt="Analytics" width="45%" />
+</div>
+
+<div align="center">
+  <img src="./public/screenshots/setting.png" alt="Settings" width="45%" />
+</div>
 
 ## Install & Run
 
