@@ -9,7 +9,8 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "vuex": ["node_modules/vuex/types"]
     },
     "lib": ["ESNext", "DOM"],
     "resolveJsonModule": true

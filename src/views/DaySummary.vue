@@ -1048,13 +1048,14 @@ const saveAll = () => {
                     emit('close')
                 }, 1500)
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 console.error('⚠️ Failed to save day summary:', error)
-                console.error('Error details:', error.message, error.stack)
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+                console.error('Error details:', errorMessage)
                 isSaving.value = false
-                toast.error(`Could not save your summary: ${error.message || 'Unknown error'}`, 'Save Failed')
+                toast.error(`Could not save your summary: ${errorMessage}`, 'Save Failed')
             })
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('⚠️ Error preparing day summary:', error)
         isSaving.value = false
         toast.error('Failed to prepare summary data. Please check your input.', 'Save Failed')
@@ -1068,7 +1069,7 @@ const deleteDaySummary = () => {
                 toast.success(t('toast.deleted'), t('toast.success'))
                 emit('close')
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 console.error('⚠️ Failed to delete day summary:', error)
                 toast.error('Could not delete the summary. Please try again.', 'Delete Failed')
             })

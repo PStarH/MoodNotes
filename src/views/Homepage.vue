@@ -576,10 +576,10 @@
                             <h3 class="text-2xl font-bold text-[#4E3B2B] mb-1 flex items-center">
                                 <span class="mr-2">✅</span>{{ $t('home.tasks') }}
                             </h3>
-                            <p class="text-sm text-[#7D5A36]/80">{{ $t('home.manageGoals') }}</p>
                         </div>
                         <button @click="isTaskFormOpen = true"
-                            class="flex items-center glass-effect p-4 rounded-xl border-0 cursor-pointer hover-lift transition-all duration-200 warm-shadow bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white font-semibold">
+                            class="flex items-center glass-effect p-4 rounded-xl border border-themed cursor-pointer hover-lift transition-all duration-200 warm-shadow font-semibold"
+                            style="color: var(--color-text);">
                             <Plus :size="20" class="mr-2" />
                             <span>{{ $t('home.addNewTask') }}</span>
                         </button>
@@ -618,7 +618,7 @@
                                             style="background: rgba(125, 90, 54, 0.1);"
                                             :aria-label="$t('home.editTask')"
                                             :title="$t('home.editTask')">
-                                            <Edit2 :size="16" class="text-primary" />
+                                            <Edit2 :size="16" class="text-[#7D5A36]" />
                                         </button>
                                         <button
                                             @click="confirmDeleteTask(index)"
@@ -851,7 +851,8 @@
                         </div>
                     </div>
                     <button @click="openAddHabitModal"
-                        class="mt-4 bg-[#7D5A36] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center">
+                        class="mt-4 glass-effect border border-themed px-4 py-2 rounded-md hover-lift transition-all flex items-center font-semibold"
+                        style="color: var(--color-text);">
                         <Plus :size="20" class="mr-2" />
                         {{ $t('habit.addHabit') }}
                     </button>
@@ -2164,6 +2165,7 @@ watch(locale, (newLocale) => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-clamp: 2;
 }
 
 /* Task card hover effects */
