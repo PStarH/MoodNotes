@@ -41,7 +41,7 @@ interface StoredQuotePayload {
   language?: string
 }
 
-const DEFAULT_STORAGE_KEY = 'moodnotes.dailyQuote'
+const DEFAULT_STORAGE_KEY = 'moodsnote.dailyQuote'
 const DEFAULT_CACHE_WINDOW = 1000 * 60 * 60 * 24 // 24 hours
 
 const moodBasedQuotes = quotesJson as Record<string, DailyQuote[]>
@@ -75,8 +75,8 @@ const pickLocalQuote = (excludeText?: string, mood?: MoodType, language: 'en' | 
   }
 
   const fallbackQuote = language === 'zh'
-    ? { text: '每天写一点，记录你的故事。', author: 'MoodNotes' }
-    : { text: 'Keep writing your story one day at a time.', author: 'MoodNotes' }
+    ? { text: '每天写一点，记录你的故事。', author: 'MoodsNote' }
+    : { text: 'Keep writing your story one day at a time.', author: 'MoodsNote' }
 
   if (quotesPool.length === 0) {
     return fallbackQuote

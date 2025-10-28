@@ -1,5 +1,5 @@
 {
-  "name": "moodnotes-electron",
+  "name": "moodsnote-electron",
   "version": "1.0.0",
   "main": "dist/main.js",
   "scripts": {

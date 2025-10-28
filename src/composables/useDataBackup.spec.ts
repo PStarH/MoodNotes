@@ -160,7 +160,7 @@ describe('useDataBackup', () => {
       expect(isExporting.value).toBe(false)
       expect(backupProgress.value).toBe(0)
       expect(mockLink.click).toHaveBeenCalled()
-      expect(mockLink.download).toContain('moodnotes-backup-')
+      expect(mockLink.download).toContain('moodsnote-backup-')
       expect(mockLink.download).toContain('.json')
     })
 
@@ -287,7 +287,7 @@ describe('useDataBackup', () => {
 
       await exportData('markdown')
 
-      expect(exportedContent).toContain('# MoodNotes Backup')
+      expect(exportedContent).toContain('# MoodsNote Backup')
       expect(exportedContent).toContain('## 2025-01-15')
       expect(exportedContent).toContain('**Mood:** happy')
       expect(exportedContent).toContain('**Tags:** `productive`, `happy`')

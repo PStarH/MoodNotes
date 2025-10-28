@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="./public/icon.png" alt="MoodNotes Icon" width="120" />
+  <img src="./public/icon.png" alt="MoodsNote Icon" width="120" />
 </div>
 
-# MoodNotes · v1.0.0
+# MoodsNote · v1.0.0
 
 <div align="center">
 
@@ -12,10 +12,10 @@
 
 Let your days and moods have a warm place to rest.
 
-![Stars](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
+![Stars](https://img.shields.io/github/stars/PStarH/MoodsNote?style=social)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
-MoodNotes is a local-first journaling app built with Vue 3 + Vite and Electron. It turns “writing it down” into something gentle, effortless, and powerful: daily summaries and sparks, mood trends and habit insights, offline storage with one-click backup/import. What matters isn’t the features—it’s the honest conversation between you and your life.
+MoodsNote is a local-first journaling app built with Vue 3 + Vite and Electron. It turns "writing it down" into something gentle, effortless, and powerful: daily summaries and sparks, mood trends and habit insights, offline storage with one-click backup/import. What matters isn't the features—it's the honest conversation between you and your life.
 
 — For those who live with intention.
 

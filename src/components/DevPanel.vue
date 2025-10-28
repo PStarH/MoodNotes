@@ -146,7 +146,7 @@ const clearData = () => {
     sessionStorage.clear()
     if ('indexedDB' in window) {
       // Clear IndexedDB data used by LocalForage
-      indexedDB.deleteDatabase('MoodNotes')
+      indexedDB.deleteDatabase('MoodsNote')
     }
     location.reload()
   }

@@ -1,5 +1,5 @@
 /**
- * Global type declarations for MoodNotes
+ * Global type declarations for MoodsNote
  * Extends the Window interface with Electron API types
  */
 

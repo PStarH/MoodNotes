@@ -7,8 +7,8 @@
             :inert="isOverlayActive"
         >
             <div class="mb-8 flex items-center">
-                <img src="/icon1.png" alt="MoodNotes" class="w-10 h-10 mr-3" />
-                <h2 class="text-[#4E3B2B] text-2xl font-bold tracking-wide">MoodNotes</h2>
+                <img src="/icon1.png" alt="MoodsNote" class="w-10 h-10 mr-3" />
+                <h2 class="text-[#4E3B2B] text-2xl font-bold tracking-wide">MoodsNote</h2>
             </div>
             <nav class="flex-1">
                 <ul class="list-none p-0 space-y-2">

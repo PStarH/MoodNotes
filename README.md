@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="./public/icon.png" alt="MoodNotes Icon" width="120" />
+  <img src="./public/icon.png" alt="MoodsNote Icon" width="120" />
 </div>
 
-# 晨暮日记 MoodNotes · v1.0.0
+# 晨暮日记 MoodsNote · v1.0.0
 
 <div align="center">
 
@@ -12,7 +12,7 @@
 
 让日常的光影与心绪，有一处可以安放的地方。
 
-![Stars](https://img.shields.io/github/stars/PStarH/MoodNotes?style=social)
+![Stars](https://img.shields.io/github/stars/PStarH/MoodsNote?style=social)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
 晨暮日记是一款基于 Vue 3 + Vite 与 Electron 打造的本地优先日记应用。它把「写下来」这件事变得温柔、顺手而有力量：从每日小结、灵感速记，到情绪趋势、习惯打卡与可视化洞察；从离线保存到一键备份/导入，重要的不是功能本身，而是你与生活之间更真诚的对话。

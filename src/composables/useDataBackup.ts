@@ -172,19 +172,19 @@ export function useDataBackup() {
       switch (format) {
         case 'json':
           content = JSON.stringify(data, null, 2)
-          filename = `moodnotes-backup-v${CURRENT_VERSION}-${new Date().toISOString().split('T')[0]}.json`
+          filename = `moodsnote-backup-v${CURRENT_VERSION}-${new Date().toISOString().split('T')[0]}.json`
           mimeType = 'application/json'
           break
 
         case 'csv':
           content = convertToCSV(data.daySummaries)
-          filename = `moodnotes-backup-${new Date().toISOString().split('T')[0]}.csv`
+          filename = `moodsnote-backup-${new Date().toISOString().split('T')[0]}.csv`
           mimeType = 'text/csv'
           break
 
         case 'markdown':
           content = convertToMarkdown(data.daySummaries)
-          filename = `moodnotes-backup-${new Date().toISOString().split('T')[0]}.md`
+          filename = `moodsnote-backup-${new Date().toISOString().split('T')[0]}.md`
           mimeType = 'text/markdown'
           break
 
@@ -396,7 +396,7 @@ export function useDataBackup() {
   }
 
   const convertToMarkdown = (summaries: DaySummary[]): string => {
-    let markdown = '# MoodNotes Backup\n\n'
+    let markdown = '# MoodsNote Backup\n\n'
     
     summaries.forEach(summary => {
       markdown += `## ${summary.date}\n\n`
