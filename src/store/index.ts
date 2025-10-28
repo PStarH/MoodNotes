@@ -13,7 +13,7 @@ import {
 import { handleStorageError } from '@/utils/storageErrorHandler'
 
 localforage.config({
-  name: 'MoodNotes',
+  name: 'MoodsNote',
   storeName: 'mood_notes_store',
 })
 

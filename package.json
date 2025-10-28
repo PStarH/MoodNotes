@@ -1,18 +1,18 @@
 {
-  "name": "moodnotes",
+  "name": "moodsnote",
   "version": "1.0.0",
   "description": "A local-first journaling app with mood tracking, habit insights, and beautiful data visualization",
   "author": {
     "name": "PStarH",
     "url": "https://github.com/PStarH"
   },
-  "homepage": "https://github.com/PStarH/MoodNotes#readme",
+  "homepage": "https://github.com/PStarH/MoodsNote#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PStarH/MoodNotes.git"
+    "url": "https://github.com/PStarH/MoodsNote.git"
   },
   "bugs": {
-    "url": "https://github.com/PStarH/MoodNotes/issues"
+    "url": "https://github.com/PStarH/MoodsNote/issues"
   },
   "keywords": [
     "journal",
@@ -84,8 +84,8 @@
     "vue-tsc": "^3.1.2"
   },
   "build": {
-    "appId": "com.pstarh.moodnotes",
-    "productName": "MoodNotes",
+    "appId": "com.pstarh.moodsnote",
+    "productName": "MoodsNote",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build-resources"

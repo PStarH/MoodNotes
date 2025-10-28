@@ -415,7 +415,7 @@ export default {
   // Settings
   settings: {
     title: 'Settings',
-    subtitle: 'Customize your MoodNotes experience',
+    subtitle: 'Customize your MoodsNote experience',
     theme: 'Theme',
     themeDesc: 'Choose your preferred color scheme',
     themeOptions: {
@@ -457,10 +457,10 @@ export default {
     noQuotesYet: 'No custom quotes yet. Add your first inspirational quote!',
     quoteStats: 'Quote Bank Statistics',
     customQuotesInLibrary: 'Custom Quotes in Library',
-    about: 'About MoodNotes',
+    about: 'About MoodsNote',
     version: 'Version',
     build: 'Build',
-    aboutDesc: 'MoodNotes is your personal journaling companion, designed to help you track your mood, habits, and memories with beautiful visualizations and insights.',
+    aboutDesc: 'MoodsNote is your personal journaling companion, designed to help you track your mood, habits, and memories with beautiful visualizations and insights.',
     english: 'English',
     defaultLanguage: 'Default language',
     chinese: '中文',
