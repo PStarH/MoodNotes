@@ -14,8 +14,20 @@ const mockStore = {
   dispatch: vi.fn()
 }
 
-vi.mock('vuex', () => ({
-  useStore: () => mockStore
+// Properly mock Vuex module with all required exports
+vi.mock('vuex', async () => {
+  const actual = await vi.importActual('vuex')
+  return {
+    ...actual,
+    useStore: () => mockStore
+  }
+})
+
+// Mock vue-i18n
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({
+    t: (key: string) => key // Return the key as the translation
+  })
 }))
 
 // Mock useImportConflict
