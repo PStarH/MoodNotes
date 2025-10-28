@@ -1,7 +1,31 @@
 {
   "name": "moodnotes",
-  "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "A local-first journaling app with mood tracking, habit insights, and beautiful data visualization",
+  "author": {
+    "name": "PStarH",
+    "url": "https://github.com/PStarH"
+  },
+  "homepage": "https://github.com/PStarH/MoodNotes#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PStarH/MoodNotes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PStarH/MoodNotes/issues"
+  },
+  "keywords": [
+    "journal",
+    "diary",
+    "mood-tracker",
+    "habit-tracker",
+    "productivity",
+    "electron",
+    "vue",
+    "local-first",
+    "offline",
+    "privacy"
+  ],
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run vite\" \"cross-env VITE_DEV_SERVER_URL=http://localhost:3000 npm run electron\"",
@@ -82,7 +106,8 @@
       "icon": "build-resources/icon.ico",
       "target": [
         "nsis",
-        "portable"
+        "portable",
+        "msix"
       ]
     },
     "linux": {
