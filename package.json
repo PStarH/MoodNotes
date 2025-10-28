@@ -97,10 +97,25 @@
     "mac": {
       "icon": "build-resources/icon.icns",
       "category": "public.app-category.lifestyle",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build-resources/entitlements.mac.plist",
+      "entitlementsInherit": "build-resources/entitlements.mac.plist",
       "target": [
+        {
+          "target": "mas",
+          "arch": ["x64", "arm64"]
+        },
         "dmg",
         "zip"
       ]
+    },
+    "mas": {
+      "type": "distribution",
+      "hardenedRuntime": false,
+      "entitlements": "build-resources/entitlements.mas.plist",
+      "entitlementsInherit": "build-resources/entitlements.mas.inherit.plist",
+      "provisioningProfile": "build-resources/embedded.provisionprofile"
     },
     "win": {
       "icon": "build-resources/icon.ico",
