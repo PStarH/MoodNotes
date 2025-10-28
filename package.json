@@ -83,6 +83,7 @@
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.2"
   },
+  "main": "electron/dist/main.js",
   "build": {
     "appId": "com.pstarh.moodsnote",
     "productName": "MoodsNote",
@@ -92,20 +93,14 @@
     },
     "files": [
       "dist/**/*",
-      "electron/dist/**/*"
+      "electron/dist/**/*",
+      "!electron/src/**/*",
+      "!electron/tsconfig.json"
     ],
     "mac": {
       "icon": "build-resources/icon.icns",
       "category": "public.app-category.lifestyle",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "build-resources/entitlements.mac.plist",
-      "entitlementsInherit": "build-resources/entitlements.mac.plist",
       "target": [
-        {
-          "target": "mas",
-          "arch": ["x64", "arm64"]
-        },
         "dmg",
         "zip"
       ]

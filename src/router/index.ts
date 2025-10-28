@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 // Lazy load route components for better performance
 const Homepage = () => import('../views/Homepage.vue')
@@ -29,8 +29,11 @@ const routes: Array<RouteRecordRaw> = [
   }
 ]
 
+// Use hash history for Electron (file:// protocol), web history for web
+// Check if running in Electron environment
+const isElectron = typeof window !== 'undefined' && (window as any).process?.type === 'renderer'
 const router = createRouter({
-  history: createWebHistory(),
+  history: isElectron ? createWebHashHistory() : createWebHistory(),
   routes
 })
 
