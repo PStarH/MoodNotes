@@ -121,7 +121,7 @@
       ]
     },
     "linux": {
-      "icon": "public/AppIcons/Assets.xcassets/AppIcon.appiconset/512.png",
+      "icon": "build-resources/linux-icons/icon-512.png",
       "category": "Office",
       "target": [
         "AppImage",
