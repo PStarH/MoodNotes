@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 overflow-auto p-4">
+    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-[60] overflow-auto p-4">
         <div
             ref="modalRef"
             class="glass-effect w-full max-w-5xl mx-auto my-4 max-h-[95vh] overflow-y-auto rounded-2xl p-4 sm:p-6 warm-shadow-lg bounce-in custom-scrollbar"
@@ -465,24 +465,67 @@
                             <input type="file" accept="audio/*" @change="handleFileUpload" class="hidden" :aria-label="$t('daySummary.addAudio')">
                         </label>
                     </div>
-                    <div v-if="media.length > 0" class="grid grid-cols-3 gap-4" role="list" aria-label="Uploaded media files">
+                    <div v-if="isMediaIntegrityLoading" class="text-xs text-[#7D5A36]/80 mb-2 flex items-center gap-2" role="status" aria-live="polite">
+                        <span aria-hidden="true">🔍</span>
+                        {{ $t('daySummary.mediaIntegrityChecking') }}
+                    </div>
+                    <div v-if="mediaIntegrityWarningMessage" class="text-xs text-themed-danger mb-2 flex items-center gap-2" role="alert">
+                        <span aria-hidden="true">⚠️</span>
+                        {{ mediaIntegrityWarningMessage }}
+                    </div>
+                    <div v-if="media.length > 0" class="space-y-3" role="list" :aria-label="$t('daySummary.uploadedMediaList')">
                         <div
                             v-for="(item, index) in media"
                             :key="index"
-                            class="relative glass-effect rounded-xl overflow-hidden warm-shadow hover-lift transition-all duration-200"
+                            class="glass-effect rounded-xl warm-shadow hover-lift transition-all duration-200 p-4 flex flex-col gap-3 sm:flex-row sm:items-center"
                             role="listitem"
                         >
-                            <img v-if="item.type.startsWith('image')" :src="item.url" class="w-full h-32 object-cover" :alt="`Uploaded image ${index + 1}`">
-                            <video v-else-if="item.type.startsWith('video')" :src="item.url" class="w-full h-32 object-cover" controls :aria-label="`Uploaded video ${index + 1}`"></video>
-                            <audio v-else-if="item.type.startsWith('audio')" :src="item.url" class="w-full p-2" controls :aria-label="`Uploaded audio ${index + 1}`"></audio>
-                            <button
-                                @click="removeMedia(index)"
-                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all hover-lift"
-                                :aria-label="`Remove media file ${index + 1}`"
-                            >
-                                <X :size="16" aria-hidden="true" />
-                            </button>
+                            <div class="flex items-start gap-3 flex-1">
+                                <div class="media-attachment-icon" aria-hidden="true">{{ getMediaIcon(item.type) }}</div>
+                                <div class="space-y-1">
+                                    <p class="text-sm font-semibold text-[#4E3B2B]">
+                                        {{ item.filename || $t('daySummary.attachmentFallback', { index: index + 1 }) }}
+                                    </p>
+                                    <p class="text-xs text-[#7D5A36]/70">
+                                        {{ item.type }} • {{ formatFileSize(item.size) }}
+                                    </p>
+                                    <p class="text-xs text-[#7D5A36]/60">
+                                        {{ $t('daySummary.addedAt', { timestamp: formatTimestamp(item.createdAt) }) }}
+                                    </p>
+                                    <p v-if="item.integrity" class="text-xs font-semibold" :class="item.integrity.ok ? 'text-themed-success' : 'text-themed-danger'">
+                                        <span aria-hidden="true">{{ item.integrity.ok ? '✅' : '⚠️' }}</span>
+                                        {{ getIntegrityMessage(item.integrity) }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <button
+                                    @click="openMedia(item)"
+                                    class="px-3 py-1.5 text-xs rounded-lg bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white hover-lift transition-all duration-200 warm-shadow"
+                                    :aria-label="$t('daySummary.openAttachmentDescription')"
+                                >
+                                    {{ $t('daySummary.openAttachment') }}
+                                </button>
+                                <button
+                                    v-if="isElectronEnvironment"
+                                    @click="revealMedia(item)"
+                                    class="px-3 py-1.5 text-xs rounded-lg glass-effect border border-themed text-themed-secondary hover-lift transition-all duration-200"
+                                    :aria-label="$t('daySummary.revealAttachmentDescription')"
+                                >
+                                    {{ $t('daySummary.revealAttachment') }}
+                                </button>
+                                <button
+                                    @click="removeMedia(index)"
+                                    class="px-3 py-1.5 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                                    :aria-label="$t('daySummary.removeAttachment', { index: index + 1 })"
+                                >
+                                    {{ $t('common.delete') }}
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                    <div v-else class="text-xs text-themed-secondary glass-effect border border-dashed border-themed rounded-xl p-4">
+                        {{ $t('daySummary.noAttachments') }}
                     </div>
                 </div>
 
@@ -598,7 +641,9 @@ const { t } = useI18n()
 const store = useStore()
 const props = defineProps(['selectedDate'])
 const toast = useToast()
-const { uploadFile } = useMediaManager()
+const mediaManager = useMediaManager()
+const { uploadFile, listStoredMedia, openStoredMedia, revealStoredMedia } = mediaManager
+const isElectronEnvironment = mediaManager.isElectron
 const { containerRef: modalRef } = useModalFocus({ initialFocus: '#entry-date', returnFocus: true, onEscape: () => emit('close') })
 
 // Convert currentDate string to Date for historical comparison
@@ -625,6 +670,19 @@ const quillEditor = ref(null)
 const content = ref('')
 const habits: Ref<DaySummaryHabit[]> = ref([])
 const media: Ref<MediaItem[]> = ref([])
+const isMediaIntegrityLoading = ref(false)
+const mediaIntegrityWarning = ref<{ type: 'count'; count: number } | { type: 'error' } | null>(null)
+const mediaIntegrityWarningMessage = computed(() => {
+    if (!mediaIntegrityWarning.value) {
+        return null
+    }
+
+    if (mediaIntegrityWarning.value.type === 'count') {
+        return t('daySummary.integrityWarningCount', { count: mediaIntegrityWarning.value.count })
+    }
+
+    return t('daySummary.integrityCheckFailed')
+})
 const comfortZoneEntry = ref('')
 const dailyCheck = ref({
     energyLevel: 5,
@@ -777,6 +835,212 @@ const debouncedChangeCheck = () => {
     changeCheckTimeout = window.setTimeout(checkForChanges, 300)
 }
 
+const getStoredKey = (item: MediaItem) => item.storageKey || item.url
+
+const formatFileSize = (bytes?: number) => {
+    if (!bytes || bytes <= 0) return '—'
+    const units = ['B', 'KB', 'MB', 'GB']
+    let size = bytes
+    let unitIndex = 0
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024
+        unitIndex += 1
+    }
+
+    return `${size.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
+
+const formatTimestamp = (iso?: string) => {
+    if (!iso) return '—'
+    try {
+        const date = new Date(iso)
+        if (Number.isNaN(date.getTime())) return '—'
+        return new Intl.DateTimeFormat(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date)
+    } catch (error) {
+        console.error('Failed to format timestamp:', error)
+        return '—'
+    }
+}
+
+const getMediaIcon = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return '🖼️'
+    if (mimeType.startsWith('video/')) return '🎬'
+    if (mimeType.startsWith('audio/')) return '🎧'
+    return '📎'
+}
+
+const normalizeIntegrity = (integrity?: MediaItem['integrity']): MediaItem['integrity'] | undefined => {
+    if (!integrity) {
+        return undefined
+    }
+
+    if (integrity.ok) {
+        return { ok: true }
+    }
+
+    const reasonText = (integrity.reason || '').toLowerCase()
+
+    if (!reasonText) {
+        return { ok: false }
+    }
+
+    if (reasonText.includes('missing')) {
+        return { ok: false, reason: 'missing_manifest' }
+    }
+
+    if (reasonText.includes('checksum')) {
+        return { ok: false, reason: 'checksum_mismatch' }
+    }
+
+    if (reasonText.includes('size')) {
+        return { ok: false, reason: 'size_mismatch' }
+    }
+
+    if (reasonText.includes('not found')) {
+        return { ok: false, reason: 'not_found' }
+    }
+
+    if (reasonText.includes('permission') && reasonText.includes('denied')) {
+        return { ok: false, reason: 'permission_denied' }
+    }
+
+    return { ok: false, reason: integrity.reason }
+}
+
+const getIntegrityMessage = (integrity?: MediaItem['integrity']) => {
+    if (!integrity) {
+        return ''
+    }
+
+    if (integrity.ok) {
+        return t('daySummary.integrityOk')
+    }
+
+    const reason = integrity.reason?.toLowerCase()
+
+    if (!reason) {
+        return t('daySummary.integrityFailed')
+    }
+
+    if (reason === 'missing_manifest' || reason.includes('missing')) {
+        return t('daySummary.integrityMissingManifest')
+    }
+
+    if (reason === 'size_mismatch' || reason.includes('size')) {
+        return t('daySummary.integritySizeMismatch')
+    }
+
+    if (reason === 'checksum_mismatch' || reason.includes('checksum')) {
+        return t('daySummary.integrityChecksumMismatch')
+    }
+
+    if (reason === 'permission_denied') {
+        return t('daySummary.integrityPermissionDenied')
+    }
+
+    if (reason === 'not_found') {
+        return t('daySummary.integrityNotFound')
+    }
+
+    return t('daySummary.integrityFailedWithReason', { reason: integrity.reason })
+}
+
+const refreshMediaIntegrity = async () => {
+    if (!isElectronEnvironment) {
+        return
+    }
+
+    if (media.value.length === 0) {
+        mediaIntegrityWarning.value = null
+        isMediaIntegrityLoading.value = false
+        return
+    }
+
+    isMediaIntegrityLoading.value = true
+    mediaIntegrityWarning.value = null
+
+    try {
+        const files = await listStoredMedia(true)
+        const manifestMap = new Map(files.map(({ entry, integrity }) => [entry.storedName, { entry, integrity }]))
+
+        media.value = media.value.map((item) => {
+            const key = getStoredKey(item)
+            const manifestEntry = manifestMap.get(key)
+
+            if (!manifestEntry) {
+                return {
+                    ...item,
+                    storageKey: key,
+                    integrity: { ok: false, reason: 'missing_manifest' }
+                }
+            }
+
+            const normalizedIntegrity = normalizeIntegrity(manifestEntry.integrity)
+
+            return {
+                ...item,
+                id: item.id || manifestEntry.entry.id,
+                filename: item.filename || manifestEntry.entry.originalName,
+                size: manifestEntry.entry.size,
+                checksum: manifestEntry.entry.checksum,
+                createdAt: manifestEntry.entry.createdAt,
+                storageKey: key,
+                integrity: normalizedIntegrity || { ok: true }
+            }
+        })
+
+        const missingCount = media.value.filter(item => item.integrity && !item.integrity.ok).length
+        if (missingCount > 0) {
+            mediaIntegrityWarning.value = { type: 'count', count: missingCount }
+        }
+    } catch (error) {
+        console.error('Failed to refresh media integrity:', error)
+        mediaIntegrityWarning.value = { type: 'error' }
+    } finally {
+        isMediaIntegrityLoading.value = false
+    }
+}
+
+const openMedia = async (item: MediaItem) => {
+    if (!isElectronEnvironment) {
+        if (item.url.startsWith('blob:') || item.url.startsWith('http') || item.url.startsWith('data:')) {
+            const opened = window.open(item.url, '_blank', 'noopener')
+            if (!opened) {
+                toast.error(t('daySummary.openBlockedMessage'), t('daySummary.openBlockedTitle'))
+            }
+            return
+        }
+        toast.error(t('daySummary.openDesktopOnlyMessage'), t('daySummary.openDesktopOnlyTitle'))
+        return
+    }
+
+    const key = getStoredKey(item)
+    const success = await openStoredMedia({ id: item.id, storedName: key })
+    if (!success) {
+        toast.error(t('daySummary.openFailedMessage'), t('daySummary.openFailedTitle'))
+    }
+}
+
+const revealMedia = async (item: MediaItem) => {
+    if (!isElectronEnvironment) {
+        toast.error(t('daySummary.revealDesktopOnlyMessage'), t('daySummary.revealDesktopOnlyTitle'))
+        return
+    }
+
+    const key = getStoredKey(item)
+    const success = await revealStoredMedia({ id: item.id, storedName: key })
+    if (!success) {
+        toast.error(t('daySummary.revealFailedMessage'), t('daySummary.revealFailedTitle'))
+    }
+}
+
 // Define helper functions first
 const updateQuillContent = (newContent: string) => {
     if (quillInstance.value) {
@@ -792,7 +1056,7 @@ const updateQuillContent = (newContent: string) => {
 }
 
 // Load existing data function - defined before it's used
-const loadExistingData = () => {
+const loadExistingData = async () => {
     const existingSummary = store.getters.getDaySummary(currentDate.value)
     
     if (existingSummary) {
@@ -807,7 +1071,19 @@ const loadExistingData = () => {
         tags.value = existingSummary.tags || []
         sparks.value = existingSummary.sparks || []
         goalReflections.value = existingSummary.goalReflections || {}
-        media.value = existingSummary.media || []
+        const storedMedia = (existingSummary.media || []).map((item: MediaItem) => {
+            const originalUrl = item.url || ''
+            const key = item.storageKey || (!originalUrl.startsWith('blob:') ? originalUrl : undefined)
+            return {
+                ...item,
+                storageKey: key,
+                url: key && !originalUrl.startsWith('blob:') ? key : originalUrl
+            }
+        })
+        media.value = storedMedia.map((item: MediaItem) => ({
+            ...item,
+            integrity: normalizeIntegrity(item.integrity) || item.integrity
+        }))
         
         // Update Quill content
         nextTick(() => {
@@ -844,6 +1120,12 @@ const loadExistingData = () => {
         })
     }
     
+    if (isElectronEnvironment) {
+        await refreshMediaIntegrity()
+    } else {
+        mediaIntegrityWarning.value = null
+    }
+
     // After loading, snapshot the original state and reset change flag
     nextTick(() => {
         originalState.value = createStateSnapshot()
@@ -854,13 +1136,13 @@ const loadExistingData = () => {
 // Watch for selectedDate changes
 watch(() => props.selectedDate, (newDate) => {
     currentDate.value = newDate || new Date().toISOString().split('T')[0]
-    loadExistingData()
+    void loadExistingData()
 }, { immediate: true })
 
 // Watch for currentDate changes (when user changes date in the date picker)
 watch(currentDate, (newDate) => {
     if (newDate) {
-        loadExistingData()
+        void loadExistingData()
     }
 })
 
@@ -958,7 +1240,7 @@ onMounted(async () => {
     }, 1000)
 
     await initializeQuill()
-    loadExistingData()
+    await loadExistingData()
 })
 
 // Watch for changes in all reactive data to track unsaved changes
@@ -1026,10 +1308,18 @@ const handleFileUpload = async (event: Event) => {
             type: mediaFile.type,
             url: mediaFile.url,
             filename: mediaFile.filename,
-            id: mediaFile.id
+            id: mediaFile.id,
+            size: mediaFile.size,
+            checksum: mediaFile.checksum,
+            createdAt: mediaFile.createdAt,
+            storageKey: mediaFile.storageKey,
+            integrity: mediaFile.integrity
         })
         // Track change
         debouncedChangeCheck()
+        if (isElectronEnvironment) {
+            void refreshMediaIntegrity()
+        }
         // Note: toast is already shown by uploadFile
     }
 
@@ -1039,6 +1329,9 @@ const handleFileUpload = async (event: Event) => {
 const removeMedia = (index: number) => {
     media.value.splice(index, 1)
     debouncedChangeCheck()
+    if (isElectronEnvironment) {
+        void refreshMediaIntegrity()
+    }
 }
 
 const saveCustomSection = () => {
@@ -1115,7 +1408,12 @@ const saveAll = (autoClose = true, silent = false) => {
             type: item.type,
             url: item.url,
             filename: item.filename,
-            id: item.id
+            id: item.id,
+            size: item.size,
+            checksum: item.checksum,
+            createdAt: item.createdAt,
+            storageKey: item.storageKey,
+            integrity: item.integrity
         }))
 
         // Clean custom sections
@@ -1319,18 +1617,26 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background: #FAF8F4;
+    background: var(--color-surface);
     border-radius: 28px;
     padding: 20px;
     box-shadow: 0 20px 40px rgba(78, 59, 43, 0.08);
 }
 
+:global(.theme-dark) .daily-review {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
 .surface-card {
-    background: #FFF9F0;
+    background: var(--color-surface-elevated);
     border-radius: 16px;
     padding: 18px 20px;
-    border: 1px solid rgba(125, 90, 54, 0.14);
+    border: 1px solid var(--color-border);
     box-shadow: 0 12px 28px rgba(78, 59, 43, 0.08);
+}
+
+:global(.theme-dark) .surface-card {
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
 }
 
 .daily-review__info-card {
@@ -1375,16 +1681,16 @@ onUnmounted(() => {
     gap: 4px;
     padding: 4px 8px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #7D5A36, #6B4A2E);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: #FFFFFF;
     font-size: 0.75rem;
     font-weight: 600;
-    box-shadow: 0 8px 14px rgba(125, 90, 54, 0.15);
+    box-shadow: 0 8px 14px rgba(78, 59, 43, 0.15);
 }
 
 .tag-chip__remove-small {
-    background: #FFFFFF;
-    color: #7D5A36;
+    background: var(--color-surface);
+    color: var(--color-primary);
     border: none;
     width: 16px;
     height: 16px;
@@ -1402,21 +1708,29 @@ onUnmounted(() => {
     background: rgba(255, 255, 255, 0.7);
 }
 
+:global(.theme-dark) .tag-chip__remove-small:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
 .tag-input-small {
     min-width: 100px;
     padding: 6px 10px;
     border-radius: 10px;
-    border: 1px dashed rgba(125, 90, 54, 0.35);
-    background: #FFFFFF;
-    color: #4E3B2B;
+    border: 1px dashed var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
     font-size: 0.75rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tag-input-small:focus {
     outline: none;
-    border-color: rgba(125, 90, 54, 0.6);
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 2px rgba(125, 90, 54, 0.2);
+}
+
+:global(.theme-dark) .tag-input-small:focus {
+    box-shadow: 0 0 0 2px rgba(212, 165, 116, 0.25);
 }
 
 .mood-picker-inline {
@@ -1434,24 +1748,45 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(255, 244, 219, 0.85), rgba(255, 236, 200, 0.9));
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    background: rgba(125, 90, 54, 0.08);
+    border: 1px solid var(--color-border);
     flex-shrink: 0;
+}
+
+:global(.theme-dark) .meta-icon {
+    background: rgba(212, 165, 116, 0.12);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .meta-icon__glyph {
     width: 20px;
     height: 20px;
-    color: #7D5A36;
+    color: var(--color-primary);
+}
+
+.media-attachment-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(125, 90, 54, 0.08);
+    border: 1px solid var(--color-border);
+    font-size: 20px;
+}
+
+:global(.theme-dark) .media-attachment-icon {
+    background: rgba(212, 165, 116, 0.12);
 }
 
 .date-input {
     width: 100%;
     padding: 10px 14px;
     border-radius: 12px;
-    border: 1px solid rgba(125, 90, 54, 0.25);
-    background: #FFFFFF;
-    color: #4E3B2B;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
     font-weight: 600;
     font-size: 0.95rem;
     transition: all 0.3s ease;
@@ -1462,14 +1797,22 @@ onUnmounted(() => {
 .date-input:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(125, 90, 54, 0.12);
-    border-color: rgba(125, 90, 54, 0.4);
+    border-color: var(--color-primary);
+}
+
+:global(.theme-dark) .date-input:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .date-input:focus {
     outline: none;
-    border-color: #7D5A36;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(125, 90, 54, 0.22);
     transform: translateY(-1px);
+}
+
+:global(.theme-dark) .date-input:focus {
+    box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.25);
 }
 
 /* Custom date picker styling for DaySummary */
@@ -1503,14 +1846,14 @@ onUnmounted(() => {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(125, 90, 54, 0.6);
+    color: var(--color-text-secondary);
     margin-bottom: 2px;
 }
 
 .meta-value {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #4E3B2B;
+    color: var(--color-text);
 }
 
 .daily-review__editor-card {
@@ -1526,11 +1869,15 @@ onUnmounted(() => {
 }
 
 .editor-surface {
-    background: #FFFFFF;
+    background: var(--color-surface-elevated);
     border-radius: 16px;
-    border: 1px solid rgba(210, 196, 160, 0.45);
+    border: 1px solid var(--color-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     padding: 14px;
+}
+
+:global(.theme-dark) .editor-surface {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 .editor-surface--quill {
@@ -1540,14 +1887,22 @@ onUnmounted(() => {
 
 .editor-surface--loading .skeleton-chip {
     border-radius: 10px;
-    background: rgba(242, 226, 201, 0.9);
+    background: rgba(210, 196, 160, 0.3);
     height: 28px;
+}
+
+:global(.theme-dark) .editor-surface--loading .skeleton-chip {
+    background: rgba(212, 165, 116, 0.2);
 }
 
 .editor-surface--loading .skeleton-bar {
     height: 14px;
     border-radius: 8px;
-    background: rgba(242, 226, 201, 0.9);
+    background: rgba(210, 196, 160, 0.3);
+}
+
+:global(.theme-dark) .editor-surface--loading .skeleton-bar {
+    background: rgba(212, 165, 116, 0.2);
 }
 
 .editor-surface--loading .skeleton-bar.short {
@@ -1556,7 +1911,7 @@ onUnmounted(() => {
 
 :deep(.editor-surface--quill .ql-toolbar.ql-snow) {
     border: none;
-    background: #FFF5E8;
+    background: var(--color-surface);
     padding: 10px 14px;
 }
 
@@ -1568,15 +1923,71 @@ onUnmounted(() => {
 :deep(.editor-surface--quill .ql-editor) {
     min-height: 200px;
     font-size: 0.95rem;
-    color: #4E3B2B;
+    color: var(--color-text);
     font-family: inherit;
-    background: #FFFFFF;
+    background: var(--color-surface);
+}
+
+/* Dark mode Quill toolbar icons */
+:global(.theme-dark) :deep(.editor-surface--quill .ql-stroke) {
+    stroke: var(--color-text) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-fill) {
+    fill: var(--color-text) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-label) {
+    color: var(--color-text) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-label:hover) {
+    color: rgba(212, 165, 116, 0.9) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-label:hover .ql-stroke) {
+    stroke: rgba(212, 165, 116, 0.9) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill button:hover .ql-stroke) {
+    stroke: rgba(212, 165, 116, 0.9) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill button:hover .ql-fill) {
+    fill: rgba(212, 165, 116, 0.9) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill button.ql-active .ql-stroke) {
+    stroke: rgba(212, 165, 116, 1) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill button.ql-active .ql-fill) {
+    fill: rgba(212, 165, 116, 1) !important;
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-options) {
+    background: rgba(43, 35, 24, 0.95);
+    border-color: rgba(212, 165, 116, 0.25);
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-item) {
+    color: var(--color-text);
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-picker-item:hover) {
+    color: rgba(212, 165, 116, 0.9);
+    background: rgba(212, 165, 116, 0.1);
+}
+
+:global(.theme-dark) :deep(.editor-surface--quill .ql-toolbar.ql-snow) {
+    background: rgba(43, 35, 24, 0.9);
+    border-color: rgba(212, 165, 116, 0.25);
 }
 
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  background: #F0E9D2;
+    background: var(--color-border);
   outline: none;
 }
 

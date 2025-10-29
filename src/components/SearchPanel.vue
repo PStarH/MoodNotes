@@ -37,8 +37,29 @@
           class="w-full px-4 py-3 pl-12 glass-effect rounded-xl focus:outline-none focus:ring-2 transition-all"
           style="color: var(--color-text); border-color: var(--color-border);"
           :aria-label="$t('search.title')"
+          @keydown.enter="handleSearchEnter"
         />
         <Search class="absolute left-4 top-1/2 transform -translate-y-1/2" style="color: var(--color-primary);" :size="20" aria-hidden="true" />
+      </div>
+      
+      <!-- Date Jump Suggestion -->
+      <div v-if="detectedDate" class="mt-2 p-3 glass-effect rounded-lg border-2 border-[#7D5A36]/30 hover:border-[#7D5A36]/60 transition-all cursor-pointer" @click="jumpToDate(detectedDate)">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">📅</span>
+            <div>
+              <p class="text-sm font-semibold text-[#4E3B2B]">{{ $t('search.jumpToDate') }}</p>
+              <p class="text-xs text-[#7D5A36]">{{ formatDateDisplay(detectedDate) }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="px-3 py-1.5 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white text-xs rounded-lg hover-lift transition-all"
+            @click.stop="jumpToDate(detectedDate)"
+          >
+            {{ $t('search.jumpNow') }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -216,72 +237,55 @@
       >
         {{ $t('search.clearAll') }}
       </button>
-      <button
-        type="button"
-        @click="applySearch"
-        class="px-6 py-2 bg-gradient-to-r from-[#7D5A36] to-[#6B4A2E] text-white rounded-xl hover-lift transition-all duration-200 font-semibold warm-shadow"
-        aria-label="Apply search filters"
-      >
-        {{ $t('search.applySearch') }}
-      </button>
     </div>
 
     <!-- Results Preview -->
     <div v-if="filteredSummaries.length > 0" class="mt-6">
-      <h3 id="results-preview-title" class="text-lg font-semibold text-[#4E3B2B] mb-4 flex items-center">
-        <span class="mr-2" aria-hidden="true">📋</span>{{ $t('search.previewResults') }} ({{ filteredSummaries.length }})
-      </h3>
-      <DynamicScroller
-        :items="filteredSummaries"
-        :min-item-size="120"
-        class="max-h-80 custom-scrollbar"
-        key-field="date"
-        :buffer="200"
-        role="list"
-        aria-labelledby="results-preview-title"
-      >
-        <template #default="{ item: summary, index, active }">
-          <DynamicScrollerItem
-            :item="summary"
-            :active="active"
-            :size-dependencies="[
-              summary.summary,
-              summary.tags?.length
-            ]"
-            :data-index="index"
-            class="mb-3"
-          >
-            <div
-              class="glass-effect p-4 rounded-lg hover-lift transition-all duration-200 cursor-pointer"
-              role="listitem"
-              tabindex="0"
-              @click="$emit('select-entry', summary)"
-              @keydown.enter="$emit('select-entry', summary)"
-              @keydown.space.prevent="$emit('select-entry', summary)"
-              :aria-label="`Entry from ${formatDateDisplay(summary.date)} with ${summary.mood} mood`"
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="results-preview-title" class="text-lg font-semibold text-[#4E3B2B] flex items-center">
+          <span class="mr-2" aria-hidden="true">📋</span>{{ $t('search.previewResults') }} ({{ filteredSummaries.length }})
+        </h3>
+        <p class="text-xs text-[#7D5A36]/70 italic">{{ $t('search.clickToView') }}</p>
+      </div>
+      <div class="max-h-80 overflow-y-auto custom-scrollbar space-y-3">
+        <div
+          v-for="summary in filteredSummaries"
+          :key="summary.date"
+          class="glass-effect p-4 rounded-lg hover-lift transition-all duration-200 cursor-pointer"
+          role="listitem"
+          tabindex="0"
+          @click="$emit('select-entry', summary)"
+          @keydown.enter="$emit('select-entry', summary)"
+          @keydown.space.prevent="$emit('select-entry', summary)"
+          :aria-label="`Entry from ${formatDateDisplay(summary.date)} with ${summary.mood} mood`"
+        >
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-semibold text-[#4E3B2B]">{{ formatDateDisplay(summary.date) }}</span>
+            <span class="text-2xl" aria-hidden="true">{{ getMoodEmoji(summary.mood) }}</span>
+          </div>
+          <p class="text-sm text-[#7D5A36] line-clamp-2">{{ getPreviewText(summary.summary) }}</p>
+          <div v-if="summary.tags && summary.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
+            <span
+              v-for="tag in summary.tags.slice(0, 3)"
+              :key="tag"
+              class="px-2 py-1 bg-[#7D5A36] bg-opacity-20 text-[#7D5A36] text-xs rounded-full"
+              :aria-label="`Tag: ${tag}`"
             >
-              <div class="flex justify-between items-start mb-2">
-                <span class="font-semibold text-[#4E3B2B]">{{ formatDateDisplay(summary.date) }}</span>
-                <span class="text-2xl" aria-hidden="true">{{ getMoodEmoji(summary.mood) }}</span>
-              </div>
-              <p class="text-sm text-[#7D5A36] line-clamp-2">{{ getPreviewText(summary.summary) }}</p>
-              <div v-if="summary.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
-                <span
-                  v-for="tag in summary.tags.slice(0, 3)"
-                  :key="tag"
-                  class="px-2 py-1 bg-[#7D5A36] bg-opacity-20 text-[#7D5A36] text-xs rounded-full"
-                  :aria-label="`Tag: ${tag}`"
-                >
-                  {{ tag }}
-                </span>
-                <span v-if="summary.tags.length > 3" class="text-xs text-[#7D5A36]">
-                  +{{ summary.tags.length - 3 }} {{ $t('search.moreTags') }}
-                </span>
-              </div>
-            </div>
-          </DynamicScrollerItem>
-        </template>
-      </DynamicScroller>
+              {{ tag }}
+            </span>
+            <span v-if="summary.tags.length > 3" class="text-xs text-[#7D5A36]">
+              +{{ summary.tags.length - 3 }} {{ $t('search.moreTags') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No Results Message -->
+    <div v-else-if="searchInput || localFilters.mood || localFilters.tags.length > 0" class="mt-6 text-center py-8">
+      <div class="text-4xl mb-3">🔍</div>
+      <p class="text-lg font-semibold text-[#4E3B2B] mb-2">{{ $t('search.noResults') }}</p>
+      <p class="text-sm text-[#7D5A36]">{{ $t('search.noEntriesMatch') }}</p>
     </div>
   </div>
 </template>
@@ -292,13 +296,11 @@ import { X, Search } from 'lucide-vue-next'
 import { useSearch } from '@/composables/useSearch'
 import { useModalFocus } from '@/composables/useFocusTrap'
 import CustomDatePicker from './CustomDatePicker.vue'
-import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { formatDateDisplay } from '@/utils/dateFormatters'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const emit = defineEmits(['close', 'apply-search', 'select-entry'])
+const emit = defineEmits(['close', 'apply-search', 'select-entry', 'select-date'])
 
 const {
   searchQuery,
@@ -322,6 +324,79 @@ const localFilters = ref({
 })
 const tagQuery = ref('')
 const activeTagIndex = ref(-1)
+
+// Date detection for quick jump
+const detectedDate = computed(() => {
+  const input = searchInput.value.trim()
+  if (!input) return null
+
+  // Try to parse various date formats
+  // Format 1: YYYY-MM-DD (e.g., 2025-01-15)
+  const isoMatch = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (isValidDate(date)) return date
+  }
+
+  // Format 2: MM/DD/YYYY or M/D/YYYY (e.g., 1/15/2025)
+  const slashMatch = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (slashMatch) {
+    const [, month, day, year] = slashMatch
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (isValidDate(date)) return date
+  }
+
+  // Format 3: YYYY/MM/DD
+  const slashMatch2 = input.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/)
+  if (slashMatch2) {
+    const [, year, month, day] = slashMatch2
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (isValidDate(date)) return date
+  }
+
+  // Format 4: Chinese format like "1月15日" or "1月15"
+  const chineseMatch = input.match(/^(\d{1,2})月(\d{1,2})日?$/)
+  if (chineseMatch) {
+    const [, month, day] = chineseMatch
+    const year = new Date().getFullYear()
+    const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (isValidDate(date)) return date
+  }
+
+  // Format 5: "today", "今天"
+  if (input.toLowerCase() === 'today' || input === '今天') {
+    const today = new Date()
+    return today.toISOString().split('T')[0]
+  }
+
+  // Format 6: "yesterday", "昨天"
+  if (input.toLowerCase() === 'yesterday' || input === '昨天') {
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    return yesterday.toISOString().split('T')[0]
+  }
+
+  return null
+})
+
+const isValidDate = (dateString: string): boolean => {
+  const date = new Date(dateString)
+  return date instanceof Date && !isNaN(date.getTime())
+}
+
+const jumpToDate = (dateString: string) => {
+  emit('select-date', dateString)
+  emit('close')
+}
+
+const handleSearchEnter = () => {
+  if (detectedDate.value) {
+    jumpToDate(detectedDate.value)
+  } else {
+    applySearch()
+  }
+}
 
 const matchingTags = computed(() => {
   const query = tagQuery.value.trim().toLowerCase()
@@ -352,7 +427,7 @@ watch(tagQuery, value => {
 })
 
 const applySearch = () => {
-  // Apply local filters to the actual search
+  // Apply local filters to the actual search immediately for real-time preview
   searchQuery.value = searchInput.value
   searchFilters.value = {
     dateRange: { ...localFilters.value.dateRange },
@@ -361,6 +436,20 @@ const applySearch = () => {
     hasMedia: localFilters.value.hasMedia
   }
 }
+
+// Watch for changes in local input and apply immediately for preview
+watch(searchInput, () => {
+  applySearch()
+})
+
+watch(localFilters, () => {
+  applySearch()
+}, { deep: true })
+
+// Debug: log filtered summaries when they change
+watch(filteredSummaries, (newVal) => {
+  console.log('Filtered summaries:', newVal.length, newVal)
+}, { immediate: true })
 
 const resolveTagName = (input: string) => {
   const normalized = input.trim().toLowerCase()
@@ -524,5 +613,17 @@ const searchHint = computed(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Remove wave pattern from select, keep only dropdown arrow */
+#mood-filter.themed-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%237D5A36' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: calc(100% - 1rem) 50% !important;
+  background-size: 14px 8px !important;
+}
+
+:global(.theme-dark) #mood-filter.themed-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23D4A574' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") !important;
 }
 </style>

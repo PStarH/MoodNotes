@@ -66,6 +66,7 @@ import zoomPlugin from 'chartjs-plugin-zoom'
 import { useStore } from 'vuex'
 import { DaySummary } from '@/store/types'
 import { useI18n } from 'vue-i18n'
+import { countWordsInHtml } from '@/utils/wordCount'
 
 const { t, locale } = useI18n()
 
@@ -104,14 +105,9 @@ const resetZoom = () => {
     }
 }
 
-// Optimized: Helper function to count words - use DOMParser instead of createElement
+// Optimized: Helper function to count words - supports both English and Chinese
 const getWordCount = (html: string): number => {
-    if (!html) return 0
-    // Use DOMParser for better performance than createElement
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const text = doc.body.textContent || doc.body.innerText || ''
-    return text.split(/\s+/).filter(word => word.length > 0).length
+    return countWordsInHtml(html)
 }
 
 // Optimization: Create Map for O(1) lookups and cache word counts

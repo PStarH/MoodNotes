@@ -29,44 +29,44 @@
             </router-link>
           </li>
           <li class="mb-3">
-            <a
-              href="#"
-              class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+            <button
+              type="button"
               @click="openCalendar"
+              class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
             >
               <Calendar class="mr-3" :size="20" />
               <span class="font-medium">{{ $t('nav.calendar') }}</span>
-            </a>
+            </button>
           </li>
           <li class="mb-3">
-            <a
-              href="#"
-              class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+            <button
+              type="button"
               @click="openHabits"
+              class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
             >
               <BookOpen class="mr-3" :size="20" />
               <span class="font-medium">{{ $t('nav.habits') }}</span>
-            </a>
+            </button>
           </li>
           <li class="mb-3">
-            <a
-              href="#"
-              class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+            <button
+              type="button"
               @click="isSearchPanelOpen = true"
+              class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
             >
               <Search class="mr-3" :size="20" />
               <span class="font-medium">{{ $t('nav.search') }}</span>
-            </a>
+            </button>
           </li>
           <li>
-            <a
-              href="#"
-              class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
+            <button
+              type="button"
               @click="isBackupPanelOpen = true"
+              class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
             >
               <Download class="mr-3" :size="20" />
               <span class="font-medium">{{ $t('nav.backup') }}</span>
-            </a>
+            </button>
           </li>
         </ul>
       </nav>
@@ -196,13 +196,13 @@
                 </button>
             </div>
             <div class="flex justify-between items-center mb-4">
-                <button @click="prevMonth" class="bg-transparent border-0 cursor-pointer p-2 hover:bg-[#7D5A36]/10 rounded-lg transition-colors">
+                <button type="button" @click="prevMonth" class="bg-transparent border-0 cursor-pointer p-2 hover:bg-[#7D5A36]/10 rounded-lg transition-colors">
                     <ChevronLeft :size="24" class="text-[#7D5A36]" />
                 </button>
                 <span class="font-bold text-xl text-[#4E3B2B]">
                     {{ currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }) }}
                 </span>
-                <button @click="nextMonth" class="bg-transparent border-0 cursor-pointer p-2 hover:bg-[#7D5A36]/10 rounded-lg transition-colors">
+                <button type="button" @click="nextMonth" class="bg-transparent border-0 cursor-pointer p-2 hover:bg-[#7D5A36]/10 rounded-lg transition-colors">
                     <ChevronRight :size="24" class="text-[#7D5A36]" />
                 </button>
             </div>
@@ -253,14 +253,14 @@
                         class="bg-[#F0E9D2] p-4 rounded-lg shadow-md">
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-medium text-[#4E3B2B]">{{ habit.name }}</span>
-                            <button @click="editHabit(habit)" class="text-[#7D5A36] hover:text-opacity-80">
+                            <button type="button" @click="editHabit(habit)" class="text-[#7D5A36] hover:text-opacity-80">
                                 <Edit2 :size="20" />
                             </button>
                         </div>
                         <p class="text-[#7D5A36] mt-2">{{ habit.description }}</p>
                     </div>
                 </div>
-                <button @click="openHabitModal"
+                <button type="button" @click="openHabitModal"
                     class="mt-4 bg-[#7D5A36] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center">
                     <Plus :size="20" class="mr-2" />
                     {{ $t('habit.addHabit') }}
@@ -645,7 +645,7 @@ const activeHabits = computed(() => habits.value.length)
 
 // Methods
 const navigateToHabits = () => {
-  router.push('/')
+  isHabitPopupOpen.value = true
 }
 
 const handleSelectEntry = (entry: any) => {

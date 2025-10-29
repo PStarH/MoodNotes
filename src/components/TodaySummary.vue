@@ -132,6 +132,7 @@
 import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useI18n } from 'vue-i18n'
+import { countWordsInHtml } from '@/utils/wordCount'
 import type { DaySummary, Habit } from '@/store/types'
 
 const emit = defineEmits(['open-entry', 'open-habits', 'view-insights'])
@@ -206,8 +207,7 @@ const hasIncompleteHabits = computed(() => {
 // Words data
 const wordCount = computed(() => {
   if (!todaySummary.value?.summary) return 0
-  const text = todaySummary.value.summary.replace(/<[^>]*>/g, '').trim()
-  return text.split(/\s+/).filter(word => word.length > 0).length
+  return countWordsInHtml(todaySummary.value.summary)
 })
 
 const wordCountDescription = computed(() => {

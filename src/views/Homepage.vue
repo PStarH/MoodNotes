@@ -33,32 +33,44 @@
                         </router-link>
                     </li>
                     <li class="mb-3">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
-                            @click="openCalendar">
+                        <button
+                            type="button"
+                            @click="openCalendar"
+                            class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
+                        >
                             <Calendar class="mr-3" :size="20" />
                             <span class="font-medium">{{ $t('nav.calendar') }}</span>
-                        </a>
+                        </button>
                     </li>
                     <li class="mb-3">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
-                            @click="isHabitPopupOpen = true">
+                        <button
+                            type="button"
+                            @click="isHabitPopupOpen = true"
+                            class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
+                        >
                             <BookOpen class="mr-3" :size="20" />
                             <span class="font-medium">{{ $t('nav.habits') }}</span>
-                        </a>
+                        </button>
                     </li>
                     <li class="mb-3">
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
-                            @click="isSearchPanelOpen = true">
+                        <button
+                            type="button"
+                            @click="isSearchPanelOpen = true"
+                            class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
+                        >
                             <Search class="mr-3" :size="20" />
                             <span class="font-medium">{{ $t('nav.search') }}</span>
-                        </a>
+                        </button>
                     </li>
                     <li>
-                        <a href="#" class="text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0]"
-                            @click="isBackupPanelOpen = true">
+                        <button
+                            type="button"
+                            @click="isBackupPanelOpen = true"
+                            class="w-full text-left text-[#4E3B2B] no-underline flex items-center p-3 rounded-lg hover-lift transition-all duration-200 hover:bg-[#FAF3E0] bg-transparent border-0 cursor-pointer"
+                        >
                             <Download class="mr-3" :size="20" />
                             <span class="font-medium">{{ $t('nav.backup') }}</span>
-                        </a>
+                        </button>
                     </li>
                 </ul>
             </nav>
@@ -337,7 +349,7 @@
                                 <span>🔥</span>
                                 {{ $t('home.habitHighlight') }}
                             </h3>
-                            <button @click="isHabitPopupOpen = true" class="text-xs font-semibold text-[#7D5A36] hover:underline">
+                            <button type="button" @click="isHabitPopupOpen = true" class="text-xs font-semibold text-[#7D5A36] hover:underline">
                                 {{ $t('home.manage') }}
                             </button>
                         </div>
@@ -787,13 +799,13 @@
 
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2.5">
-                        <button @click="prevMonth" class="bg-transparent border-0 cursor-pointer">
+                        <button type="button" @click="prevMonth" class="bg-transparent border-0 cursor-pointer">
                             <ChevronLeft :color="iconColor" :size="24" />
                         </button>
                         <span class="font-bold text-themed">
                             {{ currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }) }}
                         </span>
-                        <button @click="nextMonth" class="bg-transparent border-0 cursor-pointer">
+                        <button type="button" @click="nextMonth" class="bg-transparent border-0 cursor-pointer">
                             <ChevronRight :color="iconColor" :size="24" />
                         </button>
                     </div>
@@ -805,7 +817,7 @@
                         <template v-for="(day, index) in calendarDays" :key="index">
                             <div v-if="day.type === 'day'" class="calendar-day"
                                 :class="{ 'last-year-anniversary': day.isLastYearAnniversary }"
-                                :style="{ backgroundColor: day.emotion.color || '#FFFFFF' }"
+                                :style="{ backgroundColor: getCalendarDayColor(day.emotion.color) }"
                                 @click="handleDayClick(day.date)">
                                 <div v-if="day.isLastYearAnniversary" class="anniversary-badge">🕰️</div>
                                 <div class="emotion-icon">{{ day.emotion.emoji }}</div>
@@ -852,14 +864,14 @@
                             class="bg-[#F0E9D2] p-4 rounded-lg shadow-md">
                             <div class="flex justify-between items-center">
                                 <span class="text-lg font-medium text-[#4E3B2B]">{{ habit.name }}</span>
-                                <button @click="openEditHabitModal(habit)" class="text-[#7D5A36] hover:text-opacity-80">
+                                <button type="button" @click="openEditHabitModal(habit)" class="text-[#7D5A36] hover:text-opacity-80">
                                     <Edit2 :size="20" />
                                 </button>
                             </div>
                             <p class="text-[#7D5A36] mt-2">{{ habit.description }}</p>
                         </div>
                     </div>
-                    <button @click="openAddHabitModal"
+                    <button type="button" @click="openAddHabitModal"
                         class="mt-4 glass-effect border border-themed px-4 py-2 rounded-md hover-lift transition-all flex items-center font-semibold"
                         style="color: var(--color-text);">
                         <Plus :size="20" class="mr-2" />
@@ -903,7 +915,11 @@
         <!-- Search Panel -->
     <div v-if="isSearchPanelOpen" class="fixed inset-0 modal-backdrop flex items-start justify-center z-50 overflow-y-auto py-8" role="presentation">
             <div class="w-full mx-4" style="max-width: min(1200px, 95vw);">
-                <SearchPanel @close="isSearchPanelOpen = false" @select-entry="handleSelectEntry" />
+                <SearchPanel 
+                    @close="isSearchPanelOpen = false" 
+                    @select-entry="handleSelectEntry"
+                    @select-date="handleSelectDate"
+                />
             </div>
         </div>
 
@@ -973,6 +989,7 @@ import { useI18n } from 'vue-i18n'
 import { Calendar, Clock, BookOpen, List, Plus, Camera, Video, ChevronLeft, ChevronRight, ChevronDownIcon, X, CheckCircle2, XCircle, FileText, Edit2, Search, Download, Upload, RefreshCcw, BarChart3, Settings, Trash2 } from 'lucide-vue-next'
 import DOMPurify from 'dompurify'
 import { formatDate, formatRelativeTime, formatDateLong } from '@/utils/dateFormatters'
+import { countWordsInHtml } from '@/utils/wordCount'
 import DaySummary from './DaySummary.vue'
 import SummaryCard from '../components/SummaryCard.vue'
 import SearchPanel from '../components/SearchPanel.vue'
@@ -1269,6 +1286,38 @@ const mapMoodToEmotion = (mood: string): EmotionDetails => {
     }
 }
 
+// Get calendar day background color adjusted for theme
+const getCalendarDayColor = (originalColor: string): string => {
+    // If no color (empty day), use CSS variable
+    if (!originalColor || originalColor === '#FFFFFF') {
+        return 'var(--color-surface)'
+    }
+    
+    // Check if dark mode is active by checking the theme-dark class
+    const isDarkMode = document.documentElement.classList.contains('theme-dark')
+    
+    // In dark mode, adjust the colors to be darker/more suitable
+    if (isDarkMode) {
+        switch (originalColor) {
+            case '#FFD700': // happy (gold)
+                return '#B8860B' // darker gold
+            case '#ADD8E6': // neutral (light blue)
+                return '#4682B4' // steel blue
+            case '#DDA0DD': // sad (plum)
+                return '#9370DB' // medium purple
+            case '#98FB98': // excited (pale green)
+                return '#3CB371' // medium sea green
+            case '#FF6347': // angry (tomato)
+                return '#CD5C5C' // indian red
+            default:
+                return 'var(--color-surface)'
+        }
+    }
+    
+    // Light mode: use original colors
+    return originalColor
+}
+
 // Utility function to strip HTML tags for safe display
 const stripHtml = (html: string): string => {
     // Sanitize HTML first to prevent XSS attacks
@@ -1280,9 +1329,7 @@ const stripHtml = (html: string): string => {
 
 // Get word count from HTML content
 const getWordCount = (html: string): number => {
-    if (!html) return 0
-    const text = stripHtml(html)
-    return text.split(/\s+/).filter(word => word.length > 0).length
+    return countWordsInHtml(html)
 }
 
 const completedHabitCount = (habits: DaySummaryHabit[] = []) => {
@@ -1763,7 +1810,15 @@ const testClick = () => {
 const handleSelectEntry = (summary: DaySummaryEntry) => {
     selectedDate.value = summary.date
     isDaySummaryFormOpen.value = true
-    isSearchPanelOpen.value = false
+    // Don't close search panel - it will stay in background
+    // isSearchPanelOpen.value = false
+}
+
+const handleSelectDate = (dateString: string) => {
+    selectedDate.value = dateString
+    isDaySummaryFormOpen.value = true
+    // Don't close search panel - it will stay in background
+    // isSearchPanelOpen.value = false
 }
 
 // Setup keyboard shortcuts
@@ -1852,7 +1907,7 @@ const maxWordsPerEntry = computed(() => {
     let max = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            const wordCount = summary.summary.split(/\s+/).filter(word => word.length > 0).length
+            const wordCount = countWordsInHtml(summary.summary)
             if (wordCount > max) {
                 max = wordCount
             }
@@ -1880,7 +1935,7 @@ const numberOfWordsInDiary = computed(() => {
     let totalWords = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            totalWords += summary.summary.split(/\s+/).filter(word => word.length > 0).length
+            totalWords += countWordsInHtml(summary.summary)
         }
     })
     return totalWords
@@ -1894,7 +1949,7 @@ const cumulativeDiaryWords = computed(() => {
     let total = 0
     daySummaries.value.forEach(summary => {
         if (summary.summary) {
-            total += summary.summary.split(/\s+/).filter(word => word.length > 0).length
+            total += countWordsInHtml(summary.summary)
         }
     })
     return total
@@ -1913,7 +1968,7 @@ const accumulatedRecord = computed(() => {
 const accumulatedWordCount = computed(() => {
     return daySummaries.value.reduce((acc, summary) => {
         if (summary.summary) {
-            return acc + summary.summary.split(/\s+/).filter(word => word.length > 0).length
+            return acc + countWordsInHtml(summary.summary)
         }
         return acc
     }, 0)

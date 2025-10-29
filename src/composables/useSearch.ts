@@ -2,6 +2,7 @@ import { ref, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import { DaySummary } from '@/store/types'
 import { useDebounce } from './usePerformance'
+import { countWordsInHtml } from '@/utils/wordCount'
 
 export function useSearch() {
   const store = useStore()
@@ -96,7 +97,7 @@ export function useSearch() {
     const filtered = filteredSummaries.value
     const totalWords = filtered.reduce((sum, summary) => {
       if (!summary.summary) return sum
-      return sum + summary.summary.split(/\s+/).filter(word => word.length > 0).length
+      return sum + countWordsInHtml(summary.summary)
     }, 0)
 
     const tagSet = new Set<string>()

@@ -43,6 +43,14 @@ export interface MediaItem {
   url: string
   filename?: string // Optional filename for new media system
   id?: string // Optional ID for new media system
+  size?: number
+  checksum?: string
+  createdAt?: string
+  storageKey?: string
+  integrity?: {
+    ok: boolean
+    reason?: string
+  }
 }
 
 export interface DaySummary {

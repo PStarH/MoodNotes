@@ -13,6 +13,7 @@
                 <p class="text-sm text-[#7D5A36]/80 mt-1">{{ $t('habitCompletion.subtitle') }}</p>
             </div>
             <button
+                type="button"
                 @click="$emit('manage-habits')"
                 class="text-xs font-semibold text-[#7D5A36] hover:underline"
                 aria-label="Manage habits"

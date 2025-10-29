@@ -11,6 +11,7 @@ import {
   HabitStatus
 } from './types'
 import { handleStorageError } from '@/utils/storageErrorHandler'
+import { countWordsInHtml } from '@/utils/wordCount'
 
 localforage.config({
   name: 'MoodsNote',
@@ -37,7 +38,16 @@ const isMediaItem = (obj: any): obj is MediaItem => {
     typeof obj === 'object' &&
     obj !== null &&
     typeof obj.type === 'string' &&
-    typeof obj.url === 'string'
+    typeof obj.url === 'string' &&
+    (obj.size === undefined || typeof obj.size === 'number') &&
+    (obj.checksum === undefined || typeof obj.checksum === 'string') &&
+    (obj.createdAt === undefined || typeof obj.createdAt === 'string') &&
+    (obj.storageKey === undefined || typeof obj.storageKey === 'string') &&
+    (obj.integrity === undefined || (
+      typeof obj.integrity === 'object' && obj.integrity !== null &&
+      typeof obj.integrity.ok === 'boolean' &&
+      (obj.integrity.reason === undefined || typeof obj.integrity.reason === 'string')
+    ))
   )
 }
 
@@ -725,7 +735,7 @@ const store: StoreOptions<State> = {
           return date.getFullYear() === year && date.getMonth() === month
         })
         .reduce((total, summary) => {
-          const wordCount = summary.summary ? summary.summary.split(/\s+/).filter(word => word.length > 0).length : 0
+          const wordCount = summary.summary ? countWordsInHtml(summary.summary) : 0
           return total + wordCount
         }, 0)
     },
