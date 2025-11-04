@@ -36,13 +36,25 @@ function createWindow() {
 
   const startURL = process.env.VITE_DEV_SERVER_URL
     ? process.env.VITE_DEV_SERVER_URL
-    : `file://${path.join(__dirname, '../dist/index.html')}`;
+    : `file://${path.join(__dirname, '../../dist/index.html')}`;
+
+  console.log('Loading URL:', startURL);
+  console.log('__dirname:', __dirname);
+  console.log('Is packaged:', app.isPackaged);
+
   mainWindow.loadURL(startURL);
 
-  // Open DevTools if in development mode
-  if (!app.isPackaged) {
-    mainWindow.webContents.openDevTools();
-  }
+  // Always open DevTools in production for debugging (temporary)
+  mainWindow.webContents.openDevTools();
+
+  // Log when page loads
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Page finished loading');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('Failed to load:', errorCode, errorDescription);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

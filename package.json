@@ -26,7 +26,6 @@
     "offline",
     "privacy"
   ],
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run vite\" \"cross-env VITE_DEV_SERVER_URL=http://localhost:3000 npm run electron\"",
     "vite": "vite",
@@ -90,6 +89,9 @@
     "directories": {
       "output": "dist-electron",
       "buildResources": "build-resources"
+    },
+    "extraMetadata": {
+      "main": "electron/dist/main.js"
     },
     "files": [
       "dist/**/*",

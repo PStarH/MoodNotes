@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -13,12 +14,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: true,
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true,
+        drop_console: false,
+        drop_debugger: false,
       },
     },
     rollupOptions: {
@@ -35,8 +36,7 @@ export default defineConfig({
         }
       },
     },
-    chunkSizeWarningLimit: 1000,
-    base: './',
+    chunkSizeWarningLimit: 1000
   },
   server: {
     host: 'localhost',

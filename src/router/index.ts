@@ -30,10 +30,10 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 // Use hash history for Electron (file:// protocol), web history for web
-// Check if running in Electron environment
-const isElectron = typeof window !== 'undefined' && (window as any).process?.type === 'renderer'
+// Check if running with file:// protocol (Electron production)
+const isFileProtocol = typeof window !== 'undefined' && window.location.protocol === 'file:'
 const router = createRouter({
-  history: isElectron ? createWebHashHistory() : createWebHistory(),
+  history: isFileProtocol ? createWebHashHistory() : createWebHistory(),
   routes
 })
 

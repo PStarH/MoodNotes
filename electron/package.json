@@ -1,6 +1,7 @@
 {
   "name": "moodsnote-electron",
   "version": "1.0.0",
+  "type": "commonjs",
   "main": "dist/main.js",
   "scripts": {
     "start": "tsc && electron .",
