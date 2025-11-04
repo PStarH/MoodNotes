@@ -1043,15 +1043,70 @@ const revealMedia = async (item: MediaItem) => {
 
 // Define helper functions first
 const updateQuillContent = (newContent: string) => {
-    if (quillInstance.value) {
+    if (!quillInstance.value) return
+
+    // Don't update if Quill isn't fully ready yet
+    if (!isQuillReady.value) {
+        console.warn('Quill not ready yet, skipping content update')
+        return
+    }
+
+    // Check if Quill is fully initialized
+    if (!quillInstance.value.root || !quillInstance.value.scroll) {
+        console.warn('Quill not fully initialized, skipping content update')
+        return
+    }
+
+    try {
         // Sanitize HTML before updating to prevent XSS attacks
         const sanitized = DOMPurify.sanitize(newContent)
-        const currentContent = quillInstance.value.root.innerHTML
+        const currentContent = quillInstance.value.root?.innerHTML || ''
+
         if (currentContent !== sanitized) {
+            // Set flag to prevent text-change handler from firing
+            isUpdatingProgrammatically.value = true
+
+            // Save current selection/cursor position (safely)
+            let selection = null
+            try {
+                selection = quillInstance.value.getSelection()
+            } catch (e) {
+                // Selection retrieval failed, continue without it
+                console.warn('Could not get Quill selection:', e)
+            }
+
             // Use Quill's clipboard API for safer content insertion
             const delta = quillInstance.value.clipboard.convert({ html: sanitized })
-            quillInstance.value.setContents(delta)
+            quillInstance.value.setContents(delta, 'silent')
+
+            // Restore cursor position if it existed and is valid
+            if (selection && selection.index !== null && selection.index !== undefined) {
+                // Use nextTick to ensure DOM is updated before restoring selection
+                nextTick(() => {
+                    try {
+                        const maxLength = quillInstance.value?.getLength() || 0
+                        const safeIndex = Math.min(selection.index, maxLength - 1)
+                        if (safeIndex >= 0 && quillInstance.value) {
+                            quillInstance.value.setSelection(safeIndex, 0, 'silent')
+                        }
+                    } catch (e) {
+                        // Selection restore failed, ignore
+                        console.warn('Could not restore Quill selection:', e)
+                    }
+                })
+            }
+
+            // Reset flag after a short delay to allow any pending updates to complete
+            nextTick(() => {
+                setTimeout(() => {
+                    isUpdatingProgrammatically.value = false
+                }, 50)
+            })
         }
+    } catch (error) {
+        console.error('Error updating Quill content:', error)
+        isUpdatingProgrammatically.value = false
+        // Silently fail to prevent breaking the UI
     }
 }
 
@@ -1146,24 +1201,39 @@ watch(currentDate, (newDate) => {
     }
 })
 
-watch(daySummary, (newSummary) => {
-    if (newSummary) {
-        content.value = newSummary.summary
-        updateQuillContent(content.value)
-    } else {
-        content.value = ''
-        updateQuillContent('')
-    }
-})
-
 const quillInstance = ref<Quill | null>(null)
+const isUpdatingProgrammatically = ref(false)
+const isQuillReady = ref(false)
+
+// Define the text-change handler separately so we can reference it
+const handleQuillTextChange = () => {
+    // Skip if this change came from programmatic update
+    if (isUpdatingProgrammatically.value) {
+        return
+    }
+
+    try {
+        if (quillInstance.value?.root) {
+            content.value = quillInstance.value.root.innerHTML || ''
+            debouncedChangeCheck()
+        }
+    } catch (error) {
+        console.error('Error in Quill text-change handler:', error)
+        // Silently fail to prevent breaking the UI
+    }
+}
 
 const initializeQuill = async () => {
     if (quillInstance.value) return // Already initialized
 
     await nextTick() // Ensure the DOM is updated
 
-    if (!quillEditor.value) return
+    if (!quillEditor.value) {
+        console.warn('Quill editor element not found, retrying...')
+        // Retry after a short delay
+        setTimeout(() => initializeQuill(), 100)
+        return
+    }
 
     isQuillLoading.value = true
 
@@ -1175,6 +1245,9 @@ const initializeQuill = async () => {
         ])
 
         const Quill = QuillModule.default
+
+        // Ensure the DOM element is ready
+        await nextTick()
 
         quillInstance.value = new Quill(quillEditor.value, {
             theme: 'snow',
@@ -1193,18 +1266,35 @@ const initializeQuill = async () => {
                     [{ 'font': [] }],
                     [{ 'align': [] }],
                     ['clean']
-                ]
-            }
+                ],
+                clipboard: {
+                    matchVisual: false // Prevent formatting issues
+                }
+            },
+            placeholder: t('daySummary.editorPlaceholder') || 'Write your thoughts here...'
         });
 
-        quillInstance.value.on('text-change', () => {
-            content.value = quillInstance.value?.root.innerHTML || ''
-            debouncedChangeCheck() // Track changes when content changes
-        })
+        // Add a small delay before attaching event handlers to ensure Quill is fully ready
+        await nextTick()
 
+        // Use the separate handler function for text-change events
+        quillInstance.value.on('text-change', handleQuillTextChange)
+
+        // Set initial content DIRECTLY (don't use updateQuillContent yet)
         if (content.value) {
-            updateQuillContent(content.value)
+            try {
+                const sanitized = DOMPurify.sanitize(content.value)
+                const delta = quillInstance.value.clipboard.convert({ html: sanitized })
+                quillInstance.value.setContents(delta, 'silent')
+            } catch (e) {
+                console.error('Failed to set initial Quill content:', e)
+            }
         }
+
+        // Mark Quill as ready AFTER everything is set up
+        await nextTick()
+        isQuillReady.value = true
+
     } catch (error) {
         console.error('Failed to load Quill editor:', error)
         toast.error('Failed to load rich text editor. Please refresh the page.', 'Editor Error')
@@ -1245,24 +1335,12 @@ onMounted(async () => {
 
 // Watch for changes in all reactive data to track unsaved changes
 watch([mood, weather, () => JSON.stringify(habits.value), dailyCheck, comfortZoneEntry, 
-       () => JSON.stringify(customSections.value), () => JSON.stringify(tags.value), 
-       () => JSON.stringify(sparks.value), () => JSON.stringify(goalReflections.value), 
-       () => JSON.stringify(media.value)], 
-    debouncedChangeCheck, 
+       () => JSON.stringify(customSections.value), () => JSON.stringify(tags.value),
+       () => JSON.stringify(sparks.value), () => JSON.stringify(goalReflections.value),
+       () => JSON.stringify(media.value)],
+    debouncedChangeCheck,
     { deep: true }
 )
-
-watch(() => daySummary.value, async (newSummary) => {
-    if (newSummary) {
-        content.value = newSummary.summary || ''
-        await nextTick()
-        updateQuillContent(content.value)
-    } else {
-        content.value = ''
-        await nextTick()
-        updateQuillContent('')
-    }
-})
 
 const cycleHabitStatus = async (habit: DaySummaryHabit, status: 'did' | 'partial' | 'not') => {
     const newStatus = habit.status === status ? null : status
@@ -1601,13 +1679,20 @@ onUnmounted(() => {
         clearTimeout(changeCheckTimeout)
         changeCheckTimeout = null
     }
-    
-    if (quillInstance.value) {
-        // Properly remove event listeners before destroying
-        quillInstance.value.off('text-change')
 
-        // Clear the instance reference
-        quillInstance.value = null
+    if (quillInstance.value) {
+        try {
+            // Mark as not ready
+            isQuillReady.value = false
+
+            // Properly remove event listeners before destroying
+            quillInstance.value.off('text-change', handleQuillTextChange)
+
+            // Clear the instance reference
+            quillInstance.value = null
+        } catch (error) {
+            console.error('Error cleaning up Quill instance:', error)
+        }
     }
 })
 </script>

@@ -529,6 +529,7 @@ export default {
   noAttachments: '尚未添加附件，试着上传图片、视频或音频记录今天的瞬间。',
     comfortZone: '舒适区探索',
     comfortZonePlaceholder: '今天有哪些新尝试？写下突破与感受',
+    editorPlaceholder: '在这里写下你的想法...',
     customSection: '自定义区块',
     addCustomSection: '+ 新增自定义区块',
     sectionTitle: '区块标题',
@@ -545,7 +546,8 @@ export default {
     lastYearMood: '当时心情',
     reflecting: '回望过去，见证成长 🌱',
     clickToEdit: '点击查看和编辑',
-    stress: '压力'
+    stress: '压力',
+    productivity: '效率'
   },  // 任务
   task: {
     priority: {
