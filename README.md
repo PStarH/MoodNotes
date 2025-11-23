@@ -2,20 +2,27 @@
   <img src="./public/icon.png" alt="MoodsNote Icon" width="120" />
 </div>
 
-# 晨暮日记 MoodsNote · v1.0.0
+# MoodsNote 晨暮日记
 
 <div align="center">
+
+**开源、本地优先、注重隐私的跨平台日记应用**
 
 简体中文 | [English](./README.en.md)
 
 </div>
 
-让日常的光影与心绪，有一处可以安放的地方。
+> 让日常的光影与心绪，有一处可以安放的地方。
 
 ![Stars](https://img.shields.io/github/stars/PStarH/MoodsNote?style=social)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Electron](https://img.shields.io/badge/Electron-33-blue?logo=electron)
+![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)
 
-晨暮日记是一款基于 Vue 3 + Vite 与 Electron 打造的本地优先日记应用。它把「写下来」这件事变得温柔、顺手而有力量：从每日小结、灵感速记，到情绪趋势、习惯打卡与可视化洞察；从离线保存到一键备份/导入，重要的不是功能本身，而是你与生活之间更真诚的对话。
+**MoodsNote 晨暮日记** 是一款基于 **Vue 3** + **Vite** + **Electron** 构建的现代化**开源日记应用**。它坚持**本地优先（Local-First）**的设计理念，确保您的数据完全掌握在自己手中。无论是每日复盘、灵感速记，还是情绪追踪、习惯打卡，MoodsNote 都能为您提供流畅、安全且富有洞察力的写作体验。
+
+它把「写下来」这件事变得温柔、顺手而有力量：从每日小结、灵感速记，到情绪趋势、习惯打卡与可视化洞察；从离线保存到一键备份/导入，重要的不是功能本身，而是你与生活之间更真诚的对话。
 
 —— 写给认真生活的人。
 

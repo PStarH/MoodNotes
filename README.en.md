@@ -2,7 +2,7 @@
   <img src="./public/icon.png" alt="MoodsNote Icon" width="120" />
 </div>
 
-# MoodsNote · v1.0.0
+# MoodsNote - Open Source Local-First Journal App
 
 <div align="center">
 
@@ -10,12 +10,17 @@
 
 </div>
 
-Let your days and moods have a warm place to rest.
+> Let your days and moods have a warm place to rest.
 
 ![Stars](https://img.shields.io/github/stars/PStarH/MoodsNote?style=social)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Electron](https://img.shields.io/badge/Electron-33-blue?logo=electron)
+![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)
 
-MoodsNote is a local-first journaling app built with Vue 3 + Vite and Electron. It turns "writing it down" into something gentle, effortless, and powerful: daily summaries and sparks, mood trends and habit insights, offline storage with one-click backup/import. What matters isn't the features—it's the honest conversation between you and your life.
+**MoodsNote** is a modern **open-source journaling app** built with **Vue 3** + **Vite** + **Electron**. It adheres to a **Local-First** design philosophy, ensuring your data remains completely in your control. Whether for daily reviews, quick inspiration capture, mood tracking, or habit building, MoodsNote provides a smooth, secure, and insightful writing experience.
+
+It turns "writing it down" into something gentle, effortless, and powerful: daily summaries and sparks, mood trends and habit insights, offline storage with one-click backup/import. What matters isn't the features—it's the honest conversation between you and your life.
 
 — For those who live with intention.
 
