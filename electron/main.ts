@@ -40,6 +40,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // Disable Node.js integration for security
       contextIsolation: true, // Enable context isolation for security
+      devTools: !app.isPackaged, // Disable DevTools in production builds
     },
   });
 
@@ -56,6 +57,13 @@ function createWindow() {
   // Log when page loads
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('Page finished loading');
+    // Notify renderer that we're running a packaged build so it can
+    // enforce first-run defaults (e.g. theme) when appropriate.
+    try {
+      mainWindow?.webContents.send('fromMain', { type: 'app:packaged', isPackaged: app.isPackaged });
+    } catch (e) {
+      console.warn('Failed to notify renderer about packaged state', e);
+    }
   });
 
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
@@ -70,6 +78,19 @@ function createWindow() {
       mainWindow?.hide();
     }
   });
+
+  // Prevent opening DevTools via keyboard shortcuts in packaged builds
+  // (App Review reported developers' panel being visible when opening the DMG)
+  if (app.isPackaged) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      const isF12 = input.code === 'F12'
+      const isToggleDevTools = (input.key === 'I' || input.key === 'i') && (input.control || input.meta) && (input.shift || input.alt)
+
+      if (isF12 || isToggleDevTools) {
+        event.preventDefault()
+      }
+    });
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -135,38 +156,39 @@ function createMenu() {
     // Window menu
     {
       label: 'Window',
+      role: 'window' as const,
       submenu: [
         { role: 'minimize' as const },
         { role: 'zoom' as const },
-        { type: 'separator' as const },
-        {
-          label: 'Show Main Window',
-          accelerator: 'CmdOrCtrl+0',
-          click: () => {
-            if (mainWindow) {
-              if (mainWindow.isMinimized()) {
-                mainWindow.restore();
-              }
-              mainWindow.show();
-              mainWindow.focus();
-            } else {
-              createWindow();
-            }
-          }
-        },
-        { type: 'separator' as const },
         ...(isMac ? [
+          { type: 'separator' as const },
           { role: 'front' as const },
           { type: 'separator' as const },
-          { role: 'window' as const }
+          {
+            label: 'MoodsNote',
+            accelerator: 'CmdOrCtrl+0',
+            click: () => {
+              if (mainWindow) {
+                if (mainWindow.isMinimized()) {
+                  mainWindow.restore();
+                }
+                mainWindow.show();
+                mainWindow.focus();
+              } else {
+                createWindow();
+              }
+            }
+          }
         ] : [
+          { type: 'separator' as const },
           { role: 'close' as const }
         ])
       ]
     },
-    // Help menu
+    // Help menu (explicit label + role to ensure macOS shows items)
     {
       label: 'Help',
+      role: 'help',
       submenu: [
         {
           label: 'Report an Issue',
@@ -178,6 +200,13 @@ function createMenu() {
           label: 'View Documentation',
           click: async () => {
             await shell.openExternal('https://github.com/PStarH/MoodNotes#readme');
+          }
+        },
+        { type: 'separator' as const },
+        {
+          label: 'MoodsNote Support',
+          click: async () => {
+            await shell.openExternal('https://github.com/PStarH/MoodNotes');
           }
         }
       ]

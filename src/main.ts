@@ -68,3 +68,24 @@ Promise.all([
 console.log('Mounting app...')
 app.mount('#app')
 console.log('App mounted successfully')
+
+// Listen to messages from the main process for packaged-run adjustments
+if (typeof window !== 'undefined' && (window as any).api && (window as any).api.receive) {
+  try {
+    ;(window as any).api.receive('fromMain', (msg: any) => {
+      try {
+        if (msg && msg.type === 'app:packaged' && msg.isPackaged) {
+          // Ensure first-run theme defaults to light for App Store builds
+          if (!localStorage.getItem('theme')) {
+            localStorage.setItem('theme', 'light')
+            console.log('App packaged: set default theme to light for first run')
+          }
+        }
+      } catch (e) {
+        console.warn('Error handling fromMain message', e)
+      }
+    })
+  } catch (e) {
+    console.warn('Failed to register fromMain listener', e)
+  }
+}
