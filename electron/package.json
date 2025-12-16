@@ -9,8 +9,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "^20.9.0",
     "electron": "^33.0.1",
     "typescript": "^5.5.3"
   }
 }
-

@@ -1,7 +1,16 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, Menu } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as crypto from 'crypto';
+
+// Extend the Electron app to include isQuitting property
+declare global {
+  namespace Electron {
+    interface App {
+      isQuitting?: boolean;
+    }
+  }
+}
 
 let mainWindow: BrowserWindow | null;
 
@@ -31,6 +40,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // Disable Node.js integration for security
       contextIsolation: true, // Enable context isolation for security
+      devTools: !app.isPackaged, // Disable DevTools in production builds
     },
   });
 
@@ -50,15 +60,164 @@ function createWindow() {
   // Log when page loads
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('Page finished loading');
+    // Notify renderer that we're running a packaged build so it can
+    // enforce first-run defaults (e.g. theme) when appropriate.
+    try {
+      mainWindow?.webContents.send('fromMain', { type: 'app:packaged', isPackaged: app.isPackaged });
+    } catch (e) {
+      console.warn('Failed to notify renderer about packaged state', e);
+    }
   });
 
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
     console.error('Failed to load:', errorCode, errorDescription);
   });
 
+  // On macOS, hide the window when closed instead of destroying it
+  // This allows users to reopen it via the Window menu
+  mainWindow.on('close', (event: Electron.Event) => {
+    if (process.platform === 'darwin' && !app.isQuitting) {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
+  });
+
+  // Prevent opening DevTools via keyboard shortcuts in packaged builds
+  // (App Review reported developers' panel being visible when opening the DMG)
+  if (app.isPackaged) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      const isF12 = input.code === 'F12'
+      const isToggleDevTools = (input.key === 'I' || input.key === 'i') && (input.control || input.meta) && (input.shift || input.alt)
+
+      if (isF12 || isToggleDevTools) {
+        event.preventDefault()
+      }
+    });
+  }
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+// Create application menu for macOS
+function createMenu() {
+  const isMac = process.platform === 'darwin';
+
+  const template: Electron.MenuItemConstructorOptions[] = [
+    // App menu (macOS only)
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { role: 'about' as const },
+        { type: 'separator' as const },
+        { role: 'services' as const },
+        { type: 'separator' as const },
+        { role: 'hide' as const },
+        { role: 'hideOthers' as const },
+        { role: 'unhide' as const },
+        { type: 'separator' as const },
+        { role: 'quit' as const }
+      ]
+    }] : []),
+    // File menu
+    {
+      label: 'File',
+      submenu: [
+        isMac ? { role: 'close' as const } : { role: 'quit' as const }
+      ]
+    },
+    // Edit menu
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' as const },
+        { role: 'redo' as const },
+        { type: 'separator' as const },
+        { role: 'cut' as const },
+        { role: 'copy' as const },
+        { role: 'paste' as const },
+        ...(isMac ? [
+          { role: 'pasteAndMatchStyle' as const },
+          { role: 'delete' as const },
+          { role: 'selectAll' as const },
+          { type: 'separator' as const },
+          {
+            label: 'Speech',
+            submenu: [
+              { role: 'startSpeaking' as const },
+              { role: 'stopSpeaking' as const }
+            ]
+          }
+        ] : [
+          { role: 'delete' as const },
+          { type: 'separator' as const },
+          { role: 'selectAll' as const }
+        ])
+      ]
+    },
+    // Window menu
+    {
+      label: 'Window',
+      role: 'window' as const,
+      submenu: [
+        { role: 'minimize' as const },
+        { role: 'zoom' as const },
+        ...(isMac ? [
+          { type: 'separator' as const },
+          { role: 'front' as const },
+          { type: 'separator' as const },
+          {
+            label: 'MoodsNote',
+            accelerator: 'CmdOrCtrl+0',
+            click: () => {
+              if (mainWindow) {
+                if (mainWindow.isMinimized()) {
+                  mainWindow.restore();
+                }
+                mainWindow.show();
+                mainWindow.focus();
+              } else {
+                createWindow();
+              }
+            }
+          }
+        ] : [
+          { type: 'separator' as const },
+          { role: 'close' as const }
+        ])
+      ]
+    },
+    // Help menu (explicit label + role to ensure macOS shows items)
+    {
+      label: 'Help',
+      role: 'help',
+      submenu: [
+        {
+          label: 'Report an Issue',
+          click: async () => {
+            await shell.openExternal('https://github.com/PStarH/MoodNotes/issues');
+          }
+        },
+        {
+          label: 'View Documentation',
+          click: async () => {
+            await shell.openExternal('https://github.com/PStarH/MoodNotes#readme');
+          }
+        },
+        { type: 'separator' as const },
+        {
+          label: 'MoodsNote Support',
+          click: async () => {
+            await shell.openExternal('https://github.com/PStarH/MoodNotes');
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
 }
 
 // Security constants
@@ -520,7 +679,7 @@ ipcMain.handle('media:open', async (event, payload: { id?: string; storedName?: 
 ipcMain.handle('media:reveal', async (event, payload: { id?: string; storedName?: string }) => {
   try {
     const { id, storedName } = payload;
-  const manifest = await loadManifest({ reconcile: true });
+    const manifest = await loadManifest({ reconcile: true });
     const entry = manifest.find(item => (id && item.id === id) || (storedName && item.storedName === storedName));
 
     if (!entry) {
@@ -543,10 +702,17 @@ ipcMain.handle('media:reveal', async (event, payload: { id?: string; storedName?
 });
 
 app.whenReady().then(() => {
+  createMenu();
   createWindow();
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    // On macOS, show the window if it exists but is hidden
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
 
@@ -554,4 +720,9 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// Handle app quit properly on macOS
+app.on('before-quit', () => {
+  app.isQuitting = true;
 });

@@ -59,6 +59,7 @@ const themes: Record<Theme, ThemeConfig> = {
 }
 
 export function useTheme() {
+  // Default to 'light' theme - App Store requires light mode as default
   const currentTheme = ref<Theme>('light')
   const systemPrefersDark = ref(false)
 
@@ -121,6 +122,10 @@ export function useTheme() {
     const savedTheme = localStorage.getItem('theme') as Theme
     if (savedTheme && themes[savedTheme]) {
       currentTheme.value = savedTheme
+    } else {
+      // First run: explicitly set light theme as default
+      currentTheme.value = 'light'
+      localStorage.setItem('theme', 'light')
     }
 
     // Listen for system theme changes
