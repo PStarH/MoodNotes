@@ -14,7 +14,7 @@
 
 ![Stars](https://img.shields.io/github/stars/PStarH/MoodsNote?style=social)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Version](https://img.shields.io/badge/version-1.0.2-green)
 ![Electron](https://img.shields.io/badge/Electron-33-blue?logo=electron)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)
 

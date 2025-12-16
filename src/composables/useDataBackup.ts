@@ -37,14 +37,14 @@ interface BackupData {
  */
 const migrateBackupData = (data: any): BackupData => {
   // If no version field, treat as v1.0.0
-  const version = data.version || '1.0.0'
+  const version = data.version || '1.0.2'
 
   console.log(`Migrating backup data from version ${version} to ${CURRENT_VERSION}`)
 
   let migratedData = { ...data }
 
   // Migration from v1.0.0 to v2.0.0
-  if (version === '1.0.0') {
+  if (version === '1.0.2') {
     console.log('Applying v1.0.0 → v2.0.0 migration...')
 
     // Add missing fields with defaults
@@ -134,7 +134,7 @@ export function useDataBackup() {
     }
 
     // Migrate data if from older version
-    const version = data.version || '1.0.0'
+    const version = data.version || '1.0.2'
     if (version !== CURRENT_VERSION) {
       console.log(`Detected backup version ${version}, migrating to ${CURRENT_VERSION}...`)
       data = migrateBackupData(data)

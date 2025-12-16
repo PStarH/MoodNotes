@@ -45,7 +45,7 @@ function createWindow() {
   mainWindow.loadURL(startURL);
 
   // Always open DevTools in production for debugging (temporary)
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   // Log when page loads
   mainWindow.webContents.on('did-finish-load', () => {

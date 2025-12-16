@@ -1,6 +1,6 @@
 {
   "name": "moodsnote",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A local-first journaling app with mood tracking, habit insights, and beautiful data visualization",
   "author": {
     "name": "PStarH",
@@ -102,9 +102,19 @@
     "mac": {
       "icon": "build-resources/icon.icns",
       "category": "public.app-category.lifestyle",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build-resources/entitlements.mac.plist",
+      "entitlementsInherit": "build-resources/entitlements.mac.plist",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "mas",
+          "arch": ["universal"]
+        },
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
       ]
     },
     "mas": {
