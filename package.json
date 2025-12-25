@@ -1,6 +1,6 @@
 {
   "name": "moodsnote",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A local-first journaling app with mood tracking, habit insights, and beautiful data visualization",
   "author": {
     "name": "PStarH",

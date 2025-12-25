@@ -1,6 +1,6 @@
 {
   "name": "moodsnote-electron",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "commonjs",
   "main": "dist/main.js",
   "scripts": {
