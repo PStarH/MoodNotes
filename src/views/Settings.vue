@@ -347,7 +347,7 @@
             {{ $t('settings.about') }}
           </h2>
           <div class="space-y-2 text-sm text-[#7D5A36]">
-            <p><strong>{{ $t('settings.version') }}:</strong> 1.0.3</p>
+            <p><strong>{{ $t('settings.version') }}:</strong> 1.0.5</p>
             <p><strong>{{ $t('settings.build') }}:</strong> 2025.10.19</p>
             <p class="pt-2 text-xs">
               {{ $t('settings.aboutDesc') }}

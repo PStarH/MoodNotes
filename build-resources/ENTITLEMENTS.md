@@ -50,7 +50,7 @@ This file is used for local macOS development builds (notarization), not for App
 
 ## Changes Made for App Store Approval
 
-**Version 1.0.1+ Changes:**
+**Version 1.0.5+ Changes:**
 - Removed `com.apple.security.files.downloads.read-write` entitlement
 - This was flagged by Apple as unnecessary since the app:
   - Stores data in its own application support directory
